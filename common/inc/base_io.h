@@ -20,7 +20,11 @@ public:
 
 	virtual size_t write(unsigned char *data, size_t nLeng) = 0;
 
+	virtual size_t write(const QString &data) = 0;
+
 	virtual size_t read(unsigned char *data, size_t nLimit) = 0;
+
+	virtual size_t read(QString &data) = 0;
 
 	virtual bool open(char *sz) = 0;
 

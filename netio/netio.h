@@ -13,13 +13,14 @@ public:
 	CNetIO();
 	virtual ~CNetIO();
 
-	virtual size_t write(unsigned char *data, size_t nLeng) = 0;
+	virtual size_t write(unsigned char *data, size_t nLeng);
+	virtual size_t write(const QString &data);
+	virtual size_t read(unsigned char *data, size_t nLimit);
+	virtual size_t read(QString &data);
 
-	virtual size_t read(unsigned char *data, size_t nLimit) = 0;
+	virtual bool open(char *sz);
 
-	virtual bool open(char *sz) = 0;
-
-	virtual void close() = 0;
+	virtual void close();
 
 	QMetaObject::Connection connect(const QObject *sender, const char *signal, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection) {
 		return m_io->connect(sender, signal, receiver, method, type);
