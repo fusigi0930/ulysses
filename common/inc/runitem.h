@@ -7,10 +7,11 @@
 
 #include "debug.h"
 
-template <typename T_T>
+template <typename T_T, typename O_O>
 class CRunItem {
 protected:
-	T_T *m_engine;
+	T_T *m_reader;
+	O_O *m_writer;
 
 
 public:

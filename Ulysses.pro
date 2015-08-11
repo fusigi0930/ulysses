@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     engine \
-    netio
+    netio \
+    xmlrun
 
 engine.depends = netio
