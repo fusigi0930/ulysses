@@ -45,7 +45,13 @@ public:
 	}
 
 	virtual ~CRunItem() {
+		m_items.clear();
 
+		if (m_sourceFile.isOpen())
+			m_sourceFile.close();
+
+		if (m_destFile.isOpen())
+			m_destFile.close();
 	}
 
 	virtual bool open(QString szFile) {
@@ -93,6 +99,7 @@ public:
 		this->close();
 		return this->open(m_sourceFile.fileName());
 	}
+
 
 };
 
