@@ -29,6 +29,10 @@ public:
 	virtual bool open(char *sz) = 0;
 
 	virtual void close() = 0;
+
+	virtual QMetaObject::Connection connect(const QObject *sender, const char *signal, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection) = 0;
+
+	virtual bool disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method) = 0;
 };
 
 #endif // __BASE_IO_H__
