@@ -6,10 +6,15 @@ SOURCES += main.cpp
 
 RESOURCES += qml.qrc
 
-INCLUDEPATH += ../common/inc
+INCLUDEPATH += ../common/inc \
+			   ../auto/inc
 
-debug: OUTDIR = $$_PRO_FILE_PWD_/../out/debug
-release: OUTDIR = $$_PRO_FILE_PWD_/../out/release
+CONFIG(debug, debug|release) {
+	OUTDIR = $$_PRO_FILE_PWD_/../out/debug
+}
+CONFIG(release, debug|release) {
+	OUTDIR = $$_PRO_FILE_PWD_/../out/release
+}
 
 OBJECTS_DIR = $$OUTDIR/obj
 MOC_DIR = $$OUTDIR/obj/moc
