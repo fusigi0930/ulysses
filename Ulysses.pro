@@ -5,4 +5,5 @@ SUBDIRS += \
     netio \
     xmlrun
 
-engine.depends = netio
+engine.depends = netio \
+				 xmlrun

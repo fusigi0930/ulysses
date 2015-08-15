@@ -9,6 +9,11 @@ RESOURCES += qml.qrc
 INCLUDEPATH += ../common/inc \
 			   ../auto/inc
 
+LIBS += \
+	-L$$_PRO_FILE_PWD_/../auto/lib \
+	-lnetio \
+	-lxmlrun
+
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug
 }
