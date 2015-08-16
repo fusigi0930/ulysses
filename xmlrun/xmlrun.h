@@ -6,9 +6,15 @@
 
 #include <QtXml/QtXml>
 
+class QXmlStreamReader;
+class QXmlStreamWriter;
+
 class XMLRUNSHARED_EXPORT CXmlRun : public CRunItem<QXmlStreamReader,
-													QXmlStreamWriter>
+													QXmlStreamWriter
+													>
 {
+protected:
+	QString m_szMainNode;
 
 public:
 	CXmlRun();
@@ -18,6 +24,7 @@ protected:
 	virtual bool parser();
 	virtual bool writer();
 
+	virtual bool getMainNode();
 };
 
 #endif // XMLRUN_H

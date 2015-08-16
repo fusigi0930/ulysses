@@ -7,28 +7,29 @@
 
 #include "debug.h"
 
-template <typename T_T, typename O_O>
-class CRunItem {
+struct SItem {
+	QString szName;
+	QString szProc;
+	QString szPreProc;
+	QString szPostProc;
+	QString szDesc;
+	QString szExpect;
+	unsigned int nCmdType;
+	unsigned int nIndex;
+	unsigned int nDelay;
+};
+
+template <typename T_T, typename O_O, typename OQO>
+class CBaseItem {
 protected:
 	T_T *m_reader;
 	O_O *m_writer;
 
-
 public:
-	struct SItem {
-		QString szName;
-		QString szProc;
-		QString szPreProc;
-		QString szPostProc;
-		QString szDesc;
-		QString szExpect;
-		unsigned int nCmdType;
-		unsigned int nIndex;
-		unsigned int nDelay;
-	};
 
 protected:
-	QList<CRunItem::SItem> m_items;
+	int m_nIndex;
+	QList<OQO> m_items;
 	QFile m_sourceFile;
 	QFile m_destFile;
 
@@ -41,11 +42,11 @@ protected:
 	}
 
 public:
-	CRunItem() {
+	CBaseItem() {
 
 	}
 
-	virtual ~CRunItem() {
+	virtual ~CBaseItem() {
 		m_items.clear();
 
 		if (m_sourceFile.isOpen())
@@ -101,7 +102,49 @@ public:
 		return this->open(m_sourceFile.fileName());
 	}
 
+	virtual int getItemCount() {
+		return m_items.length();
+	}
 
+	virtual QList<OQO> &getItems() {
+		return m_items;
+	}
+
+	virtual int getCurrentIndex() {
+		return m_nIndex;
+	}
+
+	virtual OQO getCurrentItem() {
+		return m_items.at(m_nIndex);
+	}
+
+	virtual void setCurrentIndex(int nIndex) {
+		m_nIndex=nIndex;
+	}
+
+	virtual int addItem(OQO item) {
+		m_items.append(item);
+		return m_items.length();
+	}
+
+	virtual bool removeItem(int nIndex) {
+		if (0 > nIndex || m_items.length() < nIndex)
+			return false;
+		m_items.removeAt(nIndex);
+		return true;
+	}
+};
+
+template <typename T_T, typename O_O>
+class CRunItem : public CBaseItem<T_T, O_O, SItem> {
+public:
+	CRunItem() : CBaseItem<T_T, O_O, SItem>() {
+
+	}
+
+	virtual ~CRunItem() {
+
+	}
 };
 
 #endif // __RUNITEM_H__
