@@ -4,8 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core
-
+QT       += core testlib
 QT       -= gui
 
 TARGET = unittest
@@ -31,6 +30,6 @@ CONFIG(release, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/release
 }
 
-OBJECTS_DIR = $$OUTDIR/obj
-MOC_DIR = $$OUTDIR/obj/moc
+OBJECTS_DIR = $$OUTDIR/test/obj
+MOC_DIR = $$OUTDIR/obj/test/moc
 DESTDIR = $$OUTDIR/bin
