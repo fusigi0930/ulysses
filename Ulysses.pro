@@ -5,7 +5,8 @@ SUBDIRS += \
     netio \
 	xmlrun \
 	unittest \
-    comio
+    comio \
+    factory_engine
 
 engine.depends = \
 	netio \
@@ -13,6 +14,12 @@ engine.depends = \
 	comio
 
 unittest.depends = \
+	engine \
+	netio \
+	xmlrun \
+	comio
+
+factory_engine.depends = \
 	engine \
 	netio \
 	xmlrun \
