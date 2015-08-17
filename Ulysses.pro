@@ -4,7 +4,8 @@ SUBDIRS += \
     engine \
     netio \
 	xmlrun \
-	unittest
+	unittest \
+    comio
 
 engine.depends = netio \
 				 xmlrun
