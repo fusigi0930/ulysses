@@ -25,6 +25,7 @@ protected:
 	virtual bool writer();
 
 	virtual bool getMainNode();
+	virtual bool getCase();
 };
 
 #endif // XMLRUN_H
