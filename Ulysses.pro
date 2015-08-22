@@ -6,7 +6,8 @@ SUBDIRS += \
 	xmlrun \
 	unittest \
     comio \
-    factory_engine
+    factory_engine \
+    xmlcfg
 
 engine.depends = \
 	netio \
