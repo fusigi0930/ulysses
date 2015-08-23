@@ -21,7 +21,8 @@ INCLUDEPATH += ../common/inc \
 LIBS += \
 	-L$$_PRO_FILE_PWD_/../auto/lib \
 	-lnetio \
-	-lxmlrun
+	-lxmlrun \
+	-lxmlcfg
 
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug

@@ -28,4 +28,36 @@ protected:
 	virtual bool getCase();
 };
 
+struct SFactoryItem {
+	QString szName;
+	QString szCmd;
+	QString szImage;
+	QString szExpect;
+	int nUiIndex;
+	int nDelay;
+	QString szPostCmd;
+	QString szPreCmd;
+	QString szResult;
+};
+
+struct SFactoryConfig {
+	QString szSerial;
+
+};
+
+class XMLRUNSHARED_EXPORT CXmlFactoryRun : public CBaseItem<QXmlStreamReader,
+															QXmlStreamWriter,
+															SFactoryItem>
+{
+protected:
+	SFactoryConfig m_Config;
+public:
+	CXmlFactoryRun();
+	virtual ~CXmlFactoryRun();
+
+protected:
+	virtual bool parser();
+	virtual bool writer();
+};
+
 #endif // XMLRUN_H

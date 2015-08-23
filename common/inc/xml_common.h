@@ -4,13 +4,21 @@
 #define XML_GET_VAULE_TEXT(object, node_name, variable) \
 	if (0 == object.name().toString().compare(node_name)) { \
 		variable=object.readElementText(); \
+		continue; \
 	}
 
 #define XML_GET_VAULE_INT(object, node_name, variable) \
 	if (0 == object.name().toString().compare(node_name)) { \
 		variable=object.readElementText().toInt(); \
+		continue; \
 	}
 
+#define XML_GET_VALUE_TEXT_BEGIN(object, node_name) \
+	if (0 == object.name().toString().compare(node_name)) { \
+		QString szBuf=object.readElementText(); 
+
+#define XML_GET_VALUE_TEXT_END }
+	
 #define XML_GET_ATTR_TEXT(object, node_name, attr_name, variable) \
 	if (0 == object.name().toString().compare(node_name)) { \
 		QXmlStreamAttributes attr=object.attributes(); \

@@ -56,39 +56,24 @@ bool CXmlRun::getCase() {
 			default:
 				continue;
 			case QXmlStreamReader::StartElement:
-				if (0 == m_reader->name().toString().compare(XML_CASE_ITEM)) {
-					item.szName=m_reader->readElementText();
-				}
-				else if (0 == m_reader->name().toString().compare(XML_CASE_PRECMD)) {
-					item.szPreProc=m_reader->readElementText();
-				}
-				else if (0 == m_reader->name().toString().compare(XML_CASE_POSTCMD)) {
-					item.szPostProc=m_reader->readElementText();
-				}
-				else if (0 == m_reader->name().toString().compare(XML_CASE_CMD)) {
-					item.szProc=m_reader->readElementText();
-				}
-				else if (0 == m_reader->name().toString().compare(XML_CASE_EXPECT)) {
-					item.szExpect=m_reader->readElementText();
-				}
-				else if (0 == m_reader->name().toString().compare(XML_CASE_COMMENT)) {
-					item.szDesc=m_reader->readElementText();
-				}
-				else if (0 == m_reader->name().toString().compare(XML_CASE_DELAY)) {
-					item.nDelay=m_reader->readElementText().toInt();
-				}
-				else if (0 == m_reader->name().toString().compare(XML_CASE_TYPE)) {
-					QString szType=m_reader->readElementText();
-					if (0 == szType.toLower().compare(XML_CASE_TYPE_AUTO)) {
+				XML_GET_VAULE_TEXT((*m_reader), XML_CASE_ITEM, item.szName);
+				XML_GET_VAULE_TEXT((*m_reader), XML_CASE_PRECMD, item.szPreProc);
+				XML_GET_VAULE_TEXT((*m_reader), XML_CASE_POSTCMD, item.szPostProc);
+				XML_GET_VAULE_TEXT((*m_reader), XML_CASE_CMD, item.szProc);
+				XML_GET_VAULE_TEXT((*m_reader), XML_CASE_EXPECT, item.szExpect);
+				XML_GET_VAULE_TEXT((*m_reader), XML_CASE_COMMENT, item.szDesc);
+				XML_GET_VAULE_INT((*m_reader), XML_CASE_DELAY, item.nDelay);
+				XML_GET_VALUE_TEXT_BEGIN((*m_reader), XML_CASE_TYPE)
+					if (0 == szBuf.toLower().compare(XML_CASE_TYPE_AUTO)) {
 						item.nCmdType=static_cast<int>(CMDTYPE_AUTO);
 					}
-					else if (0 == szType.toLower().compare(XML_CASE_TYPE_MANUAL)) {
+					else if (0 == szBuf.toLower().compare(XML_CASE_TYPE_MANUAL)) {
 						item.nCmdType=static_cast<int>(CMDTYPE_MANUAL);
 					}
-					else if (0 == szType.toLower().compare(XML_CASE_TYPE_HAUTO)) {
+					else if (0 == szBuf.toLower().compare(XML_CASE_TYPE_HAUTO)) {
 						item.nCmdType=static_cast<int>(CMDTYPE_HAUTO);
 					}
-				}
+				XML_GET_VALUE_TEXT_END;
 				break;
 			case QXmlStreamReader::EndElement:
 				if (0 == m_reader->name().toString().compare(XML_CASE)) {
@@ -150,7 +135,7 @@ bool CXmlRun::parser() {
 		}
 	}
 
-	return CRunItem::parser();
+	return true;
 }
 
 bool CXmlRun::writer() {
@@ -158,5 +143,34 @@ bool CXmlRun::writer() {
 		DMSG("destination file is not opened!");
 		return false;
 	}
-	return CRunItem::parser();
+	return true;
+}
+
+////////////////////////////////////////////////////
+///
+/// Factory Runner 2.0
+///
+
+CXmlFactoryRun::CXmlFactoryRun() : CBaseItem<QXmlStreamReader, QXmlStreamWriter, SFactoryItem>() {
+	m_reader=new QXmlStreamReader();
+	m_writer=new QXmlStreamWriter();
+}
+
+CXmlFactoryRun::~CXmlFactoryRun() {
+	if (m_reader) {
+		delete m_reader;
+		m_reader=NULL;
+	}
+	if (m_writer) {
+		delete m_writer;
+		m_writer=NULL;
+	}
+}
+
+bool CXmlFactoryRun::parser() {
+	return true;
+}
+
+bool CXmlFactoryRun::writer() {
+	return false;
 }

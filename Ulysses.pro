@@ -12,13 +12,15 @@ SUBDIRS += \
 engine.depends = \
 	netio \
 	xmlrun \
-	comio
+	comio \
+	xmlcfg
 
 unittest.depends = \
 	engine \
 	netio \
 	xmlrun \
-	comio
+	comio \
+	xmlcfg
 
 factory_engine.depends = \
 	engine \

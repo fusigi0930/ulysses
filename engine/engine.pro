@@ -13,7 +13,8 @@ LIBS += \
 	-L$$_PRO_FILE_PWD_/../auto/lib \
 	-lnetio \
 	-lxmlrun \
-	-lcomio
+	-lcomio \
+	-lxmlcfg
 
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug
