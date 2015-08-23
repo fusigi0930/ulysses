@@ -22,6 +22,10 @@ class XMLCFGSHARED_EXPORT CXmlConfig : public CBaseItem<QXmlStreamReader,
 public:
 	CXmlConfig();
 	virtual ~CXmlConfig();
+
+protected:
+	virtual bool parser();
+	virtual bool writer();
 };
 
 #endif // XMLCFG_H
