@@ -138,11 +138,37 @@ bool CXmlRun::parser() {
 	return true;
 }
 
+bool CXmlRun::writeCase() {
+	for (QList<SItem>::iterator pItem=m_items.begin(); pItem != m_items.end(); pItem++) {
+		XML_SET_ATTR_BEGIN((*m_writer), XML_CASE);
+		XML_SET_VAULE((*m_writer), XML_CASE_ITEM, pItem->szName);
+		XML_SET_VAULE((*m_writer), XML_CASE_COMMENT, pItem->szDesc);
+		XML_SET_VAULE((*m_writer), XML_CASE_PRECMD, pItem->szPreProc);
+		XML_SET_VAULE((*m_writer), XML_CASE_CMD, pItem->szProc);
+		XML_SET_VAULE((*m_writer), XML_CASE_POSTCMD, pItem->szPostProc);
+		XML_SET_VAULE((*m_writer), XML_CASE_DELAY, QString().sprintf("%d", pItem->nDelay));
+		XML_SET_VAULE((*m_writer), XML_CASE_EXPECT, pItem->szExpect);
+		XML_SET_ATTR_END((*m_writer)); // XML_CASE
+	}
+}
+
 bool CXmlRun::writer() {
 	if (!m_destFile.isOpen()) {
 		DMSG("destination file is not opened!");
 		return false;
 	}
+
+	m_writer->setDevice(&m_destFile);
+	m_writer->writeStartDocument();
+	XML_SET_ATTR_BEGIN((*m_writer), XML_MAIN_NODE);
+
+	if (!writeCase()) {
+		DMSG("write xml file failed!");
+		return false;
+	}
+
+	XML_SET_ATTR_END((*m_writer)); // XML_MAIN_NODE
+	m_writer->writeEndDocument();
 	return true;
 }
 

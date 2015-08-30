@@ -26,6 +26,8 @@ protected:
 
 	virtual bool getMainNode();
 	virtual bool getCase();
+
+	virtual bool writeCase();
 };
 
 struct SFactoryItem {
