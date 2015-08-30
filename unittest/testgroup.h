@@ -18,6 +18,10 @@ public:
 private slots:
 	void slotCXmlRun_saveFile();
 	void slotCXmlRun_openFile();
+	void slotCXmlRun_replaceItem();
+	void slotCXmlRun_escapeCharSave();
+	void slotCXmlRun_Utf8CharSave();
+	void slotCXmlRun_Utf8CharRead();
 };
 
 #endif // __TESTGROUP_H__
