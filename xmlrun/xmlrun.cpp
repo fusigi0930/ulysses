@@ -139,6 +139,11 @@ bool CXmlRun::parser() {
 }
 
 bool CXmlRun::writeCase() {
+	QString szCmdType[] = {
+		XML_CASE_TYPE_AUTO,
+		XML_CASE_TYPE_MANUAL,
+		XML_CASE_TYPE_HAUTO,
+	};
 	for (QList<SItem>::iterator pItem=m_items.begin(); pItem != m_items.end(); pItem++) {
 		XML_SET_ATTR_BEGIN((*m_writer), XML_CASE);
 		XML_SET_VAULE((*m_writer), XML_CASE_ITEM, pItem->szName);
@@ -148,8 +153,10 @@ bool CXmlRun::writeCase() {
 		XML_SET_VAULE((*m_writer), XML_CASE_POSTCMD, pItem->szPostProc);
 		XML_SET_VAULE((*m_writer), XML_CASE_DELAY, QString().sprintf("%d", pItem->nDelay));
 		XML_SET_VAULE((*m_writer), XML_CASE_EXPECT, pItem->szExpect);
+		XML_SET_VAULE((*m_writer), XML_CASE_TYPE, szCmdType[pItem->nCmdType]);
 		XML_SET_ATTR_END((*m_writer)); // XML_CASE
 	}
+	return true;
 }
 
 bool CXmlRun::writer() {

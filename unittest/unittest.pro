@@ -35,3 +35,6 @@ CONFIG(release, debug|release) {
 OBJECTS_DIR = $$OUTDIR/test/obj
 MOC_DIR = $$OUTDIR/obj/test/moc
 DESTDIR = $$OUTDIR/bin
+
+HEADERS += \
+    testgroup.h
