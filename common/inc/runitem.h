@@ -43,7 +43,7 @@ protected:
 
 public:
 	CBaseItem() {
-
+		m_nIndex=0;
 	}
 
 	virtual ~CBaseItem() {
@@ -116,6 +116,14 @@ public:
 
 	virtual OQO getCurrentItem() {
 		return m_items.at(m_nIndex);
+	}
+	
+	virtual OQO& getItem(int i) {
+		return m_items[i];
+	}
+	
+	virtual OQO& replaceCurrentItem() {
+		return m_items[m_nIndex];
 	}
 
 	virtual void setCurrentIndex(int nIndex) {
