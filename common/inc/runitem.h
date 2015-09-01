@@ -68,7 +68,9 @@ public:
 			return false;
 		}
 
-		return parser();
+		bool bRet=parser();
+		m_sourceFile.close();
+		return bRet;
 	}
 
 	virtual bool save(QString szFile) {
@@ -83,7 +85,9 @@ public:
 			return false;
 		}
 
-		return writer();
+		bool bRet=writer();
+		m_destFile.close();
+		return bRet;
 	}
 
 	virtual void close() {

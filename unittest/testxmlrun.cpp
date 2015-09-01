@@ -53,11 +53,48 @@ void CTestGroup::slotCXmlRun_openFile() {
 }
 
 void CTestGroup::slotCXmlRun_replaceItem() {
+	CXmlRun xmlrun;
+	if (!xmlrun.open("test.xml")) {
+		QFAIL("open test file failed!");
+	}
 
+	SItem &item=xmlrun.getItem(0);
+	item.szName="replace1";
+
+	if (!xmlrun.save("replace.xml")) {
+		QFAIL("save file failed!");
+	}
+	CXmlRun xmlrun1;
+	if (!xmlrun1.open("replace.xml")) {
+		QFAIL("open test file failed!");
+	}
+	SItem item1=xmlrun1.getCurrentItem();
+	QCOMPARE(item1.szName, QString("replace1"));
 }
 
 void CTestGroup::slotCXmlRun_escapeCharSave() {
+	CXmlRun xmlrun;
+	SItem item1;
+	item1.szName="escape";
+	item1.szDesc="&><\"'";
+	item1.szPreProc="";
+	item1.szProc="Proc";
+	item1.szPostProc="postProc";
+	item1.szExpect="test expect";
+	item1.nDelay=100;
+	item1.nCmdType=0;
 
+	xmlrun.getItems().push_back(item1);
+	if (!xmlrun.save("escape.xml")) {
+		QFAIL("save file failed!");
+	}
+
+	CXmlRun xmlrun1;
+	if (!xmlrun1.open("escape.xml")) {
+		QFAIL("open test file failed!");
+	}
+
+	QCOMPARE(xmlrun1.getCurrentItem().szName, QString("&><\"'"));
 }
 
 void CTestGroup::slotCXmlRun_Utf8CharSave() {
