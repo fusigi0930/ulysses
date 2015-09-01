@@ -16,12 +16,13 @@ public:
 	}
 
 private slots:
-	void slotCXmlRun_saveFile();
-	void slotCXmlRun_openFile();
-	void slotCXmlRun_replaceItem();
-	void slotCXmlRun_escapeCharSave();
-	void slotCXmlRun_Utf8CharSave();
-	void slotCXmlRun_Utf8CharRead();
+	void testCXmlRun_saveFile();
+	void testCXmlRun_openFile();
+	void testCXmlRun_replaceItem();
+	void testCXmlRun_escapeCharSave();
+	void testCXmlRun_Utf8CharSave();
+	void testCXmlRun_Utf8CharRead();
+	void testCXmlRun_multipleItem();
 };
 
 #endif // __TESTGROUP_H__
