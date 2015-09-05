@@ -164,3 +164,31 @@ void CTestGroup::testCXmlRun_multipleItem() {
 
 	QFile::remove("multiple.xml");
 }
+
+void CTestGroup::testCXmlFactoryRun_saveFile() {
+
+}
+
+void CTestGroup::testCXmlFactoryRun_openFile() {
+
+}
+
+void CTestGroup::testCXmlFactoryRun_replaceItem() {
+
+}
+
+void CTestGroup::testCXmlFactoryRun_escapeCharSave() {
+
+}
+
+void CTestGroup::testCXmlFactoryRun_Utf8CharSave() {
+
+}
+
+void CTestGroup::testCXmlFactoryRun_Utf8CharRead() {
+
+}
+
+void CTestGroup::testCXmlFactoryRun_multipleItem() {
+
+}

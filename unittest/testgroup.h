@@ -23,6 +23,14 @@ private slots:
 	void testCXmlRun_Utf8CharSave();
 	void testCXmlRun_Utf8CharRead();
 	void testCXmlRun_multipleItem();
+
+	void testCXmlFactoryRun_saveFile();
+	void testCXmlFactoryRun_openFile();
+	void testCXmlFactoryRun_replaceItem();
+	void testCXmlFactoryRun_escapeCharSave();
+	void testCXmlFactoryRun_Utf8CharSave();
+	void testCXmlFactoryRun_Utf8CharRead();
+	void testCXmlFactoryRun_multipleItem();
 };
 
 #endif // __TESTGROUP_H__

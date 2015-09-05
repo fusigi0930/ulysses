@@ -11,7 +11,7 @@ class QXmlStreamReader;
 class QXmlStreamWriter;
 
 struct SConfig {
-	QString m_szMethod;
+	QString m_szMethod;		// Network, RS232, ...
 };
 
 class XMLCFGSHARED_EXPORT CXmlConfig : public CBaseItem<QXmlStreamReader,

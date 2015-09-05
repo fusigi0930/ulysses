@@ -354,5 +354,47 @@ bool CXmlFactoryRun::getSettings() {
 }
 
 bool CXmlFactoryRun::writer() {
-	return false;
+	if (!m_destFile.isOpen()) {
+		DMSG("destination file is not opened!");
+		return false;
+	}
+
+	m_writer->setDevice(&m_destFile);
+	m_writer->writeStartDocument();
+	XML_SET_ATTR_BEGIN((*m_writer), XML_FACTORY);
+
+	if (!writeItems()) {
+		DMSG("write xml file failed -- items!");
+		return false;
+	}
+	if (!writeSettings()) {
+		DMSG("write xml failed -- settings");
+		return false;
+	}
+
+	XML_SET_ATTR_END((*m_writer)); // XML_MAIN_NODE
+	m_writer->writeEndDocument();
+	return true;
+}
+
+bool CXmlFactoryRun::writeItems() {
+	for (QList<SFactoryItem>::iterator pItem=m_items.begin(); pItem != m_items.end(); pItem++) {
+		XML_SET_ATTR_BEGIN((*m_writer), XML_FAC_ITEM);
+		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_NAME, pItem->szName);
+		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_IMAGE, pItem->szImage);
+		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_PRE_COMMAND, pItem->szPreCmd);
+		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_COMMAND, pItem->szCmd);
+		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_POST_COMMAND, pItem->szPostCmd);
+		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_DELAY, QString().sprintf("%d", pItem->nDelay));
+		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_EXPECT, pItem->szExpect);;
+		XML_SET_ATTR_END((*m_writer)); // XML_FAC_ITEM
+	}
+	return true;
+}
+
+bool CXmlFactoryRun::writeSettings() {
+	XML_SET_ATTR_BEGIN((*m_writer), XML_SETTINGS);
+	XML_SET_VAULE((*m_writer), XML_SETT_SERIAL, m_Config.szSerial);
+	XML_SET_ATTR_END((*m_writer)); // XML_FAC_ITEM
+	return true;
 }

@@ -65,6 +65,9 @@ protected:
 	virtual bool getFactoryItem();
 	virtual bool getScrpit();
 	virtual bool getSettings();
+
+	virtual bool writeItems();
+	virtual bool writeSettings();
 };
 
 #endif // XMLRUN_H
