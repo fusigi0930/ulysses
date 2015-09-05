@@ -184,6 +184,39 @@ bool CXmlRun::writer() {
 /// Factory Runner 2.0
 ///
 
+#define DEFAULT_XML_NAME		"items.xml"
+#define XML_FACTORY				"factory"
+
+#define XML_FAC_ITEM			"item"
+#define XML_FAC_ITEM_NAME		"name"
+#define XML_FAC_ITEM_COMMAND	"command"
+#define XML_FAC_ITEM_EXPECT		"expect"
+#define XML_FAC_ITEM_IMAGE		"image"
+#define XML_FAC_ITEM_COLOR		"itemcolor"
+#define XML_FAC_ITEM_DELAY		"delay"
+#define XML_FAC_ITEM_POST_COMMAND "postcmd"
+#define XML_FAC_ITEM_PRE_COMMAND  "precmd"
+
+#define XML_COMMAND_REBOOT "reboot"
+#define XML_COMMAND_PAUSE "pause"
+#define XML_COMMAND_DELAY "delay"
+#define XML_COMMAND_BOOT "boot"
+
+#define XML_FAC_ITEM_COLOR_NORMAL	"#F0F0F0"
+#define XML_FAC_ITEM_COLOR_PASS		"#20FF20"
+#define XML_FAC_ITEM_COLOR_FAIL		"#FF2020"
+
+#define XML_SCRIPT              "script"
+#define XML_SCRIPT_NAME         "name"
+#define XML_SCRIPT_CONTENT      "content"
+#define XML_SCRIPT_COMMENT      "comment"
+
+#define XML_SETTINGS			"settings"
+
+#define XML_SETT_SERIAL			"serial"
+#define XML_SETT_MAC_FILE		"mac_file"
+#define XML_SETT_ID_FILE		"id_file"
+
 CXmlFactoryRun::CXmlFactoryRun() : CBaseItem<QXmlStreamReader, QXmlStreamWriter, SFactoryItem>() {
 	m_reader=new QXmlStreamReader();
 	m_writer=new QXmlStreamWriter();
@@ -201,6 +234,122 @@ CXmlFactoryRun::~CXmlFactoryRun() {
 }
 
 bool CXmlFactoryRun::parser() {
+	if (!m_sourceFile.isOpen()) {
+		DMSG("source file is not opened!");
+		return false;
+	}
+
+	m_reader->setDevice(&m_sourceFile);
+
+	while (!m_reader->atEnd() && ! m_reader->hasError()) {
+		QXmlStreamReader::TokenType readToken=m_reader->readNext();
+
+		switch(readToken) {
+			default:
+				continue;
+			case QXmlStreamReader::StartElement:
+				if (0 == m_reader->name().toString().compare(XML_FACTORY)) {
+					if (!getFactory()) {
+						DMSG("get main node: %s failed!", XML_FACTORY);
+						return false;
+					}
+				}
+				break;
+			case QXmlStreamReader::EndElement:
+				break;
+		}
+	}
+
+	return true;
+}
+
+bool CXmlFactoryRun::getFactory() {
+	while (!m_reader->atEnd() && ! m_reader->hasError()) {
+		QXmlStreamReader::TokenType readToken=m_reader->readNext();
+
+		switch(readToken) {
+			default:
+				continue;
+			case QXmlStreamReader::StartElement:
+				if (0 == m_reader->name().toString().compare(XML_FAC_ITEM)) {
+					if (!getFactoryItem()) {
+						DMSG("get factory item: %d failed!", m_reader->lineNumber());
+						return false;
+					}
+				}
+				else if (0 == m_reader->name().toString().compare(XML_SCRIPT)) {
+					if (!getScrpit()) {
+						DMSG("get script: %d failed!", m_reader->lineNumber());
+						return false;
+					}
+				}
+				else if (0 == m_reader->name().toString().compare(XML_SETTINGS)) {
+					if (!getSettings()) {
+						DMSG("get settings: %d failed!", m_reader->lineNumber());
+						return false;
+					}
+				}
+				break;
+			case QXmlStreamReader::EndElement:
+				break;
+		}
+	}
+	return true;
+}
+
+bool CXmlFactoryRun::getFactoryItem() {
+	SFactoryItem info;
+	info.nDelay=0;
+	while (!m_reader->atEnd() && !m_reader->hasError()) {
+		QXmlStreamReader::TokenType readToken=m_reader->readNext();
+
+		switch (readToken) {
+			default:
+				continue;
+			case QXmlStreamReader::StartElement:
+				XML_GET_VAULE_TEXT((*m_reader), XML_FAC_ITEM_NAME, info.szName);
+				XML_GET_VAULE_TEXT((*m_reader), XML_FAC_ITEM_COMMAND, info.szCmd);
+				XML_GET_VAULE_TEXT((*m_reader), XML_FAC_ITEM_IMAGE, info.szImage);
+				XML_GET_VAULE_TEXT((*m_reader), XML_FAC_ITEM_EXPECT, info.szExpect);
+				XML_GET_VAULE_INT((*m_reader), XML_FAC_ITEM_DELAY, info.nDelay);
+				XML_GET_VAULE_TEXT((*m_reader), XML_FAC_ITEM_POST_COMMAND, info.szPostCmd);
+				XML_GET_VAULE_TEXT((*m_reader), XML_FAC_ITEM_PRE_COMMAND, info.szPreCmd);
+				break;
+			case QXmlStreamReader::EndElement:
+				if (!m_reader->name().toString().compare(XML_FAC_ITEM)) {
+					// post processo for the parser datas
+					info.szCmd.append('\r');
+					if(0 != info.szImage.left(7).compare("file://")) {
+						info.szImage="file:///" + QDir::currentPath() + "/" + info.szImage;
+					}
+					m_items.push_back(info);
+					return true;
+				}
+				break;
+		}
+	}
+	return true;
+}
+
+bool CXmlFactoryRun::getScrpit() {
+	// removed it function content, because not used
+	return true;
+}
+
+bool CXmlFactoryRun::getSettings() {
+	while (!m_reader->atEnd() && !m_reader->hasError()) {
+		QXmlStreamReader::TokenType readToken=m_reader->readNext();
+
+		switch (readToken) {
+			default:
+				continue;
+			case QXmlStreamReader::StartElement:
+				XML_GET_VAULE_TEXT((*m_reader), XML_SETT_SERIAL, m_Config.szSerial);
+				break;
+			case QXmlStreamReader::EndElement:
+				break;
+		}
+	}
 	return true;
 }
 

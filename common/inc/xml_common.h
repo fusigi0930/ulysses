@@ -19,14 +19,19 @@
 
 #define XML_GET_VALUE_TEXT_END }
 	
-#define XML_GET_ATTR_TEXT(object, node_name, attr_name, variable) \
+#define XML_GET_ATTR_BEGIN(object, node_name) \
 	if (0 == object.name().toString().compare(node_name)) { \
+
+#define XML_GET_ATTR_END }
+
+#define XML_GET_ATTR_TEXT(object, attr_name, variable) \
+	{ \
 		QXmlStreamAttributes attr=object.attributes(); \
 		variable=attr.value(attr_name).toString(); \
 	}
 
-#define XML_GET_ATTR_INT(object, node_name, attr_name, variable) \
-	if (0 == object.name().toString().compare(node_name)) { \
+#define XML_GET_ATTR_INT(object, attr_name, variable) \
+	{ \
 		QXmlStreamAttributes attr=object.attributes(); \
 		variable=attr.value(attr_name).toString().toInt(); \
 	}

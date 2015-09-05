@@ -60,6 +60,11 @@ public:
 protected:
 	virtual bool parser();
 	virtual bool writer();
+
+	virtual bool getFactory();
+	virtual bool getFactoryItem();
+	virtual bool getScrpit();
+	virtual bool getSettings();
 };
 
 #endif // XMLRUN_H
