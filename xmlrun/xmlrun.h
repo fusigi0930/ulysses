@@ -51,7 +51,7 @@ class XMLRUNSHARED_EXPORT CXmlFactoryRun : public CBaseItem<QXmlStreamReader,
 															QXmlStreamWriter,
 															SFactoryItem>
 {
-protected:
+public:
 	SFactoryConfig m_Config;
 public:
 	CXmlFactoryRun();

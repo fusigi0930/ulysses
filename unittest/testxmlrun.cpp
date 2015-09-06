@@ -2,6 +2,7 @@
 #include "xmlrun.h"
 #include "runitem.h"
 #include <QList>
+#include "debug.h"
 #include "testgroup.h"
 
 void CTestGroup::testCXmlRun_saveFile() {
@@ -166,29 +167,192 @@ void CTestGroup::testCXmlRun_multipleItem() {
 }
 
 void CTestGroup::testCXmlFactoryRun_saveFile() {
+	CXmlFactoryRun run;
+	SFactoryItem item;
+	item.szName="item1";
+	item.nDelay=100;
+	item.szCmd="cmd";
+	item.szExpect="expect";
+	item.szImage="image";
+	item.szPostCmd="post cmd";
+	item.szPreCmd="pre cmd";
 
+	run.getItems().push_back(item);
+	if (!run.save("factorytest.xml")) {
+		QFAIL("save xml file failed");
+
+	}
+
+	QFile file;
+	file.setFileName("factorytest.xml");
+	if (!file.open(QFile::ReadOnly)) {
+		QFAIL("open file failed!");
+	}
+	QByteArray buf=file.readAll();
+	file.close();
+
+	QCOMPARE(-1 != buf.indexOf("<factory>"), true);
+	QCOMPARE(-1 != buf.indexOf("</factory>"), true);
+	QCOMPARE(-1 != buf.indexOf("<settings>"), true);
+	QCOMPARE(-1 != buf.indexOf("</settings>"), true);
+	QCOMPARE(-1 != buf.indexOf("<serial>COM3</serial>"), true);
+	QCOMPARE(-1 != buf.indexOf("<item>"), true);
+	QCOMPARE(-1 != buf.indexOf("</item>"), true);
+	QCOMPARE(-1 != buf.indexOf("<name>item1</name>"), true);
+	QCOMPARE(-1 != buf.indexOf("<delay>100</delay>"), true);
+	QCOMPARE(-1 != buf.indexOf("<command>cmd</command>"), true);
+	QCOMPARE(-1 != buf.indexOf("<precmd>pre cmd</precmd>"), true);
+	QCOMPARE(-1 != buf.indexOf("<postcmd>post cmd</postcmd>"), true);
+	QCOMPARE(-1 != buf.indexOf("<expect>expect</expect>"), true);
+	QCOMPARE(-1 != buf.indexOf("<image>image</image>"), true);
 }
 
 void CTestGroup::testCXmlFactoryRun_openFile() {
+	CXmlFactoryRun run;
+	if (!run.open("factorytest.xml")) {
+		QFAIL("cannot open file");
+	}
 
+	SFactoryItem item=run.getCurrentItem();
+	QCOMPARE(0==item.szName.compare("item1"), true);
+	QCOMPARE(item.nDelay, 100);
+	QCOMPARE(0 == item.szCmd.compare("cmd\r"), true);
+	QCOMPARE(0 == item.szExpect.compare("expect"), true);
+	QString szImage;
+	szImage.sprintf("file:///%s/image", QSZ(QDir::currentPath()));
+	QCOMPARE(0 == item.szImage.compare(szImage), true);
+	QCOMPARE(0 == item.szPostCmd.compare("post cmd"), true);
+	QCOMPARE(0 == item.szPreCmd.compare("pre cmd"), true);
+	QCOMPARE(0 == run.m_Config.szSerial.compare("COM3"), true);
 }
 
 void CTestGroup::testCXmlFactoryRun_replaceItem() {
+	CXmlFactoryRun run;
+	if (!run.open("factorytest.xml")) {
+		QFAIL("cannot open file");
+	}
 
+	SFactoryItem &item=run.getItem(0);
+	item.szName="replace1";
+
+	if (!run.save("replace.xml")) {
+		QFAIL("save file failed!");
+	}
+	CXmlFactoryRun xmlrun1;
+	if (!xmlrun1.open("replace.xml")) {
+		QFAIL("open test file failed!");
+	}
+	SFactoryItem item1=xmlrun1.getCurrentItem();
+	QCOMPARE(item1.szName, QString("replace1"));
+	QFile::remove("testfactorytestxml");
+	QFile::remove("replace.xml");
 }
 
 void CTestGroup::testCXmlFactoryRun_escapeCharSave() {
+	CXmlFactoryRun run;
+	SFactoryItem item;
+	item.szName="&<>\"";
+	item.nDelay=100;
+	item.szCmd="cmd";
+	item.szExpect="expect";
+	item.szImage="image";
+	item.szPostCmd="post cmd";
+	item.szPreCmd="pre cmd";
 
+	run.getItems().push_back(item);
+	if (!run.save("factoryescape.xml")) {
+		QFAIL("save xml file failed");
+
+	}
+
+	CXmlFactoryRun xmlrun1;
+	if (!xmlrun1.open("factoryescape.xml")) {
+		QFAIL("open xml file failed");
+	}
+	QCOMPARE(0 == xmlrun1.getCurrentItem().szName.compare("&<>\""), true);
 }
 
 void CTestGroup::testCXmlFactoryRun_Utf8CharSave() {
+	CXmlFactoryRun run;
+	SFactoryItem item;
+	item.szName="&<>\"";
+	item.nDelay=100;
+	item.szCmd="cmd";
+	item.szExpect="expect";
+	item.szImage="image";
+	item.szPostCmd="post cmd";
+	item.szPreCmd="pre cmd";
 
+	run.getItems().push_back(item);
+	if (!run.save("factoryescape.xml")) {
+		QFAIL("save xml file failed");
+
+	}
+
+	CXmlFactoryRun xmlrun1;
+	if (!xmlrun1.open("factoryescape.xml")) {
+		QFAIL("open xml file failed");
+	}
+	QCOMPARE(0 == xmlrun1.getCurrentItem().szName.compare("&<>\""), true);
+	QFile::remove("factoryescape.xml");
 }
 
 void CTestGroup::testCXmlFactoryRun_Utf8CharRead() {
+	CXmlFactoryRun run;
+	SFactoryItem item;
+	item.szName="這是中文UTF8";
+	item.nDelay=100;
+	item.szCmd="cmd";
+	item.szExpect="expect";
+	item.szImage="image";
+	item.szPostCmd="post cmd";
+	item.szPreCmd="pre cmd";
 
+	run.getItems().push_back(item);
+	if (!run.save("utf8factory.xml")) {
+		QFAIL("save xml file failed");
+
+	}
+
+	CXmlFactoryRun xmlrun1;
+	if (!xmlrun1.open("utf8factory.xml")) {
+		QFAIL("open xml file failed");
+	}
+	QCOMPARE(0 == xmlrun1.getCurrentItem().szName.compare("這是中文UTF8"), true);
+	QFile::remove("utf8factory.xml");
 }
 
 void CTestGroup::testCXmlFactoryRun_multipleItem() {
+	CXmlFactoryRun xmlrun;
+	for (int i=0; i<100; i++) {
+		SFactoryItem item;
+		item.szName.sprintf("item%03d", i);
+		item.szCmd.sprintf("cmd%03d", i);
+		item.szPreCmd.sprintf("precmd%03d", i);
+		item.szPostCmd.sprintf("postcmd%03d", i);
+		item.szImage.sprintf("image%03d", i);
+		item.szExpect.sprintf("expect%03d", i);
+		item.nDelay=i;;
+		xmlrun.getItems().push_back(item);
+	}
+	if (!xmlrun.save("factorymultiple.xml")) {
+		QFAIL("save test file failed!");
+	}
+	CXmlFactoryRun xmlrun1;
+	if (!xmlrun1.open("factorymultiple.xml")) {
+		QFAIL("open file failed");
+	}
 
+	QCOMPARE(xmlrun1.getItemCount(), xmlrun.getItemCount());
+	for (int i=0; i<xmlrun.getItemCount(); i++) {
+		QCOMPARE(xmlrun1.getItem(i).szName, QString().sprintf("item%03d", i));
+		QCOMPARE(xmlrun1.getItem(i).szCmd, QString().sprintf("cmd%03d\r", i));
+		QCOMPARE(xmlrun1.getItem(i).szPreCmd, QString().sprintf("precmd%03d", i));
+		QCOMPARE(xmlrun1.getItem(i).szPostCmd, QString().sprintf("postcmd%03d", i));
+		QCOMPARE(xmlrun1.getItem(i).szImage, QString().sprintf("file:///%s/image%03d", QSZ(QDir::currentPath()), i));
+		QCOMPARE(xmlrun1.getItem(i).szExpect, QString().sprintf("expect%03d", i));
+		QCOMPARE(xmlrun1.getItem(i).nDelay == i, true);
+	}
+
+	QFile::remove("multiple.xml");
 }

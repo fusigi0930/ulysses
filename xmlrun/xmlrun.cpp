@@ -220,6 +220,7 @@ bool CXmlRun::writer() {
 CXmlFactoryRun::CXmlFactoryRun() : CBaseItem<QXmlStreamReader, QXmlStreamWriter, SFactoryItem>() {
 	m_reader=new QXmlStreamReader();
 	m_writer=new QXmlStreamWriter();
+	m_Config.szSerial="COM3";
 }
 
 CXmlFactoryRun::~CXmlFactoryRun() {
@@ -383,6 +384,9 @@ bool CXmlFactoryRun::writeItems() {
 		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_NAME, pItem->szName);
 		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_IMAGE, pItem->szImage);
 		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_PRE_COMMAND, pItem->szPreCmd);
+		if (0 == pItem->szCmd.right(1).compare("\r")) {
+			pItem->szCmd.remove(pItem->szCmd.length()-1);
+		}
 		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_COMMAND, pItem->szCmd);
 		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_POST_COMMAND, pItem->szPostCmd);
 		XML_SET_VAULE((*m_writer), XML_FAC_ITEM_DELAY, QString().sprintf("%d", pItem->nDelay));
