@@ -5,6 +5,7 @@
 
 CNetIO::CNetIO() : CBaseIO<QTcpSocket>() {
 	m_io=new QTcpSocket(NULL);
+	m_udpIo=new QUdpSocket(NULL);
 }
 
 CNetIO::~CNetIO() {
@@ -12,6 +13,12 @@ CNetIO::~CNetIO() {
 		delete m_io;
 		m_io=NULL;
 	}
+	if (m_udpIo) {
+		delete m_udpIo;
+		m_udpIo=NULL;
+	}
+
+	m_listBroadcast.clear();
 }
 
 size_t CNetIO::write(unsigned char *data, size_t nLeng) {
@@ -40,4 +47,37 @@ bool CNetIO::open(char *sz) {
 
 void CNetIO::close() {
 
+}
+
+void CNetIO::startBroadcast(int nPort) {
+	if (-1 != m_listBroadcast.indexOf(nPort)) {
+		return;
+	}
+	m_listBroadcast.push_back(nPort);
+
+	if (1 != m_listBroadcast.length())
+		return;
+
+	// start broadcast thread
+}
+
+void CNetIO::stopBroadcast(int nPort) {
+	int nPos=m_listBroadcast.indexOf(nPort);
+	if (-1 == nPos)
+		return;
+	m_listBroadcast.removeAt(nPos);
+	if (0 == m_listBroadcast.length()) {
+		// stop broadcast thread
+	}
+}
+
+void CNetIO::dataBroadcast() {
+	// broadcast
+	QByteArray data="broadcast::CNetIO";
+	for (QList<int>::iterator pPort=m_listBroadcast.begin();
+		 pPort != m_listBroadcast.end(); pPort++) {
+
+		m_udpIo->writeDatagram(data.data(), data.size(), QHostAddress::Broadcast,
+							   *pPort);
+	}
 }

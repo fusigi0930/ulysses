@@ -5,10 +5,18 @@
 #include "base_io.h"
 
 #include <QTcpSocket>
+#include <QUdpSocket>
+#include <QList>
 
 class NETIOSHARED_EXPORT CNetIO : public CBaseIO<QTcpSocket>
 {
+protected:
+	virtual void dataBroadcast();
 
+protected:
+	QUdpSocket *m_udpIo;
+
+	QList<int> m_listBroadcast;
 public:
 	CNetIO();
 	virtual ~CNetIO();
@@ -22,13 +30,16 @@ public:
 
 	virtual void close();
 
-	QMetaObject::Connection connect(const QObject *sender, const char *signal, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection) {
+	virtual QMetaObject::Connection connect(const QObject *sender, const char *signal, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection) {
 		return m_io->connect(sender, signal, receiver, method, type);
 	}
 
-	bool disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method) {
+	virtual bool disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method) {
 		return m_io->disconnect(sender, signal, receiver, method);
 	}
+
+	virtual void startBroadcast(int nPort);
+	virtual void stopBroadcast(int nPort);
 };
 
 #endif // NETIO_H
