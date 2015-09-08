@@ -3,8 +3,8 @@
 
 #define TEMP_BUF_SIZE 1024
 
-CNetIO::CNetIO() : CBaseIO<QAbstractSocket>() {
-	m_io=new QAbstractSocket(QAbstractSocket::TcpSocket, NULL);
+CNetIO::CNetIO() : CBaseIO<QTcpSocket>() {
+	m_io=new QTcpSocket(NULL);
 }
 
 CNetIO::~CNetIO() {

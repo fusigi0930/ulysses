@@ -4,9 +4,9 @@
 #include "netio_global.h"
 #include "base_io.h"
 
-#include <QAbstractSocket>
+#include <QTcpSocket>
 
-class NETIOSHARED_EXPORT CNetIO : public CBaseIO<QAbstractSocket>
+class NETIOSHARED_EXPORT CNetIO : public CBaseIO<QTcpSocket>
 {
 
 public:
