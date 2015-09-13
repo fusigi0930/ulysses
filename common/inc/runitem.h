@@ -19,8 +19,22 @@ struct SItem {
 	unsigned int nDelay;
 };
 
+class CRootItem {
+public:
+	CRootItem() {}
+	virtual ~CRootItem() {}
+	virtual bool open(QString szFile)=0;
+	virtual bool save(QString szFile)=0;
+	virtual void close()=0;
+	virtual bool reload()=0;
+	virtual int getItemCount()=0;
+	virtual int getCurrentIndex()=0;
+	virtual void setCurrentIndex(int nIndex)=0;
+	virtual bool removeItem(int nIndex)=0;
+};
+
 template <typename T_T, typename O_O, typename OQO>
-class CBaseItem {
+class CBaseItem : public CRootItem {
 protected:
 	T_T *m_reader;
 	O_O *m_writer;
@@ -42,7 +56,7 @@ protected:
 	}
 
 public:
-	CBaseItem() {
+	CBaseItem() : CRootItem() {
 		m_nIndex=0;
 	}
 

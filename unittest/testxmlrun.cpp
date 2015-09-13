@@ -354,5 +354,14 @@ void CTestGroup::testCXmlFactoryRun_multipleItem() {
 		QCOMPARE(xmlrun1.getItem(i).nDelay == i, true);
 	}
 
-	QFile::remove("multiple.xml");
+	//QFile::remove("factorymultiple.xml");
+}
+
+void CTestGroup::testBaseXml() {
+	CRootItem *base=new CXmlFactoryRun();
+	if (!base->open("factorymultiple.xml")) {
+		QFAIL("open file failed");
+	}
+
+	QCOMPARE(base->getItemCount(), 100);
 }

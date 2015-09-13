@@ -31,6 +31,8 @@ private slots:
 	void testCXmlFactoryRun_Utf8CharSave();
 	void testCXmlFactoryRun_Utf8CharRead();
 	void testCXmlFactoryRun_multipleItem();
+
+	void testBaseXml();
 };
 
 #endif // __TESTGROUP_H__
