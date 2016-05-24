@@ -7,20 +7,23 @@ SUBDIRS += \
 	unittest \
     comio \
     factory_engine \
-    xmlcfg
+    xmlcfg \
+    luacore
 
 engine.depends = \
 	netio \
 	xmlrun \
 	comio \
-	xmlcfg
+        xmlcfg \
+        luacore
 
 unittest.depends = \
 	engine \
 	netio \
 	xmlrun \
 	comio \
-	xmlcfg
+        xmlcfg \
+        luacore
 
 factory_engine.depends = \
 	engine \

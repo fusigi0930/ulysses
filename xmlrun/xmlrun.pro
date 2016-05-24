@@ -10,6 +10,7 @@ QT       -= gui
 
 TARGET = xmlrun
 TEMPLATE = lib
+CONFIG += dll
 
 DEFINES += XMLRUN_LIBRARY
 

@@ -9,6 +9,7 @@ QT	+=	serialport
 
 TARGET = comio
 TEMPLATE = lib
+CONFIG += dll
 
 DEFINES += COMIO_LIBRARY
 

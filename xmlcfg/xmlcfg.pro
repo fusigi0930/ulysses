@@ -10,6 +10,7 @@ QT       -= gui
 
 TARGET = xmlcfg
 TEMPLATE = lib
+CONFIG += dll
 
 DEFINES += XMLCFG_LIBRARY
 

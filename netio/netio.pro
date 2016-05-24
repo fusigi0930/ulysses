@@ -10,6 +10,7 @@ QT       -= gui
 
 TARGET = netio
 TEMPLATE = lib
+CONFIG += dll
 
 DEFINES += NETIO_LIBRARY
 
