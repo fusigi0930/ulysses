@@ -14,7 +14,8 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 SOURCES += main.cpp \
-    testxmlrun.cpp
+    testxmlrun.cpp \
+    testluacore.cpp
 
 INCLUDEPATH += ../common/inc \
 			   ../auto/inc
@@ -23,7 +24,8 @@ LIBS += \
 	-L$$_PRO_FILE_PWD_/../auto/lib \
 	-lnetio \
 	-lxmlrun \
-	-lxmlcfg
+    -lxmlcfg \
+    -lluacore
 
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug

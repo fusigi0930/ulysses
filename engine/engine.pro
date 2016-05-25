@@ -14,7 +14,8 @@ LIBS += \
 	-lnetio \
 	-lxmlrun \
 	-lcomio \
-	-lxmlcfg
+    -lxmlcfg \
+    -lluacore
 
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug

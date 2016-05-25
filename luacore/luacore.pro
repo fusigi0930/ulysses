@@ -12,12 +12,19 @@ CONFIG += dll
 
 DEFINES += LUACORE_LIBRARY
 
-SOURCES += cluacore.cpp
+SOURCES += luacore.cpp \
+    luafunc.cpp
 
-HEADERS += cluacore.h\
+HEADERS += luacore.h \
         luacore_global.h
 
-INCLUDEPATH += ../common/inc
+INCLUDEPATH += \
+        ../common/inc \
+        $$_PRO_FILE_PWD_/lua-5.3.2/src
+
+LIBS += \
+    -L$$_PRO_FILE_PWD_/lua-5.3.2/src \
+    -llua
 
 CONFIG(debug, debug|release) {
         OUTDIR = $$_PRO_FILE_PWD_/../out/debug
@@ -31,10 +38,12 @@ MOC_DIR = $$OUTDIR/obj/moc
 DESTDIR = $$OUTDIR/bin
 
 lua_src.target = lua_src
+lua_inst.target = lua_inst
 
 win32 {
     QMAKE_POST_LINK += $$_PRO_FILE_PWD_/post_build.bat $$replace(_PRO_FILE_PWD_, /, \\) $$replace(OUTDIR, /, \\)\bin
     lua_src.commands = mingw32-make -C $$_PRO_FILE_PWD_/lua-5.3.2 mingw
+    lua_inst.commands = mingw32-make -C $$_PRO_FILE_PWD_/lua-5.3.2 mingw
 }
 
 unix {

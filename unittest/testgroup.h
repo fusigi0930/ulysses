@@ -33,6 +33,8 @@ private slots:
 	void testCXmlFactoryRun_multipleItem();
 
 	void testBaseXml();
+
+	void testCLuaCore_runAsScript();
 };
 
 #endif // __TESTGROUP_H__
