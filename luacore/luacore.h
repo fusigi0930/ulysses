@@ -13,10 +13,17 @@
 // use Lua 5.3.2
 struct lua_State;
 
+#define GLOBAL_LUACORE "__LUA_CORE__"
+
 class LUACORESHARED_EXPORT CLuaCore : public CRootInterp
 {
 private:
 	lua_State *m_LuaState;
+	QString m_szLuaResult;
+
+	void registerLuaCore();
+	void registerLuaOverrideFunc();
+	CLuaCore **m_luaUserData;
 public:
 	CLuaCore();
 	virtual ~CLuaCore();
@@ -27,7 +34,11 @@ public:
 	virtual int run();
 
 	virtual int run_as_string(QString szScript);
+	virtual void setResult(QString str);
 	virtual QString getResult();
+
+	// override original Lua function
+	static int luaPrint(lua_State* L);
 };
 
 #endif // CLUACORE_H

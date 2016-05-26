@@ -23,7 +23,7 @@ public:
 	virtual ~CRootInterp() {}
 	virtual bool open(QString szFile) {
 		m_szFile=szFile;
-		return false;
+		return true;
 	}
 	
 	virtual void close() {

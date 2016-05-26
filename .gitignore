@@ -2,4 +2,11 @@
 *.autosave
 out
 auto
-
+*.Debug
+*.Release
+*.o
+debug
+release
+lua.exe
+luac.exe
+liblua.a
