@@ -26,7 +26,7 @@ void CLuaCore::registerLuaCore() {
 
 	m_luaUserData=reinterpret_cast<CLuaCore**>(lua_newuserdata(m_LuaState, sizeof(CLuaCore*)));
 	*m_luaUserData=this;
-	lua_setglobal(m_LuaState, "LuaCore");
+	lua_setglobal(m_LuaState, GLOBAL_LUACORE);
 #if 0
 	CLuaCore *luacore=NULL;
 	for (int i=1; i<=lua_gettop(m_LuaState); i++) {

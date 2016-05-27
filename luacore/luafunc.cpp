@@ -17,7 +17,6 @@ void CLuaCore::registerLuaOverrideFunc() {
 	for (int i=0; NULL != override_func[i].func; i++) {
 		lua_pushcfunction(m_LuaState, override_func[i].func);
 		lua_setglobal(m_LuaState, override_func[i].name);
-		//lua_push(m_LuaState, 1);
 	}
 }
 
@@ -25,7 +24,7 @@ int CLuaCore::luaPrint(lua_State *L) {
 	CLuaCore *luacore=NULL;
 	CLuaCore **p;
 	QString outString;
-	lua_getglobal(L, "LuaCore");
+	lua_getglobal(L, GLOBAL_LUACORE);
 	DMSG("top: %d", lua_gettop(L));
 	for (int i=0; i<=lua_gettop(L); i++) {
 		switch (lua_type(L, i)) {
