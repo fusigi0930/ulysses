@@ -41,8 +41,28 @@ size_t CNetIO::read(QString &data) {
 	return nRet;
 }
 
+bool CNetIO::isIpAddr(QString szIpAddr) {
+	return true;
+}
+
 bool CNetIO::open(char *sz) {
-	return false;
+	QString szOpen=sz;
+	QStringList szList=szOpen.split(":");
+
+	if (0 != szList.at(0).compare("net", Qt::CaseInsensitive)) {
+		DMSG("open type is not net io type!");
+		return false;
+	}
+
+	// detect ip or server
+	if (0 == szList.at(1).compare("server", Qt::CaseInsensitive)) {
+
+	}
+	else if (isIpAddr(szList.at(1))) {
+
+	}
+
+	return true;
 }
 
 void CNetIO::close() {

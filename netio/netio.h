@@ -10,6 +10,9 @@
 
 class NETIOSHARED_EXPORT CNetIO : public CBaseIO<QTcpSocket>
 {
+private:
+	bool isIpAddr(QString szIpAddr);
+
 protected:
 	virtual void dataBroadcast();
 

@@ -4,6 +4,31 @@
 #include <QObject>
 #include <QString>
 
+/////////////////////////////////
+/// open method parser
+/// <method>:xxxxx:xxxx
+/// every parameters should use the seprate character ":"
+/// method: net, serial
+/// for net:
+/// the parameters should be:
+///		parameter1:
+///			ip:
+///			server:
+///		parameter2:
+///			port:
+/// for serial:
+/// the paramters should be:
+///		parameter1:
+///			port name
+///		parameter2:
+///			baud rate
+///		parameter3:
+///			others
+///
+
+#define _IOTYPE_NET		0
+#define _IOTYPE_SERAIL	1
+
 class CRootIO {
 public:
 	CRootIO() {
