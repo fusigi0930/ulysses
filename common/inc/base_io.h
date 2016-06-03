@@ -39,11 +39,11 @@ public:
 
 	}
 
-	virtual size_t write(unsigned char *data, size_t nLeng) = 0;
+    virtual size_t write(char *data, size_t nLeng) = 0;
 
 	virtual size_t write(const QString &data) = 0;
 
-	virtual size_t read(unsigned char *data, size_t nLimit) = 0;
+    virtual size_t read(char *data, size_t nLimit) = 0;
 
 	virtual size_t read(QString &data) = 0;
 
@@ -55,7 +55,7 @@ public:
 template <typename T_T>
 class CBaseIO : public CRootIO {
 protected:
-	T_T *m_io;
+    T_T m_io;
 
 public:
 	CBaseIO() : CRootIO() {
@@ -66,11 +66,11 @@ public:
 
 	}
 
-	virtual size_t write(unsigned char *data, size_t nLeng) = 0;
+    virtual size_t write(char *data, size_t nLeng) = 0;
 
 	virtual size_t write(const QString &data) = 0;
 
-	virtual size_t read(unsigned char *data, size_t nLimit) = 0;
+    virtual size_t read(char *data, size_t nLimit) = 0;
 
 	virtual size_t read(QString &data) = 0;
 
@@ -78,10 +78,6 @@ public:
 
 	virtual void close() = 0;
 
-	virtual QMetaObject::Connection connect(const QObject *sender, const char *signal, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection) = 0;
-
-	virtual bool disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method) = 0;
 };
-
 #endif // __BASE_IO_H__
 

@@ -4,45 +4,51 @@
 #include "netio_global.h"
 #include "base_io.h"
 
-#include <QTcpSocket>
-#include <QUdpSocket>
+#ifdef Q_OS_WIN
+#include <winsock2.h>
+#endif
+
+#include <QFuture>
+#include <QFutureWatcher>
 #include <QList>
 
-class NETIOSHARED_EXPORT CNetIO : public CBaseIO<QTcpSocket>
+
+class NETIOSHARED_EXPORT CNetcatIO : public CBaseIO<int>
 {
 private:
 	bool isIpAddr(QString szIpAddr);
 
-protected:
-	virtual void dataBroadcast();
+	bool openClient(QStringList &szList);
+	bool openServer(QStringList &szList);
+
+	size_t readSocket(char *data, size_t nLimit);
+
+	sockaddr_in m_addr;
+	int m_nPort;
+
+	bool m_bIsServer;
+	QString m_szRecvData;
 
 protected:
-	QUdpSocket *m_udpIo;
+	QFuture<int> m_thread;
+	QFutureWatcher<int> m_threadWatcher;
 
-	QList<int> m_listBroadcast;
 public:
-	CNetIO();
-	virtual ~CNetIO();
+	CNetcatIO();
+	virtual ~CNetcatIO();
 
-	virtual size_t write(unsigned char *data, size_t nLeng);
+	virtual size_t write(char *data, size_t nLeng);
 	virtual size_t write(const QString &data);
-	virtual size_t read(unsigned char *data, size_t nLimit);
+	virtual size_t read(char *data, size_t nLimit);
 	virtual size_t read(QString &data);
 
 	virtual bool open(char *sz);
 
 	virtual void close();
 
-	virtual QMetaObject::Connection connect(const QObject *sender, const char *signal, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection) {
-		return m_io->connect(sender, signal, receiver, method, type);
-	}
+	virtual int run();
 
-	virtual bool disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method) {
-		return m_io->disconnect(sender, signal, receiver, method);
-	}
-
-	virtual void startBroadcast(int nPort);
-	virtual void stopBroadcast(int nPort);
+	static int runThread(CNetcatIO *io);
 };
 
 #endif // NETIO_H

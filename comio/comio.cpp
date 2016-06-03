@@ -2,7 +2,7 @@
 
 #define TEMP_BUF_SIZE 1024
 
-CComIO::CComIO() : CBaseIO<QSerialPort>() {
+CComIO::CComIO() : CBaseIO<QSerialPort*>() {
 	m_io=new QSerialPort();
 }
 

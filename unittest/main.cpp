@@ -2,6 +2,8 @@
 #include <QTest>
 #include "testgroup.h"
 
+#include "netio.h"
+
 int main(int argc, char *argv[])
 {
 	QCoreApplication a(argc, argv);

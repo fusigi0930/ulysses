@@ -6,7 +6,7 @@
 #include "base_io.h"
 #include <QtSerialPort>
 
-class COMIOSHARED_EXPORT CComIO : public CBaseIO<QSerialPort>
+class COMIOSHARED_EXPORT CComIO : public CBaseIO<QSerialPort*>
 {
 public:
 	CComIO();

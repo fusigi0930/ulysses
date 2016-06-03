@@ -21,6 +21,11 @@ HEADERS += netio.h\
 
 INCLUDEPATH += ../common/inc
 
+win32 {
+LIBS += \
+    -lws2_32
+}
+
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug
 }

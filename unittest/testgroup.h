@@ -35,6 +35,8 @@ private slots:
 	void testBaseXml();
 
 	void testCLuaCore_runAsScript();
+
+	void testCNetcatIO_openServer();
 };
 
 #endif // __TESTGROUP_H__

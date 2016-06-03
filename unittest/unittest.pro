@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core testlib
+QT       += core testlib network
 QT       -= gui
 
 TARGET = unittest
@@ -15,7 +15,8 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     testxmlrun.cpp \
-    testluacore.cpp
+    testluacore.cpp \
+    testnetio.cpp
 
 INCLUDEPATH += ../common/inc \
 			   ../auto/inc
