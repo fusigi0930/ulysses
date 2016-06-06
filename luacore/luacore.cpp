@@ -5,6 +5,33 @@
 
 #include <typeinfo>
 
+//////////////////////////////////////////////
+/// CInterpThread
+///
+
+CInterpThread::CInterpThread() : QThread() {
+	m_interp=NULL;
+}
+
+CInterpThread::~CInterpThread() {
+
+}
+
+void CInterpThread::setIO(CRootInterp *interp) {
+	m_interp=interp;
+}
+
+void CInterpThread::run() {
+	if (NULL == m_interp)
+		return;
+
+	m_interp->run();
+}
+
+/////////////////////////////////////////////////////
+/// \brief CLuaCore::CLuaCore
+///
+
 CLuaCore::CLuaCore() : CRootInterp()
 {
 	m_LuaState=NULL;
@@ -62,7 +89,11 @@ void CLuaCore::close() {
 		lua_close(m_LuaState);
 		m_LuaState=NULL;
 	}
-
+	if (getThread()) {
+		if (getThread()->isRunning()) getThread()->terminate();
+		delete getThread();
+		setThread(NULL);
+	}
 	CRootInterp::close();
 }
 

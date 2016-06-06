@@ -6,9 +6,21 @@
 #include "debug.h"
 
 #include <QString>
-#include <QFuture>
-#include <QFutureWatcher>
 #include <base_interp.h>
+#include <QThread>
+
+class LUACORESHARED_EXPORT CInterpThread : public QThread
+{
+	Q_OBJECT
+private:
+	CRootInterp *m_interp;
+public:
+	CInterpThread();
+	~CInterpThread();
+
+	void setIO(CRootInterp *io);
+	virtual void run();
+};
 
 // use Lua 5.3.2
 struct lua_State;

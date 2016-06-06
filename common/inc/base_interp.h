@@ -4,9 +4,7 @@
 #include <QString>
 #include <QList>
 #include <QFile>
-#include <QtConcurrent/QtConcurrent>
-#include <QFuture>
-#include <QFutureWatcher>
+#include <QThread>
 
 #include "debug.h"
 
@@ -15,11 +13,10 @@ protected:
 	QString m_szFile;
 	QFile m_file;
 	
-    QFuture<int> m_thread;
-    QFutureWatcher<int> m_threadWatcher;
+    QThread *m_thread;
 	
 public:
-	CRootInterp() {}
+    CRootInterp() { m_thread = NULL; }
 	virtual ~CRootInterp() {}
 	virtual bool open(QString szFile) {
 		m_szFile=szFile;
@@ -40,28 +37,13 @@ public:
         return open(m_szFile);
 	}
 	
-	static int runThread(CRootInterp *interp, QString szFile) {
-		if (NULL == interp || szFile.isEmpty()) {
-			return -1;
-		}
-		
-		if (!interp->open(szFile)) {
-			return -2;
-		}
-		
-		return interp->run();
-		
-	}
-	
 	virtual int create(QString szFile) {
 		if (szFile.isEmpty()) {
 			return -1;
 		}
 		
-		m_thread=QtConcurrent::run (
-						CRootInterp::runThread, this, szFile);
-						
-		m_threadWatcher.setFuture(m_thread);
+        if (m_thread)
+            m_thread->start();
 						
 		return 0;
 	}
@@ -71,20 +53,18 @@ public:
 	}
 	
 	virtual int stop() {
-		if (m_thread.isRunning())
-            m_thread.cancel();
+        if (m_thread->isRunning())
+            m_thread->terminate();
 		return 0;
 	}
-	virtual int suspend() {
-		if (m_thread.isRunning())
-			m_thread.pause();
-		return 0;
-	}
-	virtual int resume() {
-		if (m_thread.isPaused())
-			m_thread.resume();
-		return 0;
-	}
+
+    virtual void setThread(QThread *thread) {
+        m_thread=thread;
+    }
+
+    virtual QThread* getThread() {
+        return m_thread;
+    }
 };
 
 

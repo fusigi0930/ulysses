@@ -12,8 +12,36 @@
 
 #define TEMP_BUF_SIZE 1024
 
+//////////////////////////////////////////////
+/// CIOThread
+///
+
+CIOThread::CIOThread() : QThread() {
+	m_io=NULL;
+}
+
+CIOThread::~CIOThread() {
+
+}
+
+void CIOThread::setIO(CRootIO *io) {
+	m_io=io;
+}
+
+void CIOThread::run() {
+	if (NULL == m_io)
+		return;
+
+	m_io->run();
+}
+
+//////////////////////////////////////////////
+/// CNetcatIO::CNetcatIO
+///
+
 CNetcatIO::CNetcatIO() : CBaseIO<int>() {
 	m_io=-1;
+	m_thread=NULL;
 	m_bIsServer=false;
 }
 
@@ -159,10 +187,14 @@ bool CNetcatIO::open(char *sz) {
 	::setsockopt(m_io, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&option), sizeof(option));
 
 	// start read thread
-	m_thread=QtConcurrent::run (
-			CNetcatIO::runThread, this);
+	if(NULL != m_thread) {
+		m_thread->terminate();
+		delete m_thread;
+	}
 
-	m_threadWatcher.setFuture(m_thread);
+	m_thread = new CIOThread;
+	m_thread->setIO(this);
+	m_thread->start();
 
 	return true;
 }
@@ -180,6 +212,13 @@ void CNetcatIO::close() {
 		m_io=-1;
 	}
 
+	if (NULL != m_thread) {
+		if (m_thread->isRunning())
+			m_thread->terminate();
+		delete m_thread;
+		m_thread=NULL;
+	}
+
 }
 
 int CNetcatIO::runThread(CNetcatIO *io) {
@@ -192,8 +231,9 @@ int CNetcatIO::run() {
 	char arBuf[1024];
 	while (-1 != m_io) {
 		memset (arBuf, 0, sizeof(arBuf));
-		readSocket(arBuf, sizeof(arBuf)-1);
-		m_szRecvData.append(arBuf+0x29);
+		if (-1 == readSocket(arBuf, sizeof(arBuf)-1))
+			break;
+		m_szRecvData.append(arBuf);
 	}
 	return 0;
 }

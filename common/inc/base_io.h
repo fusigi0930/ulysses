@@ -50,6 +50,8 @@ public:
 	virtual bool open(char *sz) = 0;
 
 	virtual void close() = 0;
+	
+	virtual int run() = 0;
 };
 
 template <typename T_T>
@@ -77,6 +79,8 @@ public:
 	virtual bool open(char *sz) = 0;
 
 	virtual void close() = 0;
+	
+	virtual int run() = 0;
 
 };
 #endif // __BASE_IO_H__

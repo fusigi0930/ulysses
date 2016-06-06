@@ -8,9 +8,20 @@
 #include <winsock2.h>
 #endif
 
-#include <QFuture>
-#include <QFutureWatcher>
-#include <QList>
+#include <QThread>
+
+class NETIOSHARED_EXPORT CIOThread : public QThread
+{
+	Q_OBJECT
+private:
+	CRootIO *m_io;
+public:
+	CIOThread();
+	~CIOThread();
+
+	void setIO(CRootIO *io);
+	virtual void run();
+};
 
 
 class NETIOSHARED_EXPORT CNetcatIO : public CBaseIO<int>
@@ -30,8 +41,7 @@ private:
 	QString m_szRecvData;
 
 protected:
-	QFuture<int> m_thread;
-	QFutureWatcher<int> m_threadWatcher;
+	CIOThread *m_thread;
 
 public:
 	CNetcatIO();
