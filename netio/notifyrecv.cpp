@@ -62,27 +62,47 @@ int CNotifyRecv::parseBroadcast() {
 	// for bootloader
 	for (std::map<int, QString>::iterator pBootDev=m_mapBootDev.begin();
 		 pBootDev != m_mapBootDev.end(); pBootDev++) {
-		QString szData=QString("ebxb:%1").arg(pBootDev->second);
+		QString szData=QString().sprintf("ebxb:%s", QSZ(pBootDev->second));
 		if (-1 == dataList.indexOf(szData)) {
 			emit sigStartNewBootDev(pBootDev->first);
 			m_mapBootDev.erase(pBootDev->first);
 		}
 	}
 
+	// for system halt
+	for (std::map<QString, QString>::iterator pSysDev=m_mapSysDev.begin();
+		 pSysDev != m_mapSysDev.end(); pSysDev++) {
+		QString szData=QString().sprintf("ebxs:%s", QSZ(pSysDev->second));
+		if (-1 == dataList.indexOf(szData)) {
+			emit sigHaltSysDev(pSysDev->first);
+			m_mapSysDev.erase(pSysDev->first);
+		}
+	}
 	// for system
 	for (data=dataList.begin(); data != dataList.end(); data++) {
 		if (0 == data->left(4).compare(UBOOT_BCAST_PREFIX)) {
 			QString szIp=data->mid(5);
+
 			bool bOK=false;
 			int nSubAddr=szIp.split('.').at(3).toInt(&bOK, 10);
+
 			std::map<int, QString>::iterator findBoot =
 					m_mapBootDev.find(nSubAddr);
+
 			if (findBoot == m_mapBootDev.end()) {
 				m_mapBootDev[nSubAddr]=szIp;
 			}
 		}
 		else if (0 == data->left(4).compare(SYS_BCAST_PREFIX)) {
-			emit sigStartNewSysDev(data->mid(5));
+			QStringList ipList=data->split(':');
+
+			std::map<QString, QString>::iterator findSys =
+					m_mapSysDev.find(ipList.at(2));
+
+			if (findSys == m_mapSysDev.end()) {
+				m_mapSysDev[ipList.at(2)]=QString("%1:%2").arg(ipList.at(1)).arg(ipList.at(2));
+				emit sigStartNewSysDev(QString("%1:%2").arg(ipList.at(1)).arg(ipList.at(2)));
+			}
 		}
 	}
 

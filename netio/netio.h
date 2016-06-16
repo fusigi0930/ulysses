@@ -106,6 +106,7 @@ class NETIOSHARED_EXPORT CNotifyRecv : public CNetcatIO
 	Q_OBJECT
 private:
 	std::map<int, QString> m_mapBootDev;
+	std::map<QString, QString> m_mapSysDev;
 	int parseBroadcast();
 
 public:
@@ -119,6 +120,7 @@ public:
 signals:
 	void sigStartNewBootDev(int nPort);
 	void sigStartNewSysDev(QString szIP);
+	void sigHaltSysDev(QString szIP);
 
 public slots:
 
