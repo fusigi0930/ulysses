@@ -4,6 +4,9 @@
 #include <QRegExp>
 #include <QtConcurrent/QtConcurrent>
 
+#include <QDateTime>
+#include <QTime>
+
 #ifdef Q_OS_WIN
 #include <winsock2.h>
 #endif
@@ -13,29 +16,6 @@
 #define TEMP_BUF_SIZE 1024
 
 //////////////////////////////////////////////
-/// CIOThread
-///
-
-CIOThread::CIOThread() : QThread() {
-	m_io=NULL;
-}
-
-CIOThread::~CIOThread() {
-
-}
-
-void CIOThread::setIO(CRootIO *io) {
-	m_io=io;
-}
-
-void CIOThread::run() {
-	if (NULL == m_io)
-		return;
-
-	m_io->run();
-}
-
-//////////////////////////////////////////////
 /// CNetcatIO::CNetcatIO
 ///
 
@@ -43,6 +23,7 @@ CNetcatIO::CNetcatIO() : CBaseIO<int>() {
 	m_io=-1;
 	m_thread=NULL;
 	m_bIsServer=false;
+	m_hThread=NULL;
 }
 
 CNetcatIO::~CNetcatIO() {
@@ -53,6 +34,11 @@ size_t CNetcatIO::write(char *data, size_t nLeng) {
 	if (-1 == m_io) return 0;
 
 	size_t nSize=static_cast<size_t>(::send(m_io, data, nLeng, 0));
+	QString szData=data;
+	if (szData.contains("boot") || szData.contains("run mmcboot") || szData.contains("run localboot") ||
+			szData.contains("bootm")) {
+		emit sigStartKernel();
+	}
 	return nSize;
 }
 
@@ -132,6 +118,8 @@ bool CNetcatIO::openClient(QStringList &szList) {
 
 	::connect(m_io, reinterpret_cast<SOCKADDR*>(&m_addr), sizeof(m_addr));
 	m_bIsServer=false;
+
+	connect(this, SIGNAL(sigStartKernel()), this, SLOT(slotStartKernel()), Qt::QueuedConnection);
 	return true;
 }
 
@@ -218,22 +206,67 @@ void CNetcatIO::close() {
 		delete m_thread;
 		m_thread=NULL;
 	}
-
-}
-
-int CNetcatIO::runThread(CNetcatIO *io) {
-	if (NULL == io) return -1;
-
-	return io->run();
+	m_hThread=NULL;
 }
 
 int CNetcatIO::run() {
 	char arBuf[1024];
+#ifdef Q_OS_WIN
+	m_hThread=::GetCurrentThread();
+#endif
 	while (-1 != m_io) {
 		memset (arBuf, 0, sizeof(arBuf));
 		if (-1 == readSocket(arBuf, sizeof(arBuf)-1))
 			break;
 		m_szRecvData.append(arBuf);
 	}
+#ifdef Q_OS_WIN
+	m_hThread=NULL;
+#endif
 	return 0;
+}
+
+int CNetcatIO::setPrompt(QString szPrompt) {
+	m_szPrompt=szPrompt;
+	return 0;
+}
+
+int CNetcatIO::waitPrompt(int nTimeout) {
+	QRegExp prompt(m_szPrompt);
+	QDateTime startTime=QDateTime::currentDateTime();
+	while (nTimeout > (QDateTime::currentDateTime().toTime_t() - startTime.toTime_t())) {
+		QString szData=m_szRecvData;
+		szData.replace('\r', '\n');
+
+		QStringList recvList=m_szRecvData.split("\n",  QString::SkipEmptyParts);
+		if (0 < recvList.count()) {
+			QString szLastLine=recvList.at(recvList.count()-1);
+			if (szLastLine.contains(prompt))
+				return _WAIT_DONE;
+		}
+		QThread::msleep(100);
+	}
+	return _WAIT_TIMEOUT;
+}
+
+#ifdef Q_OS_WIN
+int CNetcatIO::pause() {
+	if (m_hThread) {
+		::SuspendThread(m_hThread);
+	}
+	return 0;
+}
+
+int CNetcatIO::resume() {
+	if (m_hThread) {
+		::ResumeThread(m_hThread);
+	}
+	return 0;
+}
+
+#endif
+
+void CNetcatIO::slotStartKernel() {
+	DMSG("start kernel, close connection");
+	close();
 }

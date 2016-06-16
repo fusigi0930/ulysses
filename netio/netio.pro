@@ -14,7 +14,10 @@ CONFIG += dll
 
 DEFINES += NETIO_LIBRARY
 
-SOURCES += netio.cpp
+SOURCES += netio.cpp \
+    iothread.cpp \
+    notifyrecv.cpp \
+    telnetio.cpp
 
 HEADERS += netio.h\
         netio_global.h
