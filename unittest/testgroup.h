@@ -38,6 +38,7 @@ private slots:
 
 	void testCNetcatIO_openServer();
 	void testCNotifyRecv_broadcastProcess();
+	void testCTelnetIO_openClient();
 };
 
 #endif // __TESTGROUP_H__

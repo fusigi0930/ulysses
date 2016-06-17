@@ -89,6 +89,15 @@ size_t CNetcatIO::read(QString &data) {
 bool CNetcatIO::isIpAddr(QString szIpAddr) {
 	QRegExp iprx("\\d{1,3}(\\.\\d{1,3}){3}");
 	bool bResult=false;
+	hostent *theHost=NULL;
+
+	theHost=::gethostbyname(QSZ(szIpAddr));
+	if (NULL == theHost) {
+		return false;
+	}
+
+	szIpAddr=::inet_ntoa(*reinterpret_cast<in_addr *>(*theHost->h_addr_list));
+
 	if (0 == iprx.indexIn(szIpAddr)) {
 		bResult=true;
 

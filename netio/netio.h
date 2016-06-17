@@ -107,9 +107,13 @@ public slots:
 class NETIOSHARED_EXPORT CTelnetIO : public CNetcatIO
 {
 	Q_OBJECT
+protected:
+	virtual bool openClient(QStringList &szList);
 public:
 	CTelnetIO();
 	virtual ~CTelnetIO();
+
+	virtual bool open(char *sz);
 };
 
 class NETIOSHARED_EXPORT CNotifyRecv : public CNetcatIO
@@ -131,6 +135,11 @@ public:
 	virtual bool open();
 	virtual int runParser();
 	virtual void close();
+
+#ifdef Q_OS_WIN
+	virtual int pause();
+	virtual int resume();
+#endif
 
 signals:
 	void sigStartNewBootDev(int nPort);

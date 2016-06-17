@@ -17,6 +17,8 @@ void CTestGroup::testCNetcatIO_openServer() {
 	QThread::msleep(1000);
 	nio.read(szRecv);
 	DMSG("recv: %s", QSZ(szRecv));
+	nio.close();
+	nc.close();
 
 	QCOMPARE(szRecv.left(4).compare("help"), 0);
 }
@@ -66,6 +68,20 @@ void CTestGroup::testCNotifyRecv_broadcastProcess() {
 	arg.clear();
 	arg=sigHeltSysDev.takeFirst();
 	szBuf=arg.at(0).toString();
+	nrecv.close();
+	nio.close();
+	QThread::msleep(100);
 	QCOMPARE(szBuf.compare("192.168.48.111"), 0);
+}
+
+void CTestGroup::testCTelnetIO_openClient() {
+	CTelnetIO tio;
+	tio.open("bbs.ntpu.edu.tw");
+	QThread::msleep(12000);
+	QString sz;
+	tio.read(sz);
+	DMSG("find ntpu: %d", sz.contains("ntpu"));
+	int nPos=sz.indexOf("ntpu");
+	QCOMPARE(sz.mid(nPos,4), QString("ntpu"));
 }
 
