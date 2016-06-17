@@ -22,6 +22,8 @@ SOURCES += netio.cpp \
 HEADERS += netio.h\
         netio_global.h
 
+# QMAKE_CXXFLAGS += -fpermissive
+
 INCLUDEPATH += ../common/inc
 
 win32 {

@@ -142,6 +142,17 @@ bool CNetcatIO::openServer(QStringList &szList) {
 
 	::bind(m_io, reinterpret_cast<sockaddr*>(&m_addr), sizeof(m_addr));
 	m_bIsServer=true;
+
+	// timeout settings
+#if 0
+	fd_set rfd;
+	FD_ZERO(&rfd);
+	timeval timeout;
+	timeout.tv_usec=0;
+	timeout.tv_sec=1;
+	FD_SET(m_io, &rfd);
+	select(m_io+1, &rfd, NULL, NULL, &timeout);
+#endif
 	return true;
 }
 
@@ -218,7 +229,8 @@ int CNetcatIO::run() {
 		memset (arBuf, 0, sizeof(arBuf));
 		if (-1 == readSocket(arBuf, sizeof(arBuf)-1))
 			break;
-		m_szRecvData.append(arBuf);
+		//DMSG("sock recv: %s", arBuf);
+		m_szRecvData.append(arBuf).append('\n');
 	}
 #ifdef Q_OS_WIN
 	m_hThread=NULL;

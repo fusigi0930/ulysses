@@ -37,6 +37,7 @@ private slots:
 	void testCLuaCore_runAsScript();
 
 	void testCNetcatIO_openServer();
+	void testCNotifyRecv_broadcastProcess();
 };
 
 #endif // __TESTGROUP_H__

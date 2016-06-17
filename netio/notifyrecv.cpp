@@ -11,6 +11,7 @@
 #endif
 
 #include <unistd.h>
+#include <algorithm>
 
 #define UBOOT_BCAST_PREFIX "ebxb"
 #define SYS_BCAST_PREFIX "ebxs"
@@ -20,7 +21,8 @@
 ///
 
 CNotifyRecv::CNotifyRecv() : CNetcatIO() {
-
+	m_parserThread=NULL;
+	m_hParserThread=NULL;
 }
 
 CNotifyRecv::~CNotifyRecv() {
@@ -28,54 +30,63 @@ CNotifyRecv::~CNotifyRecv() {
 }
 
 bool CNotifyRecv::open() {
-	return CNetcatIO::open("net:server:7500");
+	bool bRet=CNetcatIO::open("net:server:7500");
+	m_parserThread = new CIOParserThread;
+	m_parserThread->setIO(this);
+	m_parserThread->start();
+	return bRet;
 }
 
 void CNotifyRecv::close() {
+	if (NULL != m_parserThread) {
+		if (m_parserThread->isRunning())
+			m_parserThread->terminate();
+		delete m_parserThread;
+		m_parserThread=NULL;
+	}
+	m_hParserThread=NULL;
+
 	CNetcatIO::close();
 }
 
-int CNotifyRecv::run() {
+int CNotifyRecv::runParser() {
 #ifdef Q_OS_WIN
-	m_hThread=::GetCurrentThread();
+	m_hParserThread=::GetCurrentThread();
 #endif
-	char arBuf[512];
 	while (-1 != m_io) {
-		memset (arBuf, 0, sizeof(arBuf));
-		if (-1 == readSocket(arBuf, sizeof(arBuf)-1))
-			break;
-		m_szRecvData.append(arBuf);
+		QThread::msleep(3000);
 		parseBroadcast();
-		QThread::msleep(2000);
 	}
 #ifdef Q_OS_WIN
-	m_hThread=NULL;
+	m_hParserThread=NULL;
 #endif
 	return 0;
 }
 
 int CNotifyRecv::parseBroadcast() {
-	m_szRecvData.replace('\r', '\n');
+	//m_szRecvData.replace('\r', '\n');
 	QStringList dataList=m_szRecvData.split('\n', QString::SkipEmptyParts);
 	QStringList::iterator data;
 
 	// for bootloader
 	for (std::map<int, QString>::iterator pBootDev=m_mapBootDev.begin();
-		 pBootDev != m_mapBootDev.end(); pBootDev++) {
+		pBootDev != m_mapBootDev.end(); pBootDev++) {
 		QString szData=QString().sprintf("ebxb:%s", QSZ(pBootDev->second));
 		if (-1 == dataList.indexOf(szData)) {
 			emit sigStartNewBootDev(pBootDev->first);
 			m_mapBootDev.erase(pBootDev->first);
+			break;
 		}
 	}
 
 	// for system halt
 	for (std::map<QString, QString>::iterator pSysDev=m_mapSysDev.begin();
-		 pSysDev != m_mapSysDev.end(); pSysDev++) {
+		pSysDev != m_mapSysDev.end(); ++pSysDev) {
 		QString szData=QString().sprintf("ebxs:%s", QSZ(pSysDev->second));
 		if (-1 == dataList.indexOf(szData)) {
 			emit sigHaltSysDev(pSysDev->first);
 			m_mapSysDev.erase(pSysDev->first);
+			break;
 		}
 	}
 	// for system
@@ -90,6 +101,7 @@ int CNotifyRecv::parseBroadcast() {
 					m_mapBootDev.find(nSubAddr);
 
 			if (findBoot == m_mapBootDev.end()) {
+				DMSG("add: %d", nSubAddr);
 				m_mapBootDev[nSubAddr]=szIp;
 			}
 		}
@@ -100,11 +112,13 @@ int CNotifyRecv::parseBroadcast() {
 					m_mapSysDev.find(ipList.at(2));
 
 			if (findSys == m_mapSysDev.end()) {
+				DMSG("add %s", QSZ(ipList.at(2)));
 				m_mapSysDev[ipList.at(2)]=QString("%1:%2").arg(ipList.at(1)).arg(ipList.at(2));
 				emit sigStartNewSysDev(QString("%1:%2").arg(ipList.at(1)).arg(ipList.at(2)));
 			}
 		}
 	}
+	m_szRecvData.clear();
 
 	return 0;
 }

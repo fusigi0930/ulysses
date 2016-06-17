@@ -17,13 +17,24 @@
 class NETIOSHARED_EXPORT CIOThread : public QThread
 {
 	Q_OBJECT
-private:
+protected:
 	CRootIO *m_io;
 public:
 	CIOThread();
 	~CIOThread();
 
-	void setIO(CRootIO *io);
+	virtual void setIO(CRootIO *io);
+	virtual void run();
+};
+
+class NETIOSHARED_EXPORT CIOParserThread : public CIOThread
+{
+	Q_OBJECT
+
+public:
+	CIOParserThread();
+	~CIOParserThread();
+
 	virtual void run();
 };
 
@@ -110,11 +121,15 @@ private:
 	int parseBroadcast();
 
 public:
+#ifdef Q_OS_WIN
+	HANDLE m_hParserThread;
+#endif
+	CIOThread *m_parserThread;
 	CNotifyRecv();
 	virtual ~CNotifyRecv();
 
 	virtual bool open();
-	virtual int run();
+	virtual int runParser();
 	virtual void close();
 
 signals:

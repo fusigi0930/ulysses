@@ -8,6 +8,7 @@
 #endif
 
 #include <unistd.h>
+#include <typeinfo>
 
 #define TEMP_BUF_SIZE 1024
 
@@ -34,3 +35,23 @@ void CIOThread::run() {
 	m_io->run();
 }
 
+CIOParserThread::CIOParserThread() : CIOThread() {
+
+}
+
+CIOParserThread::~CIOParserThread() {
+
+}
+
+void CIOParserThread::run() {
+	if (NULL == m_io) {
+		DMSG("m_io is null");
+		return;
+	}
+	CNotifyRecv *pRecv=dynamic_cast<CNotifyRecv*>(m_io);
+	if (NULL == pRecv) {
+		DMSG("type casting to CNotifyRecv failed!");
+		return;
+	}
+	pRecv->runParser();
+}
