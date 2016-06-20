@@ -2,9 +2,9 @@ TEMPLATE = app
 
 QT += qml quick widgets
 
-SOURCES += ../engine/factory/main.cpp
+SOURCES += main.cpp
 
-RESOURCES += ../engine/factory/qml.qrc
+RESOURCES += qml.qrc
 
 INCLUDEPATH += ../common/inc \
 			   ../auto/inc
@@ -13,7 +13,9 @@ LIBS += \
 	-L$$_PRO_FILE_PWD_/../auto/lib \
 	-lnetio \
 	-lxmlrun \
-	-lcomio
+    -lcomio \
+    -lxmlcfg \
+    -lluacore
 
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug
@@ -25,6 +27,12 @@ CONFIG(release, debug|release) {
 OBJECTS_DIR = $$OUTDIR/factory/obj
 MOC_DIR = $$OUTDIR/factory/obj/moc
 DESTDIR = $$OUTDIR/bin
+
+ulysses_common.target = ulysses_common
+ulysses_common.commands = rcc -binary $$_PRO_FILE_PWD_/../common/qml/ulysses_common.qrc -o $$DESTDIR/ulysses_common.rcc
+QMAKE_EXTRA_TARGETS += ulysses_common
+PRE_TARGETDEPS = ulysses_common
+
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

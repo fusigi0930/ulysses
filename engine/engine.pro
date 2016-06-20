@@ -28,6 +28,11 @@ OBJECTS_DIR = $$OUTDIR/obj
 MOC_DIR = $$OUTDIR/obj/moc
 DESTDIR = $$OUTDIR/bin
 
+ulysses_common.target = ulysses_common
+ulysses_common.commands = rcc -binary $$_PRO_FILE_PWD_/../common/qml/ulysses_common.qrc -o $$DESTDIR/ulysses_common.rcc
+QMAKE_EXTRA_TARGETS += ulysses_common
+PRE_TARGETDEPS = ulysses_common
+
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
 

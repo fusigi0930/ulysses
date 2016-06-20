@@ -1,5 +1,6 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.2
+import "qrc:/ulysses/"
 
 ApplicationWindow {
     visible: true
@@ -20,6 +21,16 @@ ApplicationWindow {
             }
         }
     }
+
+	IconButton {
+		id: testButton
+		text: qsTr("YAS")
+		image: "image/res/png/run.png"
+		tooltip: qsTr("Test")
+		onClicked: {
+			setIcon("/image/res/png/run.png");
+		}
+	}
 
     Label {
         text: qsTr("Hello World")

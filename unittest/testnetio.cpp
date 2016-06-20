@@ -83,5 +83,16 @@ void CTestGroup::testCTelnetIO_openClient() {
 	DMSG("find ntpu: %d", sz.contains("ntpu"));
 	int nPos=sz.indexOf("ntpu");
 	QCOMPARE(sz.mid(nPos,4), QString("ntpu"));
+
+	QString szCmd="guest\n";
+	tio.write(szCmd);
+	QThread::msleep(5000);
+	szCmd="\n";
+	tio.write(szCmd);
+	QThread::msleep(5000);
+	tio.read(sz);
+	tio.close();
+	nPos=sz.indexOf("Jobs");
+	QCOMPARE(sz.mid(nPos,4), QString("Jobs"));
 }
 

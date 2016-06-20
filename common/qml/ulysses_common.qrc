@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/ulysses">
+        <file>IconButton.qml</file>
+        <file>qmldir</file>
+    </qresource>
+    <qresource prefix="/image">
+        <file>res/png/run.png</file>
+    </qresource>
+</RCC>	
