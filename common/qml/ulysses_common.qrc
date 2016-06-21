@@ -1,9 +1,21 @@
 <RCC>
-    <qresource prefix="/ulysses">
-        <file>IconButton.qml</file>
-        <file>qmldir</file>
-    </qresource>
-    <qresource prefix="/image">
-        <file>res/png/run.png</file>
-    </qresource>
+	<qresource prefix="/ulysses">
+		<file>IconButton.qml</file>
+		<file>FactoryGridView.qml</file>
+		<file>BroadcastGridView.qml</file>
+		<file>qmldir</file>
+	</qresource>
+	<qresource prefix="/image">
+		<file>res/png/run.png</file>
+		<file>res/png/stop.png</file>
+		<file>res/png/pause.png</file>
+		<file>res/png/reset.png</file>
+		<file>res/png/playing.png</file>
+		<file>res/png/icon-android.png</file>
+		<file>res/png/icon-boot.png</file>
+		<file>res/png/icon-factory.png</file>
+		<file>res/png/icon-ubuntu.png</file>
+		<file>res/png/icon-yocto.png</file>
+		<file>res/png/back-device.png</file>
+	</qresource>
 </RCC>	

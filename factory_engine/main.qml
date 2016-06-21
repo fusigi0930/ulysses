@@ -29,7 +29,20 @@ ApplicationWindow {
 		image: "image/res/png/run.png"
 		tooltip: qsTr("Test")
 		onClicked: {
-			setIcon("/image/res/png/run.png");
+			console.log("test")
+			//testView.sigAddItem({"name":"AA","command":"bb","itemcolor":"#F0F0F0"})
+			testView.sigAddItem({"ip":"192.168.100.100","mac":"ff:ff:ff:ff:ff:ff","style":"android","itemcolor":"#f0f0f0"})
+		}
+	}
+
+	Rectangle {
+		x: 50
+		y:80
+		width: parent.width
+		height: parent.height
+		//FactoryGridView {
+		BroadcastGridView {
+			id: testView
 		}
 	}
 
