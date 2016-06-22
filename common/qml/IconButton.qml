@@ -3,9 +3,11 @@ import QtQuick.Controls 1.2
 
 Rectangle {
 	id: iconBtn
-	property alias image: pngButton.iconSource
+	property alias image: buttonImage.source
 	property alias tooltip: pngButton.tooltip
 	property alias text: bottomText.text
+	property alias buttonWidth: pngButton.width
+	property alias buttonHeight: pngButton.height
 
 	width:60
 	height:60
@@ -15,10 +17,17 @@ Rectangle {
 	
 	ToolButton {
 		id: pngButton
-		iconSource: ""
+		width: 48
+		height: 48
 		tooltip: ""
 		anchors.horizontalCenter: parent.horizontalCenter
 		onClicked: iconBtn.clicked()
+		Image {
+			id: buttonImage
+			anchors.fill: parent
+			anchors.margins: 5
+			source: "qrc:/image/res/png/run.png"
+		}
 	}
 	Text {
 		id: bottomText

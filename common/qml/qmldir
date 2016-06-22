@@ -1,2 +1,5 @@
 IconButton 1.0 IconButton.qml
 FactoryGridView 1.0 FactoryGridView.qml
+BroadcastGridView 1.0 BroadcastGridView.qml
+FactoryToolBar 1.0 FactoryToolBar.qml
+BasedTabView 1.0 BasedTabView.qml

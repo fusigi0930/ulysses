@@ -7,43 +7,34 @@ ApplicationWindow {
     visible: true
     width: 640
     height: 480
-    title: qsTr("Hello World")
+	title: qsTr("Ulysses - factory")
+	visibility: "Maximized"
 
-    menuBar: MenuBar {
-        Menu {
-            title: qsTr("File")
-            MenuItem {
-                text: qsTr("&Open")
-                onTriggered: console.log("Open action triggered");
-            }
-            MenuItem {
-                text: qsTr("Exit")
-                onTriggered: Qt.quit();
-            }
-        }
-    }
+	toolBar: FactoryToolBar {
+		id: factoryToolBar
 
-	IconButton {
-		id: testButton
-		text: qsTr("YAS")
-		image: "image/res/png/run.png"
-		tooltip: qsTr("Test")
-		onClicked: {
-			console.log("test")
-			//testView.sigAddItem({"name":"AA","command":"bb","itemcolor":"#F0F0F0"})
-			testView.sigAddItem({"ip":"192.168.100.100","mac":"ff:ff:ff:ff:ff:ff","style":"android","itemcolor":"#f0f0f0"})
+		onSigClickButton: {
+			if (button == "run") {
+				factoryToolBar.sigSignal("access")
+				baseTabHost.sigAddHost({"mac":"ff:ff:ff:ff:ff:ff","ip":"192.168.100.200","style":"android","itemcolor":"#F0F0F0"})
+			}
+			else if (button == "stop") {
+				factoryToolBar.sigSignal("wait")
+				baseTabHost.sigRemoveHost({"mac":"ff:ff:ff:ff:ff:ff","ip":"192.168.100.200","style":"android","itemcolor":"#F0F0F0"})
+			}
+			else if (button == "reset") {
+				factoryToolBar.sigSignal("none")
+			}
 		}
 	}
 
-	Rectangle {
-		x: 50
-		y:80
-		width: parent.width
-		height: parent.height
-		//FactoryGridView {
-		BroadcastGridView {
-			id: testView
-		}
+	BasedTabView {
+		id: baseTabHost
 	}
+
+	//BroadcastGridView {
+	//	id: testView
+	//}
+
 
 }

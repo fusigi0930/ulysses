@@ -21,15 +21,17 @@ GridView {
 	
 	signal sigRunItem(int nItem)
 	signal sigAddItem(var item)
-	signal sigUpdateItemResult(var color)
+	signal sigUpdateItemResult(var item)
 	signal sigFinalResult(int nItem, var color)
 	
 	onSigAddItem: {
 		listItems.append(item);
 	}
 	
-	onUpdateItemResult: {
-		listItems.get(nItem).itemcolor=color;
+	onSigUpdateItemResult: {
+		if (item.index < listItem.count()) {
+			listItems.get(item.index).itemcolor=item.itemcolor;
+		}
 	}
 
 	MouseArea {
@@ -49,6 +51,7 @@ GridView {
 			border.width: 1
 			width: gridItems.cellWidth
 			height: gridItems.cellHeight
+			radius: 4
 			color: itemcolor //"#F0F0F0"
 
 			Item {

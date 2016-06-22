@@ -3,6 +3,8 @@
 		<file>IconButton.qml</file>
 		<file>FactoryGridView.qml</file>
 		<file>BroadcastGridView.qml</file>
+		<file>FactoryToolBar.qml</file>
+		<file>BasedTabView.qml</file>
 		<file>qmldir</file>
 	</qresource>
 	<qresource prefix="/image">

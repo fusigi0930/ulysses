@@ -9,7 +9,6 @@ import "qrc:/ulysses/"
 // image
 // itemcolor: -- color
 //
-
 GridView {
 	id: gridItems
 	anchors.fill: parent
@@ -24,11 +23,9 @@ GridView {
 	
 	signal sigRunItem(var item)
 	signal sigAddItem(var item)
-	signal sigFinalResult(int nItem, var color)
-	
-	Component.onCompleted: {
-	}	
-	
+	signal sigRemoveItem(var item)
+	signal sigFinalResult(var nameIp, var item)
+			
 	onSigAddItem: {
 		if (item.style == "android") {
 			item.image  = "qrc:/image/res/png/icon-android.png"
@@ -47,6 +44,18 @@ GridView {
 		}	
 		listItems.append(item);
 	}
+	
+	onSigRemoveItem: {
+		for (var i=0; i<listItems.count; i++) {
+			if (listItems.get(i).ip === item.ip) {
+				listItems.remove(i)
+				break;
+			}
+		}
+	}
+	
+	Component.onCompleted: {
+	}	
 
 	MouseArea {
 		anchors.fill: parent
@@ -62,7 +71,7 @@ GridView {
 		id: itemShower
 		Rectangle {
 			border.color: "#80C0FF"
-			border.width: 2
+			border.width: 0
 			width: gridItems.cellWidth
 			height: gridItems.cellHeight
 			color: itemcolor //"#F0F0F0"
@@ -87,7 +96,7 @@ GridView {
 					anchors.bottom: parent.bottom
 					
 					source: "qrc:/image/res/png/back-device.png"
-					opacity: 0.04
+					opacity: 0.1
 				}
 				Text {
 					id: itemMac
@@ -98,7 +107,7 @@ GridView {
 					font.pixelSize: 28
 					font.family: "Tohama"
 					font.bold: true
-					color: "#3030FF"
+					color: "#3060FF"
 					text: mac
 				}				
 
