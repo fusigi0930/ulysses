@@ -25,6 +25,8 @@ GridView {
 	signal sigAddItem(var item)
 	signal sigRemoveItem(var item)
 	signal sigFinalResult(var nameIp, var item)
+	signal sigStartClient(var ip)
+	signal sigEndClient(var ip)
 			
 	onSigAddItem: {
 		if (item.style == "android") {
@@ -59,11 +61,23 @@ GridView {
 
 	MouseArea {
 		anchors.fill: parent
+		acceptedButtons: Qt.LeftButton | Qt.RightButton
+		
 		onDoubleClicked: {
 			var nItem=gridItems.indexAt(mouse.x, mouse.y);
-			if (nItem !== -1) {
-				gridItems.sigRunItem(nItem);
+			if (nItem !== -1 && mouse.button === Qt.LeftButton) {
+				console.log("ip: " + listItems.get(nItem).ip)
+				gridItems.sigStartClient(listItems.get(nItem).ip)
 			}
+		}
+		
+		onClicked: {
+			var nItem=gridItems.indexAt(mouse.x, mouse.y);
+			if (nItem !== -1 && mouse.button === Qt.RightButton) {
+				if (listItems.get(nItem).itemcolor !== "#8080FF") {
+					gridItems.sigEndClient(listItems.get(nItem).ip)
+				}
+			}		
 		}
 	}
 

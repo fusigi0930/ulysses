@@ -24,12 +24,17 @@ ApplicationWindow {
 			}
 			else if (button == "reset") {
 				factoryToolBar.sigSignal("none")
+				baseTabHost.sigAddItem("192.168.100.200", {"name":"= =+","itemcolor":"#F0F0F0"})
 			}
 		}
 	}
 
 	BasedTabView {
 		id: baseTabHost
+
+		onSigStartClient: {
+			baseTabHost.sigAddTab(ip, "qrc:/ulysses/FactoryGridView.qml")
+		}
 	}
 
 	//BroadcastGridView {
