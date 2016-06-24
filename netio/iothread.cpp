@@ -35,6 +35,10 @@ void CIOThread::run() {
 	m_io->run();
 }
 
+//////////////////////////////////////////////
+/// CIOParserThread
+///
+
 CIOParserThread::CIOParserThread() : CIOThread() {
 
 }
@@ -54,4 +58,52 @@ void CIOParserThread::run() {
 		return;
 	}
 	pRecv->runParser();
+}
+
+//////////////////////////////////////////////
+/// CNetActionThread
+///
+
+CNetActionThread::CNetActionThread() : QThread() {
+	m_action=NULL;
+	m_hThread=NULL;
+}
+
+CNetActionThread::CNetActionThread(CBaseAction *action) : QThread() {
+	m_action=action;
+	m_hThread=NULL;
+}
+
+CNetActionThread::~CNetActionThread() {
+
+}
+
+void CNetActionThread::run() {
+#ifdef Q_OS_WIN
+	m_hThread=::GetCurrentThread();
+#endif
+	if (m_action) {
+		m_action->run();
+	}
+#ifdef Q_OS_WIN
+	m_hThread=NULL;
+#endif
+}
+
+int CNetActionThread::pause() {
+#ifdef Q_OS_WIN
+	if (m_hThread) {
+		::SuspendThread(m_hThread);
+	}
+#endif
+	return 0;
+}
+
+int CNetActionThread::resume() {
+#ifdef Q_OS_WIN
+	if (m_hThread) {
+		::ResumeThread(m_hThread);
+	}
+#endif
+	return 0;
 }

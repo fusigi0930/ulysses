@@ -123,25 +123,27 @@ int CNotifyRecv::parseBroadcast() {
 	return 0;
 }
 
-#ifdef Q_OS_WIN
+
 int CNotifyRecv::pause() {
+#ifdef Q_OS_WIN
 	if (m_hThread) {
 		::SuspendThread(m_hThread);
 	}
 	if (m_hParserThread) {
 		::SuspendThread(m_hParserThread);
 	}
+#endif
 	return 0;
 }
 
 int CNotifyRecv::resume() {
+#ifdef Q_OS_WIN
 	if (m_hThread) {
 		::ResumeThread(m_hThread);
 	}
 	if (m_hParserThread) {
 		::ResumeThread(m_hParserThread);
 	}
+#endif
 	return 0;
 }
-
-#endif

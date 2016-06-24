@@ -3,12 +3,16 @@ import QtQuick.Controls 1.2
 
 import "qrc:/ulysses/"
 
+import FactoryAction 1.0
+
 ApplicationWindow {
     visible: true
-    width: 640
-    height: 480
 	title: qsTr("Ulysses - factory")
 	visibility: "Maximized"
+
+	onClosing: {
+		actionFactory.slotClose()
+	}
 
 	toolBar: FactoryToolBar {
 		id: factoryToolBar
@@ -37,9 +41,12 @@ ApplicationWindow {
 		}
 	}
 
-	//BroadcastGridView {
-	//	id: testView
-	//}
+	FactoryAction {
+		id: actionFactory
 
+		onSigStartNewBootDev: {
+			baseTabHost.sigAddHost({"mac":szMac,"ip":szIp,"style":"boot","itemcolor":"#E0E0E0"})
+		}
 
+	}
 }

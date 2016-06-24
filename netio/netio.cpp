@@ -37,7 +37,7 @@ size_t CNetcatIO::write(char *data, size_t nLeng) {
 	QString szData=data;
 	if (szData.contains("boot") || szData.contains("run mmcboot") || szData.contains("run localboot") ||
 			szData.contains("bootm")) {
-		emit sigStartKernel();
+		emit sigStartKernel(m_nPort);
 	}
 	return nSize;
 }
@@ -128,7 +128,7 @@ bool CNetcatIO::openClient(QStringList &szList) {
 	::connect(m_io, reinterpret_cast<SOCKADDR*>(&m_addr), sizeof(m_addr));
 	m_bIsServer=false;
 
-	connect(this, SIGNAL(sigStartKernel()), this, SLOT(slotStartKernel()), Qt::QueuedConnection);
+	connect(this, SIGNAL(sigStartKernel(int)), this, SLOT(slotStartKernel()), Qt::QueuedConnection);
 	return true;
 }
 
@@ -238,7 +238,7 @@ int CNetcatIO::run() {
 		memset (arBuf, 0, sizeof(arBuf));
 		if (-1 == readSocket(arBuf, sizeof(arBuf)-1))
 			break;
-		//DMSG("sock recv: %s", arBuf);
+		DMSG("sock recv: %s", arBuf);
 		m_szRecvData.append(arBuf).append('\n');
 	}
 #ifdef Q_OS_WIN
@@ -270,22 +270,24 @@ int CNetcatIO::waitPrompt(int nTimeout) {
 	return _WAIT_TIMEOUT;
 }
 
-#ifdef Q_OS_WIN
+
 int CNetcatIO::pause() {
+#ifdef Q_OS_WIN
 	if (m_hThread) {
 		::SuspendThread(m_hThread);
 	}
+#endif
 	return 0;
 }
 
 int CNetcatIO::resume() {
+#ifdef Q_OS_WIN
 	if (m_hThread) {
 		::ResumeThread(m_hThread);
 	}
+#endif
 	return 0;
 }
-
-#endif
 
 void CNetcatIO::slotStartKernel() {
 	DMSG("start kernel, close connection");

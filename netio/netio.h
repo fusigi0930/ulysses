@@ -3,6 +3,7 @@
 
 #include "netio_global.h"
 #include "base_io.h"
+#include "base_action.h"
 
 #ifdef Q_OS_WIN
 #include <winsock2.h>
@@ -41,11 +42,27 @@ public:
 class NETIOSHARED_EXPORT CNetActionThread : public QThread
 {
 	Q_OBJECT
+protected:
+	CBaseAction *m_action;
+
+#ifdef Q_OS_WIN
+	HANDLE m_hThread;
+#endif
+
 signals:
 
 public slots:
 
 public:
+	CNetActionThread();
+	CNetActionThread(CBaseAction *action);
+
+	~CNetActionThread();
+
+	virtual void run();
+
+	virtual int pause();
+	virtual int resume();
 
 };
 
@@ -92,12 +109,12 @@ public:
 	virtual int run();
 	virtual int setPrompt(QString szPrompt);
 	virtual int waitPrompt(int nTimout);
-#ifdef Q_OS_WIN
+
 	virtual int pause();
 	virtual int resume();
-#endif
+
 signals:
-	void sigStartKernel();
+	void sigStartKernel(int nPort);
 
 public slots:
 	void slotStartKernel();
@@ -136,10 +153,9 @@ public:
 	virtual int runParser();
 	virtual void close();
 
-#ifdef Q_OS_WIN
 	virtual int pause();
 	virtual int resume();
-#endif
+
 
 signals:
 	void sigStartNewBootDev(int nPort);

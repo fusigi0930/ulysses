@@ -2,7 +2,13 @@ TEMPLATE = app
 
 QT += qml quick widgets
 
-SOURCES += main.cpp
+HEADERS += \
+    cfactoryaction.h \
+    cdoaction.h
+
+SOURCES += main.cpp \
+    cfactoryaction.cpp \
+    cdoaction.cpp
 
 RESOURCES += qml.qrc
 
