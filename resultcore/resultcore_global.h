@@ -1,0 +1,12 @@
+#ifndef RESULTCORE_GLOBAL_H
+#define RESULTCORE_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(RESULTCORE_LIBRARY)
+#  define RESULTCORESHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define RESULTCORESHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // RESULTCORE_GLOBAL_H

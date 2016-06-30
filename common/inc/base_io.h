@@ -52,6 +52,10 @@ public:
 	virtual void close() = 0;
 	
 	virtual int run() = 0;
+
+    virtual int setPrompt(QString szPrompt) = 0;
+
+    virtual int waitPrompt(int nTimout) = 0;
 };
 
 template <typename T_T>

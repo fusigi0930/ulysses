@@ -30,6 +30,7 @@ public:
 	virtual int getItemCount()=0;
 	virtual int getCurrentIndex()=0;
 	virtual void setCurrentIndex(int nIndex)=0;
+    virtual bool nextItem() = 0;
 	virtual bool removeItem(int nIndex)=0;
 };
 
@@ -131,9 +132,21 @@ public:
 	virtual int getCurrentIndex() {
 		return m_nIndex;
 	}
+	
+	virtual bool nextItem() {
+		bool bRet=false;
+		if (m_nIndex < m_items.size() - 1) {
+			m_nIndex++;
+			bRet=true;
+		}
+		else {
+			bRet=false;
+		}
+		return bRet;
+	}
 
-	virtual OQO getCurrentItem() {
-		return m_items.at(m_nIndex);
+    virtual OQO& getCurrentItem() {
+        return m_items[m_nIndex];
 	}
 	
 	virtual OQO& getItem(int i) {

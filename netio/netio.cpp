@@ -262,8 +262,10 @@ int CNetcatIO::waitPrompt(int nTimeout) {
 		QStringList recvList=m_szRecvData.split("\n",  QString::SkipEmptyParts);
 		if (0 < recvList.count()) {
 			QString szLastLine=recvList.at(recvList.count()-1);
-			if (szLastLine.contains(prompt))
+			if (szLastLine.contains(prompt)) {
+				DMSG("Wait the prompt!!");
 				return _WAIT_DONE;
+			}
 		}
 		QThread::msleep(100);
 	}

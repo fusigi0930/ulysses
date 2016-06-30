@@ -10,6 +10,7 @@ TabView {
 	signal sigAddHost(var item)
 	signal sigRemoveHost(var item)
 	signal sigFinalResult(var nameIp, var item)
+	signal sigUpdateHost(var item)
 	
 	signal sigAddItem(var tabName, var item)
 	signal sigRunItem(var tabName, var item)
@@ -40,6 +41,16 @@ TabView {
 				break;
 			}
 		}	
+	}
+	
+	onSigUpdateHost: {
+		for (var i=0; i<tabView.count; i++) {
+			if (tabView.getTab(i).title === defaultMonitorTabName) {
+				tabView.sigRemoveTab(item.ip)
+				tabView.getTab(i).item.sigUpdateItem(item)
+				break;
+			}
+		}		
 	}
 
 	onSigAddItem: {
@@ -79,6 +90,11 @@ TabView {
 	}
 	
 	onSigAddTab: {
+		for (var i=0; i<tabView.count; i++) {
+			if (tabView.getTab(i).title === ip) {
+				return;
+			}
+		}	
 		tabView.addTab(ip, Qt.createComponent(comp))
 		tabView.getTab(tabView.count - 1).active = true	
 	}
@@ -145,6 +161,11 @@ TabView {
 
 		BroadcastGridView {
 			onSigStartClient: {
+				for (var i=0; i<tabView.count; i++) {
+					if (tabView.getTab(i).title === ip) {
+						return;
+					}
+				}				
 				tabView.sigStartClient(ip)
 			}
 			

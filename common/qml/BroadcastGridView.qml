@@ -24,6 +24,7 @@ GridView {
 	signal sigRunItem(var item)
 	signal sigAddItem(var item)
 	signal sigRemoveItem(var item)
+	signal sigUpdateItem(var item)
 	signal sigFinalResult(var nameIp, var item)
 	signal sigStartClient(var ip)
 	signal sigEndClient(var ip)
@@ -54,6 +55,31 @@ GridView {
 				break;
 			}
 		}
+	}
+	
+	onSigUpdateItem: {
+		for (var i=0; i<listItems.count; i++) {
+			if (listItems.get(i).ip === item.ip) {
+				if (item.style == "android") {
+					listItems.get(i).image  = "qrc:/image/res/png/icon-android.png"
+				}
+				else if (item.style == "boot") {
+					listItems.get(i).image = "qrc:/image/res/png/icon-boot.png"
+				}
+				else if (item.style == "factory") {
+					listItems.get(i).image = "qrc:/image/res/png/icon-factory.png"
+				}
+				else if (item.style == "ubuntu") {
+					listItems.get(i).image = "qrc:/image/res/png/icon-ubuntu.png"
+				}
+				else if (item.style == "yocto") {
+					listItems.get(i).image = "qrc:/image/res/png/icon-yocto.png"
+				}	
+				listItems.get(i).itemcolor=item.itemcolor
+				listItems.get(i).style=item.style
+				break;
+			}
+		}	
 	}
 	
 	Component.onCompleted: {
