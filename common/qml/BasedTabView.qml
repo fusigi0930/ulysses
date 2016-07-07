@@ -74,7 +74,7 @@ TabView {
 	onSigUpdateItemResult: {
 		for (var i=0; i<tabView.count; i++) {
 			if (tabView.getTab(i).title === tabName) {
-				tabView.getTab(i).item.sigFinalResult(nameIp, item)
+				tabView.getTab(i).item.sigUpdateItemResult(item)
 				break;
 			}
 		}	
@@ -83,7 +83,7 @@ TabView {
 	onSigFinalResult: {
 		for (var i=0; i<tabView.count; i++) {
 			if (tabView.getTab(i).title === defaultMonitorTabName) {
-				tabView.getTab(i).item.sigUpdateItemResult(item)
+				tabView.getTab(i).item.sigUpdateFinalResult(nameIp, item)
 				break;
 			}
 		}			

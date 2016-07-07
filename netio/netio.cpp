@@ -37,7 +37,8 @@ size_t CNetcatIO::write(char *data, size_t nLeng) {
 	QString szData=data;
 	if (szData.contains("boot") || szData.contains("run mmcboot") || szData.contains("run localboot") ||
 			szData.contains("bootm")) {
-		emit sigStartKernel(m_nPort);
+		DMSG("emit sigStartKernel!!!!");
+		emit sigStartKernel(m_nPort-7000);
 	}
 	return nSize;
 }
@@ -128,7 +129,7 @@ bool CNetcatIO::openClient(QStringList &szList) {
 	::connect(m_io, reinterpret_cast<SOCKADDR*>(&m_addr), sizeof(m_addr));
 	m_bIsServer=false;
 
-	connect(this, SIGNAL(sigStartKernel(int)), this, SLOT(slotStartKernel()), Qt::QueuedConnection);
+	//connect(this, SIGNAL(sigStartKernel(int)), this, SLOT(slotStartKernel()), Qt::QueuedConnection);
 	return true;
 }
 
@@ -238,8 +239,9 @@ int CNetcatIO::run() {
 		memset (arBuf, 0, sizeof(arBuf));
 		if (-1 == readSocket(arBuf, sizeof(arBuf)-1))
 			break;
-		DMSG("sock recv: %s", arBuf);
-		m_szRecvData.append(arBuf).append('\n');
+		//DMSG("sock recv: %s", arBuf);
+		m_szRecvData.append(arBuf);
+		if (7500 == m_nPort) m_szRecvData.append("\n");
 	}
 #ifdef Q_OS_WIN
 	m_hThread=NULL;
@@ -255,15 +257,15 @@ int CNetcatIO::setPrompt(QString szPrompt) {
 int CNetcatIO::waitPrompt(int nTimeout) {
 	QRegExp prompt(m_szPrompt);
 	QDateTime startTime=QDateTime::currentDateTime();
-	while (nTimeout > (QDateTime::currentDateTime().toTime_t() - startTime.toTime_t())) {
+	while (nTimeout > (QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch())) {
 		QString szData=m_szRecvData;
 		szData.replace('\r', '\n');
 
 		QStringList recvList=m_szRecvData.split("\n",  QString::SkipEmptyParts);
-		if (0 < recvList.count()) {
+		if (1 < recvList.count()) {
 			QString szLastLine=recvList.at(recvList.count()-1);
 			if (szLastLine.contains(prompt)) {
-				DMSG("Wait the prompt!!");
+				//DMSG("Wait the prompt!!");
 				return _WAIT_DONE;
 			}
 		}
@@ -293,5 +295,9 @@ int CNetcatIO::resume() {
 
 void CNetcatIO::slotStartKernel() {
 	DMSG("start kernel, close connection");
-	close();
+	//close();
+}
+
+bool CNetcatIO::isOpened() {
+	return (0 < m_io ? true : false);
 }

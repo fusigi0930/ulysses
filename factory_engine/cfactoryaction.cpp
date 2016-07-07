@@ -4,7 +4,7 @@
 #include <QStringList>
 #include <QVariantMap>
 
-#define IP_PREFIX "192.168.0.%d"
+#define IP_PREFIX "192.168.48.%d"
 
 //
 // mac: -- mac address
@@ -19,9 +19,16 @@
 #define HOST_ITEM_STYLE			"style"
 #define HOST_ITEM_COLOR			"itemcolor"
 
+#define HOST_COLOR_NORMAL		"#C0C0E0"
+#define HOST_COLOR_WAIT			"#F0F050"
+#define HOST_COLOR_HALT			"#909090"
+#define HOST_COLOR_PASS			"#70F070"
+#define HOST_COLOR_FAIL			"#F07070"
+
 
 CFactoryAction::CFactoryAction() : QObject() ,CBaseAction(),
 	m_actionThread(this),
+	m_szXmlName("items.xml"),
 	m_broadcastRecv()
 {
 	m_bIsRunning=false;
@@ -33,6 +40,7 @@ CFactoryAction::CFactoryAction() : QObject() ,CBaseAction(),
 
 	// test code
 	connect(this, SIGNAL(sigTest(int)), &m_broadcastRecv, SIGNAL(sigStartKernel(int)));
+	connect(this, SIGNAL(sigTestKernel(QString)), &m_broadcastRecv, SIGNAL(sigStartNewSysDev(QString)));
 
 	m_broadcastRecv.open();
 }
@@ -50,34 +58,38 @@ int CFactoryAction::run() {
 	return 0;
 }
 
+void CFactoryAction::destoryDev(SRunDev *dev) {
+	if (dev) {
+		if (dev->thread) {
+			if (dev->thread->isRunning())
+				dev->thread->terminate();
+			delete dev->thread;
+		}
+		if (dev->rio) {
+			dev->rio->close();
+			delete dev->rio;
+		}
+		if (dev->wio) {
+			dev->tio->close();
+			delete dev->wio;
+		}
+		if (dev->tio) {
+			dev->tio->close();
+			delete dev->tio;
+		}
+		if (dev->timer) {
+			dev->timer->stop();
+			delete dev->timer;
+		}
+		delete dev;
+	}
+}
+
 void CFactoryAction::close() {
 	for (std::map<QString, SRunDev*>::iterator pIO=m_mapDevice.begin();
 		pIO != m_mapDevice.end(); pIO++) {
 
-		if(pIO->second) {
-			if (pIO->second->thread) {
-				if (pIO->second->thread->isRunning())
-					pIO->second->thread->terminate();
-				delete pIO->second->thread;
-			}
-			if (pIO->second->rio) {
-				pIO->second->rio->close();
-				delete pIO->second->rio;
-			}
-			if (pIO->second->wio) {
-				pIO->second->wio->close();
-				delete pIO->second->wio;
-			}
-			if (pIO->second->tio) {
-				pIO->second->tio->close();
-				delete pIO->second->tio;
-			}
-			if (pIO->second->timer) {
-				pIO->second->timer->stop();
-				delete pIO->second->timer;
-			}
-			delete pIO->second;
-		}
+		destoryDev(pIO->second);
 	}
 
 	m_mapDevice.clear();
@@ -105,15 +117,17 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	newDev->rio=new CNetcatIO();
 	newDev->wio=new CNetcatIO();
 	newDev->tio=new CTelnetIO();
-	newDev->action=new CDoAction(newDev);
+	newDev->action=new CDoAction(newDev, m_szXmlName);
 	newDev->thread=new CNetActionThread(newDev->action);
 	newDev->timer=new CTimer();
 	newDev->szIp=szIp;
 
 	connect(newDev->timer, SIGNAL(sigTimeout(QTimer*)), this, SLOT(slotTimerTimeout(QTimer*)));
 	connect(newDev->timer, SIGNAL(sigTimeoutClose(QTimer*)), this, SLOT(slotTimeoutClose(QTimer*)));
-	connect(&m_broadcastRecv, SIGNAL(sigStartKernel(int)), dynamic_cast<CDoAction*>(newDev->action), SLOT(slotStartKernel(int)));
+	connect(dynamic_cast<CNetcatIO*>(newDev->wio), SIGNAL(sigStartKernel(int)), dynamic_cast<CDoAction*>(newDev->action), SLOT(slotStartKernel(int)));
+	connect(dynamic_cast<CNetcatIO*>(newDev->wio), SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)));
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigAddShowItem(QVariant)), this, SIGNAL(sigAddShowItem(QVariant)));
+	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateShowItem(QVariant)), this, SIGNAL(sigUpdateShowItem(QVariant)));
 
 	m_mapDevice[szIp]=newDev;
 
@@ -170,6 +184,30 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 		return;
 	}
 
+	QVariantMap mapItem;
+
+	mapItem.insert(HOST_ITEM_IP, pFind->first);
+	mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_NORMAL);
+	mapItem.insert(HOST_ITEM_STYLE, listData.at(0));
+
+	emit sigUpdateHost(QVariant::fromValue(mapItem));
+	if (pFind->second->timer) {
+		pFind->second->timer->stop();
+	}
+
+	if (pFind->second->tio && !pFind->second->tio->isOpened()) {
+		pFind->second->tio->open(QSZ(pFind->first));
+		QThread::msleep(120);
+		QString szCmd;
+		szCmd="root\n";
+		pFind->second->tio->write(szCmd);
+		QThread::msleep(250);
+
+		szCmd="\n";
+		pFind->second->tio->write(szCmd);
+		pFind->second->tio->setPrompt("#");
+
+	}
 }
 
 void CFactoryAction::slotHeltSysDev(QString ip) {
@@ -180,12 +218,23 @@ void CFactoryAction::slotHeltSysDev(QString ip) {
 		DMSG("the device is not exist");
 		return;
 	}
+
+	destoryDev(pFind->second);
+
+	QVariantMap mapItem;
+
+	mapItem.insert(HOST_ITEM_IP, pFind->first);
+
+	emit sigRemoveHost(QVariant::fromValue(mapItem));
+
+	m_mapDevice.erase(pFind);
 }
 
 void CFactoryAction::slotEndBootDev(int nPort) {
 	QString szIp;
 	szIp.sprintf(IP_PREFIX, nPort);
 
+	DMSG("end boot device: %d", nPort);
 	std::map<QString, SRunDev*>::iterator pFind=m_mapDevice.find(szIp);
 	if (pFind == m_mapDevice.end()) {
 		DMSG("the device is not exist");
@@ -195,11 +244,11 @@ void CFactoryAction::slotEndBootDev(int nPort) {
 	QVariantMap mapItem;
 
 	mapItem.insert(HOST_ITEM_IP, pFind->first);
-	mapItem.insert(HOST_ITEM_COLOR, "#F0F050");
+	mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_WAIT);
 
 	emit sigUpdateHost(QVariant::fromValue(mapItem));
 	if (pFind->second->timer) {
-		pFind->second->timer->setInterval(5000);
+		pFind->second->timer->setInterval(80000);
 		pFind->second->timer->setSingleShot(true);
 		pFind->second->timer->start();
 	}
@@ -221,7 +270,7 @@ void CFactoryAction::slotTimerTimeout(QTimer *timer) {
 			QVariantMap mapItem;
 
 			mapItem.insert(HOST_ITEM_IP, pItem->first);
-			mapItem.insert(HOST_ITEM_COLOR, "#F05050");
+			mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_HALT);
 
 			emit sigUpdateHost(QVariant::fromValue(mapItem));
 			break;
@@ -255,5 +304,12 @@ void CFactoryAction::slotShowItem(QString szIp) {
 void CFactoryAction::slotRemoveHost(QVariant item) {
 	QMap<QString, QVariant> mapItem=item.toMap();
 
-	m_mapDevice.erase(mapItem["ip"].toString());
+	std::map<QString, SRunDev*>::iterator pItem=m_mapDevice.find(mapItem["ip"].toString());
+
+	if (pItem == m_mapDevice.end()) {
+		return;
+	}
+
+	destoryDev(pItem->second);
+	m_mapDevice.erase(pItem);
 }

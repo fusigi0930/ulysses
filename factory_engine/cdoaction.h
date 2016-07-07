@@ -36,15 +36,22 @@ struct SRunDev {
 enum ERunStatus {
 	_RUN_STATUS_BOOTLOADER,
 	_RUN_STATUS_RAMDISK,
-	_RUN_STATUS_UNKNOW = -1
+	_RUN_STATUS_LAST
 };
 
 class CDoAction : public QObject, public CBaseAction
 {
 	Q_OBJECT
 private:
-	int runBootCmd();
-	int runSysCmd();
+	typedef int (CDoAction::*runFunc)(SFactoryItem *);
+
+	int runBootCmd(SFactoryItem *item);
+	int runSysCmd(SFactoryItem *item);
+
+	int runPrePostCmd(QString szCmd);
+	int runFinalAlarm();
+
+	void init();
 
 protected:
 	SRunDev *m_ptrDev;
@@ -55,6 +62,7 @@ protected:
 	int m_nStatus;
 public:
 	CDoAction(SRunDev *dev);
+	CDoAction(SRunDev *dev, QString item);
 	CDoAction();
 	~CDoAction();
 
@@ -63,6 +71,7 @@ public:
 
 signals:
 	void sigAddShowItem(QVariant item);
+	void sigUpdateShowItem(QVariant item);
 
 public slots:
 	void slotSetXMLFile(QString szFile);

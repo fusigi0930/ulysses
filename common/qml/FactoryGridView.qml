@@ -29,7 +29,7 @@ GridView {
 	}
 	
 	onSigUpdateItemResult: {
-		if (item.index < listItem.count()) {
+		if (item.index < listItems.count) {
 			listItems.get(item.index).itemcolor=item.itemcolor;
 		}
 	}

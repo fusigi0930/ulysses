@@ -113,6 +113,8 @@ public:
 	virtual int pause();
 	virtual int resume();
 
+	virtual bool isOpened();
+
 signals:
 	void sigStartKernel(int nPort);
 

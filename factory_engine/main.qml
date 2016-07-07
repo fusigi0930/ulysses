@@ -20,16 +20,15 @@ ApplicationWindow {
 		onSigClickButton: {
 			if (button == "run") {
 				factoryToolBar.sigSignal("access")
-				baseTabHost.sigAddHost({"mac":"ff:ff:ff:ff:ff:ff","ip":"192.168.0.152","style":"android","itemcolor":"#F0F0F0"})
 				actionFactory.sigTest(152)
 			}
 			else if (button == "stop") {
 				factoryToolBar.sigSignal("wait")
-				baseTabHost.sigRemoveHost({"mac":"ff:ff:ff:ff:ff:ff","ip":"192.168.0.15","style":"android","itemcolor":"#F0F0F0"})
+				actionFactory.sigTestKernel("factory:192.168.0.152")
 			}
 			else if (button == "reset") {
 				factoryToolBar.sigSignal("none")
-				baseTabHost.sigAddItem("192.168.0.151", {"name":"= =+","itemcolor":"#F0F0F0"})
+
 			}
 		}
 	}
@@ -47,7 +46,7 @@ ApplicationWindow {
 		id: actionFactory
 
 		onSigStartNewBootDev: {
-			baseTabHost.sigAddHost({"mac":szMac,"ip":szIp,"style":"boot","itemcolor":"#E0E0E0"})
+			baseTabHost.sigAddHost({"mac":szMac,"ip":szIp,"style":"boot","itemcolor":"#C0C0E0"})
 			baseTabHost.sigStartClient(szIp)
 		}
 
@@ -61,6 +60,10 @@ ApplicationWindow {
 
 		onSigAddShowItem: {
 			baseTabHost.sigAddItem(item.ip, item)
+		}
+
+		onSigUpdateShowItem: {
+			baseTabHost.sigUpdateItemResult(item.ip, item)
 		}
 	}
 }

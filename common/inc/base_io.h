@@ -56,6 +56,8 @@ public:
     virtual int setPrompt(QString szPrompt) = 0;
 
     virtual int waitPrompt(int nTimout) = 0;
+
+    virtual bool isOpened() = 0;
 };
 
 template <typename T_T>
