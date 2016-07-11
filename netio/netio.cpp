@@ -12,6 +12,7 @@
 #endif
 
 #include <unistd.h>
+#include <typeinfo>
 
 #define TEMP_BUF_SIZE 1024
 
@@ -28,6 +29,9 @@ CNetcatIO::CNetcatIO() : CBaseIO<int>() {
 
 CNetcatIO::~CNetcatIO() {
 	close();
+#ifdef Q_OS_WIN
+	WSACleanup();
+#endif
 }
 
 size_t CNetcatIO::write(char *data, size_t nLeng) {
@@ -115,7 +119,7 @@ bool CNetcatIO::openClient(QStringList &szList) {
 		return false;
 	close();
 
-	m_io=::socket(AF_INET, SOCK_DGRAM, 0);
+	m_io=::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
 	if (-1 == m_io) {
 		return false;
@@ -139,7 +143,7 @@ bool CNetcatIO::openServer(QStringList &szList) {
 		return false;
 	close();
 
-	m_io=::socket(AF_INET, SOCK_DGRAM, 0);
+	m_io=::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (-1 == m_io) {
 		return false;
 	}
@@ -192,8 +196,13 @@ bool CNetcatIO::open(char *sz) {
 
 	int option=1;
 
-	::setsockopt(m_io, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&option), sizeof(option));
-	::setsockopt(m_io, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&option), sizeof(option));
+	if (typeid(*this) != typeid(CTelnetIO)) {
+		::setsockopt(m_io, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&option), sizeof(option));
+		::setsockopt(m_io, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&option), sizeof(option));
+	}
+	else {
+		DMSG("telnetio: open: %s", sz);
+	}
 
 	// start read thread
 	if(NULL != m_thread) {
@@ -209,9 +218,11 @@ bool CNetcatIO::open(char *sz) {
 }
 
 void CNetcatIO::close() {
+#if 0
 	if (!m_bIsServer && -1 != m_io) {
 		::shutdown(m_io, SD_SEND);
 	}
+#endif
 	if (-1 != m_io) {
 #ifdef Q_OS_WIN
 		::closesocket(m_io);
@@ -231,21 +242,27 @@ void CNetcatIO::close() {
 }
 
 int CNetcatIO::run() {
-	char arBuf[1024];
+	// avoid optimized
+	m_readBuf[1020]='\n';
 #ifdef Q_OS_WIN
 	m_hThread=::GetCurrentThread();
 #endif
 	while (-1 != m_io) {
-		memset (arBuf, 0, sizeof(arBuf));
-		if (-1 == readSocket(arBuf, sizeof(arBuf)-1))
+		memset (m_readBuf, 0, sizeof(m_readBuf));
+		if (-1 == readSocket(m_readBuf, sizeof(m_readBuf)-1))
 			break;
-		//DMSG("sock recv: %s", arBuf);
-		m_szRecvData.append(arBuf);
+
+		m_szRecvData.append(m_readBuf);
 		if (7500 == m_nPort) m_szRecvData.append("\n");
 	}
 #ifdef Q_OS_WIN
 	m_hThread=NULL;
 #endif
+
+	if (typeid(*this) == typeid(CTelnetIO)) {
+		fprintf(stderr, "%d\n", m_readBuf[0]);
+	}
+
 	return 0;
 }
 

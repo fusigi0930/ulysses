@@ -25,6 +25,7 @@ protected:
 
 	QString m_szXmlName;
 
+	void wait(int msec);
 public:
 	CFactoryAction();
 	virtual ~CFactoryAction();
@@ -49,11 +50,9 @@ signals:
 	void sigAddShowItem(QVariant item);
 	void sigUpdateShowItem(QVariant item);
 
-	void sigTest(int nPort);
-	void sigTestKernel(QString ip);
-
 public slots:
 	void slotRemoveHost(QVariant item);
+	void slotRemoveFailedHosts();
 
 	void slotStartNewBootDev(int nPort);
 	void slotEndBootDev(int nPort);

@@ -78,6 +78,8 @@ protected:
 
 	size_t readSocket(char *data, size_t nLimit);
 
+	char m_readBuf[1024];
+
 public:
 	sockaddr_in m_addr;
 	int m_nPort;
@@ -133,6 +135,9 @@ public:
 	virtual ~CTelnetIO();
 
 	virtual bool open(char *sz);
+
+	virtual size_t write(char *data, size_t nLeng);
+	virtual size_t write(QString &szData);
 };
 
 class NETIOSHARED_EXPORT CNotifyRecv : public CNetcatIO

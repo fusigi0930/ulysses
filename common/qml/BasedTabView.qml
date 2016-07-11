@@ -46,7 +46,7 @@ TabView {
 	onSigUpdateHost: {
 		for (var i=0; i<tabView.count; i++) {
 			if (tabView.getTab(i).title === defaultMonitorTabName) {
-				tabView.sigRemoveTab(item.ip)
+				//tabView.sigRemoveTab(item.ip)
 				tabView.getTab(i).item.sigUpdateItem(item)
 				break;
 			}

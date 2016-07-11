@@ -34,19 +34,22 @@ bool CTelnetIO::openClient(QStringList &szList) {
 		return false;
 	close();
 
-	m_io=::socket(AF_INET, SOCK_STREAM, 0);
+	m_io=::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	if (-1 == m_io) {
 		return false;
 	}
 	m_addr.sin_family=AF_INET;
-	m_addr.sin_port=::htons(szList.at(3).toInt());
-
 	m_nPort=szList.at(3).toInt();
+	DMSG("open string: %s, %d", QSZ(szList.at(2)), m_nPort);
+	m_addr.sin_port=::htons(m_nPort);
+
 
 	::memset(&m_addr.sin_zero, 0, sizeof(m_addr.sin_zero));
 
-	::connect(m_io, reinterpret_cast<SOCKADDR*>(&m_addr), sizeof(m_addr));
+	if (0 != ::connect(m_io, reinterpret_cast<SOCKADDR*>(&m_addr), sizeof(m_addr))) {
+		return false;
+	}
 	m_bIsServer=false;
 
 	return true;
@@ -60,4 +63,13 @@ bool CTelnetIO::open(char *sz) {
 	QString szBuf;
 	szBuf.sprintf("net:client:%s:23", sz);
 	return CNetcatIO::open(QSZ(szBuf));
+}
+
+size_t CTelnetIO::write(char *data, size_t nLeng) {
+	size_t nSize=static_cast<size_t>(::send(m_io, data, nLeng, 0));
+	return nSize;
+}
+
+size_t CTelnetIO::write(QString &szData) {
+	return CNetcatIO::write(szData);
 }

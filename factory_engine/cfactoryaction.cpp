@@ -3,6 +3,7 @@
 #include "debug.h"
 #include <QStringList>
 #include <QVariantMap>
+#include <QDateTime>
 
 #define IP_PREFIX "192.168.48.%d"
 
@@ -37,10 +38,6 @@ CFactoryAction::CFactoryAction() : QObject() ,CBaseAction(),
 	connect(&m_broadcastRecv, SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)));
 	connect(&m_broadcastRecv, SIGNAL(sigStartNewSysDev(QString)), this, SLOT(slotStartNewSysDev(QString)));
 	connect(&m_broadcastRecv, SIGNAL(sigHaltSysDev(QString)), this, SLOT(slotHeltSysDev(QString)));
-
-	// test code
-	connect(this, SIGNAL(sigTest(int)), &m_broadcastRecv, SIGNAL(sigStartKernel(int)));
-	connect(this, SIGNAL(sigTestKernel(QString)), &m_broadcastRecv, SIGNAL(sigStartNewSysDev(QString)));
 
 	m_broadcastRecv.open();
 }
@@ -128,10 +125,13 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	connect(dynamic_cast<CNetcatIO*>(newDev->wio), SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)));
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigAddShowItem(QVariant)), this, SIGNAL(sigAddShowItem(QVariant)));
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateShowItem(QVariant)), this, SIGNAL(sigUpdateShowItem(QVariant)));
+	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateHost(QVariant)), this, SIGNAL(sigUpdateHost(QVariant)));
 
 	m_mapDevice[szIp]=newDev;
 
 	QString szBuf;
+	wait(600);
+
 	szBuf.sprintf("net:client:%s:%d", QSZ(szIp), 7000+nPort);
 	newDev->wio->open(QSZ(szBuf));
 	szBuf.sprintf("net:server:%d", 7000+nPort);
@@ -139,7 +139,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 
 	newDev->rio->setPrompt("EMBUX-TAURUS");
 
-	QThread::msleep(500);
+	wait(500);
 
 	// get mac address
 	szBuf="printenv ethaddr\n";
@@ -164,8 +164,20 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	szWo=szWo.mid(nPos+1, nEnd-nPos);
 	szWo=szWo.trimmed();
 	newDev->szWo=szWo;
+	newDev->nStatus=_TS_RUNNING;
 
 	emit sigStartNewBootDev(szIp, szMac);
+
+	if (szMac.isEmpty()) {
+		QVariantMap mapItem;
+
+		mapItem.insert(HOST_ITEM_IP, szIp);
+		mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_FAIL);
+		newDev->nStatus = _TS_FAIL;
+		emit sigUpdateHost(QVariant::fromValue(mapItem));
+		return;
+	}
+
 	newDev->thread->start();
 }
 
@@ -195,18 +207,38 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 		pFind->second->timer->stop();
 	}
 
-	if (pFind->second->tio && !pFind->second->tio->isOpened()) {
-		pFind->second->tio->open(QSZ(pFind->first));
-		QThread::msleep(120);
-		QString szCmd;
-		szCmd="root\n";
-		pFind->second->tio->write(szCmd);
-		QThread::msleep(250);
+	QThread::msleep(350);
 
-		szCmd="\n";
+	if (pFind->second->tio) {
+		QString szCmd="\nroot\n";
+
+		pFind->second->tio->open(QSZ(pFind->first));
+		wait(3000);
+
+		szCmd="\nroot\n";
 		pFind->second->tio->write(szCmd);
+		QThread::msleep(350);
+		szCmd="export PATH=$PATH:/nfs/common/rootfs/usr/bin\n";
+		pFind->second->tio->write(szCmd);
+		QThread::msleep(350);
+		szCmd="export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs/common/rootfs/usr/lib\n";
+		pFind->second->tio->write(szCmd);
+		QThread::msleep(350);
+		pFind->second->tio->read(szCmd);
+		DMSG("init telnet res: %s", QSZ(szCmd));
+
 		pFind->second->tio->setPrompt("#");
 
+#if 0
+		if (szCmd.isEmpty()) {
+			QVariantMap mapItem;
+
+			mapItem.insert(HOST_ITEM_IP, szIp);
+			mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_FAIL);
+			emit sigUpdateHost(QVariant::fromValue(mapItem));
+			pFind->second->thread->terminate();
+		}
+#endif
 	}
 }
 
@@ -251,6 +283,9 @@ void CFactoryAction::slotEndBootDev(int nPort) {
 		pFind->second->timer->setInterval(80000);
 		pFind->second->timer->setSingleShot(true);
 		pFind->second->timer->start();
+
+		pFind->second->rio->close();
+		pFind->second->wio->close();
 	}
 }
 
@@ -312,4 +347,29 @@ void CFactoryAction::slotRemoveHost(QVariant item) {
 
 	destoryDev(pItem->second);
 	m_mapDevice.erase(pItem);
+}
+
+void CFactoryAction::slotRemoveFailedHosts() {
+	std::map<QString, SRunDev*>::iterator pItem;
+	for (pItem = m_mapDevice.begin(); pItem != m_mapDevice.end(); pItem++) {
+		if (_TS_FAIL == pItem->second->nStatus) {
+			QVariantMap mapItem;
+
+			mapItem.insert(HOST_ITEM_IP, pItem->first);
+
+			emit sigRemoveHost(QVariant::fromValue(mapItem));
+
+			destoryDev(pItem->second);
+			m_mapDevice.erase(pItem);
+		}
+	}
+
+}
+
+void CFactoryAction::wait(int msec) {
+	QDateTime startTime=QDateTime::currentDateTime();
+	while (msec > (QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch())) {
+		QCoreApplication::processEvents();
+		QThread::msleep(100);
+	}
 }

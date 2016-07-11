@@ -21,6 +21,12 @@ private slots:
 	void slotTimeout();
 };
 
+enum ETEST_STATUS {
+	_TS_RUNNING,
+	_TS_PASS,
+	_TS_FAIL,
+};
+
 struct SRunDev {
 	CRootIO *rio;
 	CRootIO *wio;
@@ -31,6 +37,7 @@ struct SRunDev {
 	QString szMac;
 	QString szWo;
 	QString szIp;
+	int nStatus;
 };
 
 enum ERunStatus {
@@ -49,7 +56,7 @@ private:
 	int runSysCmd(SFactoryItem *item);
 
 	int runPrePostCmd(QString szCmd);
-	int runFinalAlarm();
+	int runFinalAlarm(bool bResult);
 
 	void init();
 
@@ -72,6 +79,7 @@ public:
 signals:
 	void sigAddShowItem(QVariant item);
 	void sigUpdateShowItem(QVariant item);
+	void sigUpdateHost(QVariant item);
 
 public slots:
 	void slotSetXMLFile(QString szFile);

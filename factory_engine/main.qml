@@ -19,15 +19,12 @@ ApplicationWindow {
 
 		onSigClickButton: {
 			if (button == "run") {
-				factoryToolBar.sigSignal("access")
-				actionFactory.sigTest(152)
+
 			}
 			else if (button == "stop") {
-				factoryToolBar.sigSignal("wait")
-				actionFactory.sigTestKernel("factory:192.168.0.152")
+				actionFactory.slotRemoveFailedHosts()
 			}
 			else if (button == "reset") {
-				factoryToolBar.sigSignal("none")
 
 			}
 		}

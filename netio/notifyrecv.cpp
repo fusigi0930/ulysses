@@ -73,6 +73,7 @@ int CNotifyRecv::parseBroadcast() {
 		pBootDev != m_mapBootDev.end(); pBootDev++) {
 		QString szData=QString().sprintf("ebxb:%s", QSZ(pBootDev->second));
 		if (-1 == dataList.indexOf(szData)) {
+			DMSG("start new boot dev: %s", QSZ(pBootDev->second));
 			emit sigStartNewBootDev(pBootDev->first);
 			m_mapBootDev.erase(pBootDev->first);
 			break;

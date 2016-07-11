@@ -105,7 +105,16 @@ int CDoAction::run() {
 
 	} while (m_xmlRun.nextItem());
 
-	runFinalAlarm();
+	QVariantMap itemMap;
+	itemMap.insert(ITEM_INFO_IP, m_ptrDev->szIp);
+	itemMap.insert(XML_FAC_ITEM_COLOR, (bFinalResult ?
+					XML_FAC_ITEM_COLOR_PASS : XML_FAC_ITEM_COLOR_FAIL));
+
+	m_ptrDev->nStatus=(bFinalResult ? _TS_PASS : _TS_FAIL);
+
+	emit sigUpdateHost(QVariant::fromValue(itemMap));
+
+	runFinalAlarm(bFinalResult);
 
 	return 0;
 }
@@ -114,7 +123,16 @@ void CDoAction::close() {
 
 }
 
-int CDoAction::runFinalAlarm() {
+int CDoAction::runFinalAlarm(bool bResult) {
+	if (NULL == m_ptrDev) return -1;
+
+	QString szCmd;
+	szCmd.sprintf("/nfs/common/rootfs/usr/bin/ebx-alarm %s\n", (bResult ? "pass" : "fail"));
+
+	if (m_ptrDev->tio) {
+		m_ptrDev->tio->write(szCmd);
+
+	}
 	return 0;
 }
 

@@ -8,6 +8,7 @@
 
 int main(int argc, char *argv[])
 {
+
     QApplication app(argc, argv);
 
 	qmlRegisterType<CFactoryAction>("FactoryAction", 1, 0, "FactoryAction");
@@ -18,5 +19,8 @@ int main(int argc, char *argv[])
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-    return app.exec();
+	int nRet=app.exec();
+
+
+	return nRet;
 }
