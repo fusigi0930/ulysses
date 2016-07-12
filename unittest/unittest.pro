@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core testlib network
+QT       += core testlib network sql
 QT       -= gui
 
 TARGET = unittest
@@ -16,7 +16,8 @@ TEMPLATE = app
 SOURCES += main.cpp \
     testxmlrun.cpp \
     testluacore.cpp \
-    testnetio.cpp
+    testnetio.cpp \
+    testresultcore.cpp
 
 INCLUDEPATH += ../common/inc \
 			   ../auto/inc
@@ -26,7 +27,8 @@ LIBS += \
 	-lnetio \
 	-lxmlrun \
     -lxmlcfg \
-    -lluacore
+    -lluacore \
+    -lresultcore
 
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug

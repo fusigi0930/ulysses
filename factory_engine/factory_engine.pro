@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-QT += qml quick widgets
+QT += qml quick widgets sql
 
 CONFIG += c++11
 
@@ -23,7 +23,8 @@ LIBS += \
 	-lxmlrun \
     -lcomio \
     -lxmlcfg \
-    -lluacore
+    -lluacore \
+    -lresultcore
 
 CONFIG(debug, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/debug

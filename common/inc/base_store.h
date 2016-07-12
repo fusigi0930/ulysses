@@ -22,7 +22,7 @@ public:
 	
 	virtual bool open(char *szFile) = 0;
 	
-	virtual unsigned long long add(const QVariant &item) = 0;
+    virtual long long add(const QVariant &item) = 0;
 	
 	virtual bool update(const QVariant &item) = 0;
 	

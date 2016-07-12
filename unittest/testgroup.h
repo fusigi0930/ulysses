@@ -36,9 +36,13 @@ private slots:
 
 	void testCLuaCore_runAsScript();
 
+#if 0
 	void testCNetcatIO_openServer();
 	void testCNotifyRecv_broadcastProcess();
 	void testCTelnetIO_openClient();
+#endif
+
+	void testCSQLiteStore_initDB();
 };
 
 #endif // __TESTGROUP_H__

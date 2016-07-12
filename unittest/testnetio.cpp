@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QSignalSpy>
 
+#if 0
 void CTestGroup::testCNetcatIO_openServer() {
 	QString szRecv;
 
@@ -96,3 +97,4 @@ void CTestGroup::testCTelnetIO_openClient() {
 	QCOMPARE(sz.mid(nPos,4), QString("Jobs"));
 }
 
+#endif

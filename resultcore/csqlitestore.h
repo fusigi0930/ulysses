@@ -3,11 +3,28 @@
 
 #include "resultcore_global.h"
 #include "base_store.h"
+#include <QSqlDatabase>
+#include <QSqlQuery>
 
 class RESULTCORESHARED_EXPORT CSQLiteStore : public CBaseStore
 {
+private:
+	bool initDB();
+	long long addTarget(const QVariantMap &item);
+	long long addBoard(const QVariantMap &item);
+	long long addItem(const QVariantMap &item);
+
+	bool updateTarget(const QVariantMap &item);
+	bool updateBoard(const QVariantMap &item);
+	bool updateItem(const QVariantMap &item);
+
+	void removeTarget(const QVariantMap &item);
+	void removeBoard(const QVariantMap &item);
+	void removeItem(const QVariantMap &item);
+
 protected:
 	QString m_szFile;
+	QSqlDatabase m_db;
 
 public:
 	CSQLiteStore();
@@ -15,7 +32,7 @@ public:
 
 	virtual bool open(char *szFile);
 
-	virtual unsigned long long add(const QVariant &item);
+	virtual long long add(const QVariant &item);
 
 	virtual bool update(const QVariant &item);
 
