@@ -6,6 +6,7 @@
 #include <QTimer>
 #include "xmlcfg.h"
 #include "xmlrun.h"
+#include "csqlitestore.h"
 
 class CTimer : public QTimer {
 	Q_OBJECT
@@ -66,6 +67,7 @@ protected:
 	CXmlConfig m_xmlConfig;
 
 	QString m_szXmlFile;
+	CSQLiteStore m_db;
 	int m_nStatus;
 public:
 	CDoAction(SRunDev *dev);

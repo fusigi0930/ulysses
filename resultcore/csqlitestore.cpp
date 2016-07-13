@@ -129,6 +129,17 @@ bool CSQLiteStore::query(std::list<QVariant> &result, char *fmt, ...) {
 	return bRet;
 }
 
+bool CSQLiteStore::query(QSqlQuery &q, char *fmt, ...) {
+	q=m_db.exec();
+
+	va_list vlist;
+	va_start (vlist, fmt);
+	char szBuf[1024]={0};
+	vsprintf(szBuf, fmt, vlist);
+	va_end(vlist);
+	return q.exec(szBuf);
+}
+
 void CSQLiteStore::close() {
 	m_db.close();
 }

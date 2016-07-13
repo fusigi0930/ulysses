@@ -41,6 +41,8 @@ public:
 
 	virtual bool query(std::list<QVariant> &result, char *fmt, ...);
 
+	virtual bool query(QSqlQuery &q, char *fmt, ...);
+
 	virtual void close();
 };
 
