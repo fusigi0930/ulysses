@@ -2,11 +2,12 @@
 #include "debug.h"
 #include <QFile>
 #include <QSqlError>
+#include <QSqlRecord>
 
 CSQLiteStore::CSQLiteStore() : CBaseStore(),
 	m_szFile()
 {
-
+	m_db = QSqlDatabase::addDatabase("QSQLITE");
 }
 
 CSQLiteStore::~CSQLiteStore() {
@@ -20,7 +21,7 @@ bool CSQLiteStore::open(char *szFile) {
 	bool bResult=false;
 
 	m_szFile=szFile;
-	m_db = QSqlDatabase::addDatabase("QSQLITE");
+
 	m_db.setDatabaseName(m_szFile);
 
 	if (!QFile::exists(m_szFile)) {
@@ -101,7 +102,31 @@ void CSQLiteStore::remove(const QVariant &item) {
 }
 
 bool CSQLiteStore::query(std::list<QVariant> &result, char *fmt, ...) {
-	return true;
+	result.clear();
+	QSqlQuery query=m_db.exec();
+
+	va_list vlist;
+	va_start (vlist, fmt);
+	char szBuf[1024]={0};
+	vsprintf(szBuf, fmt, vlist);
+	va_end(vlist);
+	bool bRet=query.exec(szBuf);
+
+	if (!bRet) {
+		DMSG("exec failed!");
+		return false;
+	}
+
+	QSqlRecord rinfo=query.record();
+	while (query.next()) {
+		QVariantMap item;
+		for (int i=0; i < rinfo.count(); i++) {
+			item.insert(rinfo.fieldName(i), query.value(i));
+		}
+		result.push_back(QVariant::fromValue(item));
+	}
+
+	return bRet;
 }
 
 void CSQLiteStore::close() {
@@ -127,7 +152,7 @@ bool CSQLiteStore::initDB() {
 	// create index in target
 	m_db.exec(
 		"create index idx_target_mac "
-		"on target (mac)"
+		"on target (mac);"
 		);
 
 	if (QSqlError::NoError != m_db.lastError().type()) {
@@ -140,7 +165,7 @@ bool CSQLiteStore::initDB() {
 		"(id integer primary key autoincrement, "
 		"tid integer not null, "
 		"result integer, "
-		"idate integer)"
+		"idate integer);"
 		);
 
 	if (QSqlError::NoError != m_db.lastError().type()) {
@@ -150,7 +175,7 @@ bool CSQLiteStore::initDB() {
 	// create index in board_info
 	m_db.exec(
 		"create index idx_binfo_tid "
-		"on board_info (tid)"
+		"on board_info (tid);"
 		);
 
 	if (QSqlError::NoError != m_db.lastError().type()) {
@@ -165,7 +190,7 @@ bool CSQLiteStore::initDB() {
 		"bid integer not null, "
 		"name text not null, "
 		"result integer, "
-		"tdate integer)"
+		"tdate integer);"
 		);
 
 	if (QSqlError::NoError != m_db.lastError().type()) {
@@ -175,7 +200,7 @@ bool CSQLiteStore::initDB() {
 	// create index in item_info
 	m_db.exec(
 		"create index idx_iinfo_tid "
-		"on item_info (tid)"
+		"on item_info (tid);"
 		);
 
 	if (QSqlError::NoError != m_db.lastError().type()) {
@@ -184,7 +209,7 @@ bool CSQLiteStore::initDB() {
 
 	m_db.exec(
 		"create index idx_iinfo_bid "
-		"on item_info (bid)"
+		"on item_info (bid);"
 		);
 
 	if (QSqlError::NoError != m_db.lastError().type()) {
@@ -200,9 +225,26 @@ long long CSQLiteStore::addTarget(const QVariantMap &item) {
 	// "wonum": work number
 	// "unum": unit output number
 	// "board_name": target board full name
-	// "idate": start date
+	// "sdate": start date
 	// "id": id
 	long long nRet=0;
+	QSqlQuery query=m_db.exec();
+
+	query.prepare("insert into target (mac,wonum,board_name,sdate) "
+				  "values (?,?,?,?);"
+				  );
+
+	query.bindValue(0, item["mac"]);
+	query.bindValue(1, item["wonum"]);
+	query.bindValue(2, item["board_name"]);
+	query.bindValue(3, item["sdate"]);
+
+	query.exec();
+	if (QSqlError::NoError != query.lastError().type()) {
+		return nRet;
+	}
+
+	nRet=query.lastInsertId().toLongLong();
 
 	return nRet;
 }
@@ -213,6 +255,21 @@ long long CSQLiteStore::addBoard(const QVariantMap &item) {
 	// "id": id
 	// "result": final test result
 	long long nRet=0;
+
+	QSqlQuery query=m_db.exec();
+
+	query.prepare("insert into board_info (tid) "
+				  "values (?);"
+				  );
+
+	query.bindValue(0, item["tid"]);
+
+	query.exec();
+	if (QSqlError::NoError != query.lastError().type()) {
+		return nRet;
+	}
+
+	nRet=query.lastInsertId().toLongLong();
 
 	return nRet;
 }
@@ -227,6 +284,24 @@ long long CSQLiteStore::addItem(const QVariantMap &item) {
 	// "tdate": test date
 	long long nRet=0;
 
+	QSqlQuery query=m_db.exec();
+
+	query.prepare("insert into item_info (tid,bid,name,tdate) "
+				  "values (?,?,?,?);"
+				  );
+
+	query.bindValue(0, item["tid"]);
+	query.bindValue(1, item["bid"]);
+	query.bindValue(2, item["name"]);
+	query.bindValue(3, item["tdate"]);
+
+	query.exec();
+	if (QSqlError::NoError != query.lastError().type()) {
+		return nRet;
+	}
+
+	nRet=query.lastInsertId().toLongLong();
+
 	return nRet;
 }
 
@@ -240,6 +315,51 @@ bool CSQLiteStore::updateTarget(const QVariantMap &item) {
 	// "id": id
 	bool bRet=false;
 
+	QSqlQuery query=m_db.exec();
+
+	QString szCond[] = {
+		"mac",
+		"id",
+		""
+	};
+
+	QString szField[] = {
+		"unum",
+		"board_name",
+		"wonum",
+		""
+	};
+
+	query.exec("begin;");
+	int nCondIndex=0;
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+		int nIndex=0;
+		while (!szField[nIndex].isEmpty()) {
+			if (item.find(szField[nIndex]) == item.end()) {
+				nIndex++;
+				continue;
+			}
+
+			QString szCmd;
+			szCmd.sprintf("update target set %s=? "
+						  "where %s=?", QSZ(szField[nIndex]), QSZ(szCond[nCondIndex]));
+
+			query.prepare(szCmd);
+			query.bindValue(0, item[szField[nIndex]]);
+			query.bindValue(1, item[szCond[nCondIndex]]);
+			query.exec();
+			nIndex++;
+		}
+		nCondIndex++;
+	}
+
+	query.exec("commit;");
+	bRet=true;
+
 	return bRet;
 }
 
@@ -250,6 +370,48 @@ bool CSQLiteStore::updateBoard(const QVariantMap &item) {
 	// "result": final test result
 	//
 	bool bRet=false;
+	QSqlQuery query=m_db.exec();
+
+	QString szCond[] = {
+		"id",
+		""
+	};
+
+	QString szField[] = {
+		"tid",
+		"result",
+		""
+	};
+
+	query.exec("begin;");
+	int nCondIndex=0;
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+		int nIndex=0;
+		while (!szField[nIndex].isEmpty()) {
+			if (item.find(szField[nIndex]) == item.end()) {
+				nIndex++;
+				continue;
+			}
+
+			QString szCmd;
+			szCmd.sprintf("update board_info set %s=? "
+						  "where %s=?", QSZ(szField[nIndex]), QSZ(szCond[nCondIndex]));
+
+			query.prepare(szCmd);
+			query.bindValue(0, item[szField[nIndex]]);
+			query.bindValue(1, item[szCond[nCondIndex]]);
+			query.exec();
+			nIndex++;
+		}
+		nCondIndex++;
+	}
+
+	query.exec("commit;");
+	bRet=true;
 
 	return bRet;
 }
@@ -263,6 +425,50 @@ bool CSQLiteStore::updateItem(const QVariantMap &item) {
 	// "result": test result
 	// "tdate": test date
 	bool bRet=false;
+	QSqlQuery query=m_db.exec();
+
+	QString szCond[] = {
+		"id",
+		""
+	};
+
+	QString szField[] = {
+		"tid",
+		"bid",
+		"name",
+		"result",
+		"tdate",
+		""
+	};
+
+	query.exec("begin;");
+	int nCondIndex=0;
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+		int nIndex=0;
+		while (!szField[nIndex].isEmpty()) {
+			if (item.find(szField[nIndex]) == item.end()) {
+				nIndex++;
+				continue;
+			}
+
+			QString szCmd;
+			szCmd.sprintf("update item_info set %s=? "
+						  "where %s=?", QSZ(szField[nIndex]), QSZ(szCond[nCondIndex]));
+
+			query.prepare(szCmd);
+			query.bindValue(0, item[szField[nIndex]]);
+			query.bindValue(1, item[szCond[nCondIndex]]);
+			query.exec();
+			nIndex++;
+		}
+		nCondIndex++;
+	}
+
+	query.exec("commit;");
 
 	return bRet;
 }
@@ -275,6 +481,51 @@ void CSQLiteStore::removeTarget(const QVariantMap &item) {
 	// "board_name": target board full name
 	// "idate": start date
 	// "id": id
+
+	QSqlQuery query=m_db.exec();
+	query.exec("begin;");
+	QString szCond[] = {
+		"wonum",
+		"mac",
+		"id"
+	};
+
+	int nCondIndex=0;
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+
+		std::list<QVariant> lst;
+		if (!this->query(lst, "select id from target where %s=%s;",
+				   QSZ(szCond[nCondIndex]), QSZ(item[szCond[nCondIndex]].toString()))) {
+			nCondIndex++;
+			continue;
+		}
+
+		if (0 >= lst.size()) {
+			nCondIndex++;
+			continue;
+		}
+
+		long long id=lst.begin()->toMap()["id"].toLongLong();
+
+		QString szCmd;
+		szCmd.sprintf("delete from item_info where tid=%lld;", id);
+		query.exec(szCmd);
+
+		szCmd.sprintf("delete from board_info where tid=%lld;", id);
+		query.exec(szCmd);
+
+		szCmd.sprintf("delete from target where id=%lld;", id);
+		query.exec(szCmd);
+
+		nCondIndex++;
+		break;
+	}
+	query.exec("commit;");
+
 }
 
 void CSQLiteStore::removeBoard(const QVariantMap &item) {
@@ -282,6 +533,46 @@ void CSQLiteStore::removeBoard(const QVariantMap &item) {
 	// "tid": target id
 	// "id": id
 	// "result": final test result
+
+	QSqlQuery query=m_db.exec();
+	query.exec("begin;");
+	QString szCond[] = {
+		"id"
+	};
+
+	int nCondIndex=0;
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+
+		std::list<QVariant> lst;
+		if (!this->query(lst, "select id from board_info where %s=%s;",
+						 QSZ(szCond[nCondIndex]), QSZ(item[szCond[nCondIndex]].toString()))) {
+			nCondIndex++;
+			continue;
+		}
+
+		if (0 >= lst.size()) {
+			nCondIndex++;
+			continue;
+		}
+
+		long long id=lst.begin()->toMap()["id"].toLongLong();
+
+		QString szCmd;
+		szCmd.sprintf("delete from item_info where bid=%lld;", id);
+		query.exec(szCmd);
+
+		szCmd.sprintf("delete from board_info where id=%lld;", id);
+		query.exec(szCmd);
+
+		nCondIndex++;
+		break;
+	}
+	query.exec("commit;");
+
 }
 
 void CSQLiteStore::removeItem(const QVariantMap &item) {
@@ -292,4 +583,43 @@ void CSQLiteStore::removeItem(const QVariantMap &item) {
 	// "name": item name
 	// "result": test result
 	// "tdate": test date
+
+	QSqlQuery query=m_db.exec();
+	query.exec("begin;");
+	QString szCond[] = {
+		"name",
+		"id"
+	};
+
+	int nCondIndex=0;
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+
+		std::list<QVariant> lst;
+		if (!this->query(lst, "select id from item_info where %s=%s;",
+						 QSZ(szCond[nCondIndex]), QSZ(item[szCond[nCondIndex]].toString()))) {
+			nCondIndex++;
+			continue;
+		}
+
+		if (0 >= lst.size()) {
+			nCondIndex++;
+			continue;
+		}
+
+		long long id=lst.begin()->toMap()["id"].toLongLong();
+
+		QString szCmd;
+		szCmd.sprintf("delete from item_info where id=%lld;", id);
+		query.exec(szCmd);
+
+		nCondIndex++;
+		break;
+	}
+	query.exec("commit;");
+
+
 }

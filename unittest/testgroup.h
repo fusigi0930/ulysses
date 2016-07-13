@@ -43,6 +43,15 @@ private slots:
 #endif
 
 	void testCSQLiteStore_initDB();
+	void testCSQLiteStore_addTarget();
+	void testCSQLiteStore_addBoard();
+	void testCSQLiteStore_addItem();
+	void testCSQLiteStore_updateTarget();
+	void testCSQLiteStore_updateBoard();
+	void testCSQLiteStore_updateItem();
+	void testCSQLiteStore_removeTarget();
+	void testCSQLiteStore_removeBoard();
+	void testCSQLiteStore_removeItem();
 };
 
 #endif // __TESTGROUP_H__

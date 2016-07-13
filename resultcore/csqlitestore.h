@@ -9,7 +9,6 @@
 class RESULTCORESHARED_EXPORT CSQLiteStore : public CBaseStore
 {
 private:
-	bool initDB();
 	long long addTarget(const QVariantMap &item);
 	long long addBoard(const QVariantMap &item);
 	long long addItem(const QVariantMap &item);
@@ -25,6 +24,8 @@ private:
 protected:
 	QString m_szFile;
 	QSqlDatabase m_db;
+
+	virtual bool initDB();
 
 public:
 	CSQLiteStore();

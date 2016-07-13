@@ -370,6 +370,6 @@ void CFactoryAction::wait(int msec) {
 	QDateTime startTime=QDateTime::currentDateTime();
 	while (msec > (QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch())) {
 		QCoreApplication::processEvents();
-		QThread::msleep(100);
+		QThread::msleep(30);
 	}
 }
