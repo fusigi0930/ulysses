@@ -11,6 +11,7 @@
 
 #include <QThread>
 #include <map>
+#include <QMutex>
 
 #define _WAIT_DONE		0
 #define _WAIT_TIMEOUT	1
@@ -79,6 +80,7 @@ protected:
 	size_t readSocket(char *data, size_t nLimit);
 
 	char m_readBuf[1024];
+	QMutex m_mutex;
 
 public:
 	sockaddr_in m_addr;

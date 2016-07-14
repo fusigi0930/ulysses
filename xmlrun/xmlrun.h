@@ -44,7 +44,7 @@ struct SFactoryItem {
 
 struct SFactoryConfig {
 	QString szSerial;
-
+	QString szBoardName;
 };
 
 class XMLRUNSHARED_EXPORT CXmlFactoryRun : public CBaseItem<QXmlStreamReader,

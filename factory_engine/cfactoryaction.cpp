@@ -5,6 +5,12 @@
 #include <QVariantMap>
 #include <QDateTime>
 
+#ifdef Q_OS_WIN
+#include <shlobj.h>
+#endif
+
+#include <QDir>
+
 #define IP_PREFIX "192.168.48.%d"
 
 //
@@ -40,10 +46,26 @@ CFactoryAction::CFactoryAction() : QObject() ,CBaseAction(),
 	connect(&m_broadcastRecv, SIGNAL(sigHaltSysDev(QString)), this, SLOT(slotHeltSysDev(QString)));
 
 	m_broadcastRecv.open();
+
+	QString szFolder;
+	QString szDBFile;
+#ifdef Q_OS_WIN
+	char szAppFolder[MAX_PATH]={0};
+	SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, szAppFolder);
+	szFolder.sprintf("%s/embux", szAppFolder);
+#else
+	szFolder.sprintf("~/.embux");
+#endif
+	szDBFile.sprintf("%s/product.db", QSZ(szFolder));
+	if (!QDir().exists(szFolder)) {
+		QDir().mkpath(szFolder);
+	}
+
+	m_db.open(QSZ(szDBFile));
 }
 
 CFactoryAction::~CFactoryAction() {
-
+	m_db.close();
 }
 
 int CFactoryAction::init() {
@@ -104,6 +126,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	QString szWo;
 	szIp.sprintf(IP_PREFIX, nPort);
 
+	DMSG("start new boot dev: %s", QSZ(szIp));
 	std::map<QString, SRunDev*>::iterator pFind=m_mapDevice.find(szIp);
 	if (pFind != m_mapDevice.end()) {
 		DMSG("duplicate ip address!");
@@ -115,6 +138,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	newDev->wio=new CNetcatIO();
 	newDev->tio=new CTelnetIO();
 	newDev->action=new CDoAction(newDev, m_szXmlName);
+	dynamic_cast<CDoAction*>(newDev->action)->setDB(&m_db);
 	newDev->thread=new CNetActionThread(newDev->action);
 	newDev->timer=new CTimer();
 	newDev->szIp=szIp;
@@ -127,10 +151,12 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateShowItem(QVariant)), this, SIGNAL(sigUpdateShowItem(QVariant)));
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateHost(QVariant)), this, SIGNAL(sigUpdateHost(QVariant)));
 
+	DMSG("add to device map: %s", QSZ(szIp));
 	m_mapDevice[szIp]=newDev;
 
+	DMSG("start communicate: %s", QSZ(szIp));
 	QString szBuf;
-	wait(600);
+	wait(900);
 
 	szBuf.sprintf("net:client:%s:%d", QSZ(szIp), 7000+nPort);
 	newDev->wio->open(QSZ(szBuf));
@@ -139,7 +165,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 
 	newDev->rio->setPrompt("EMBUX-TAURUS");
 
-	wait(500);
+	wait(600);
 
 	// get mac address
 	szBuf="printenv ethaddr\n";
@@ -178,7 +204,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 		return;
 	}
 
-	newDev->thread->start();
+	processTarget(newDev);
 }
 
 void CFactoryAction::slotStartNewSysDev(QString ip) {
@@ -213,7 +239,7 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 		QString szCmd="\nroot\n";
 
 		pFind->second->tio->open(QSZ(pFind->first));
-		wait(3000);
+		wait(5000);
 
 		szCmd="\nroot\n";
 		pFind->second->tio->write(szCmd);
@@ -368,8 +394,54 @@ void CFactoryAction::slotRemoveFailedHosts() {
 
 void CFactoryAction::wait(int msec) {
 	QDateTime startTime=QDateTime::currentDateTime();
+	int nTimes=msec/30;
 	while (msec > (QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch())) {
 		QCoreApplication::processEvents();
 		QThread::msleep(30);
+		nTimes--;
+		if (0 > nTimes)
+			break;
 	}
+}
+
+long long CFactoryAction::processTarget(SRunDev *dev) {
+	if (NULL == dev) {
+		DMSG("empty dev info!");
+		return -1;
+	}
+	// check duplicate mac address
+	QString szSQL;
+	std::list<QVariant> lst;
+
+	m_db.query(lst, "select * from target, board_info where "
+					"target.mac='%s' and target.id=board_info.tid "
+					"order by board_info.id desc limit 1;",
+					QSZ(dev->szMac));
+
+	QVariantMap dbItem;
+
+	if (0 == lst.size()) {
+		dbItem.insert("type", "target");
+		dbItem.insert("mac", dev->szMac);
+		dbItem.insert("wonum", dev->szWo);
+		dbItem.insert("unum", "-");
+		dbItem.insert("board_name", "-");
+		dev->info.nTime=QDateTime::currentMSecsSinceEpoch();
+		dbItem.insert("sdate", dev->info.nTime);
+		dev->info.nTargetID=m_db.add(QVariant::fromValue(dbItem));
+		dev->thread->start();
+		return dev->info.nTargetID;
+	}
+
+	int nResult=lst.begin()->toMap()["result"].toInt();
+	switch (nResult) {
+		default:
+			dev->info.nTargetID=lst.begin()->toMap()["id"].toLongLong();
+			dev->thread->start();
+			break;
+		case _DB_RESULT_PASS:
+			dev->info.nTargetID=lst.begin()->toMap()["id"].toLongLong();
+			break;
+	}
+	return dev->info.nTargetID;
 }

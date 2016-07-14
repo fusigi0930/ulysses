@@ -46,7 +46,8 @@ CDoAction::CDoAction(SRunDev *dev) : QObject(), CBaseAction(),
 
 CDoAction::CDoAction(SRunDev *dev, QString item) : QObject(), CBaseAction(),
 	m_szXmlFile(item),
-	m_nStatus(_RUN_STATUS_BOOTLOADER)
+	m_nStatus(_RUN_STATUS_BOOTLOADER),
+	m_pDB(NULL)
 {
 	m_ptrDev=dev;
 
@@ -55,7 +56,8 @@ CDoAction::CDoAction(SRunDev *dev, QString item) : QObject(), CBaseAction(),
 
 CDoAction::CDoAction() : QObject(), CBaseAction(),
 	m_szXmlFile("items.xml"),
-	m_nStatus(_RUN_STATUS_BOOTLOADER)
+	m_nStatus(_RUN_STATUS_BOOTLOADER),
+	m_pDB(NULL)
 {
 	m_ptrDev=NULL;
 
@@ -71,7 +73,7 @@ CDoAction::~CDoAction() {
 }
 
 int CDoAction::run() {
-	if (NULL == m_ptrDev) {
+	if (NULL == m_ptrDev || NULL == m_pDB) {
 		DMSG("not have test device!");
 		return 1;
 	}
@@ -81,6 +83,20 @@ int CDoAction::run() {
 		&CDoAction::runSysCmd,
 		NULL
 	};
+
+	// add board info
+	QVariantMap dbItem;
+	dbItem.insert("type", "board");
+	dbItem.insert("tid", m_ptrDev->info.nTargetID);
+	dbItem.insert("result", _DB_RESULT_NA);
+	m_ptrDev->info.nBoardID=m_pDB->add(QVariant::fromValue(dbItem));
+
+	// update board name
+	dbItem.clear();
+	dbItem.insert("type", "target");
+	dbItem.insert("id", m_ptrDev->info.nTargetID);
+	dbItem.insert("board_name", m_xmlRun.m_Config.szBoardName);
+	m_pDB->update(QVariant::fromValue(dbItem));
 
 	bool bFinalResult=true;
 	do {
@@ -103,6 +119,26 @@ int CDoAction::run() {
 		emit sigUpdateShowItem(QVariant::fromValue(itemMap));
 		bFinalResult &= (0 == item.szResult.compare("pass") ? true : false);
 
+		dbItem.clear();
+		dbItem.insert("type", "item");
+		dbItem.insert("tid", m_ptrDev->info.nTargetID);
+		dbItem.insert("bid", m_ptrDev->info.nBoardID);
+		dbItem.insert("name", item.szName);
+		if (item.szResult.isEmpty()) {
+			dbItem.insert("result", _DB_RESULT_NA);
+		}
+		else if (0 == item.szResult.compare("pass")) {
+			dbItem.insert("result", _DB_RESULT_PASS);
+		}
+		else if (0 == item.szResult.compare("fail")) {
+			dbItem.insert("result", _DB_RESULT_FAIL);
+		}
+		else {
+			dbItem.insert("result", _DB_RESULT_NA);
+		}
+		dbItem.insert("tdate", QDateTime::currentMSecsSinceEpoch());
+		m_pDB->add(QVariant::fromValue(dbItem));
+
 	} while (m_xmlRun.nextItem());
 
 	QVariantMap itemMap;
@@ -113,6 +149,12 @@ int CDoAction::run() {
 	m_ptrDev->nStatus=(bFinalResult ? _TS_PASS : _TS_FAIL);
 
 	emit sigUpdateHost(QVariant::fromValue(itemMap));
+
+	dbItem.clear();
+	dbItem.insert("type", "board");
+	dbItem.insert("id", m_ptrDev->info.nBoardID);
+	dbItem.insert("result", bFinalResult ? _DB_RESULT_PASS : _DB_RESULT_FAIL);
+	m_pDB->update(QVariant::fromValue(dbItem));
 
 	runFinalAlarm(bFinalResult);
 
@@ -156,8 +198,8 @@ int CDoAction::runPrePostCmd(QString szCmd) {
 			break;
 	}
 
-
-	for (QStringList::iterator p=cmdList.begin(); p!=cmdList.end(); p++) {
+	QStringList::iterator p;
+	for (p=cmdList.begin(); p!=cmdList.end(); p++) {
 		// reboot
 		if (!p->compare(XML_COMMAND_REBOOT)) {
 			//
@@ -279,4 +321,8 @@ void CDoAction::slotShowItems() {
 		emit sigAddShowItem(QVariant::fromValue(itemMap));
 		testItem.nUiIndex=i;
 	}
+}
+
+void CDoAction::setDB(CBaseStore *ptr) {
+	m_pDB=ptr;
 }

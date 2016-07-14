@@ -28,6 +28,12 @@ enum ETEST_STATUS {
 	_TS_FAIL,
 };
 
+struct SDevDBInfo {
+	long long nTargetID;
+	long long nBoardID;
+	qint64 nTime;
+};
+
 struct SRunDev {
 	CRootIO *rio;
 	CRootIO *wio;
@@ -38,6 +44,7 @@ struct SRunDev {
 	QString szMac;
 	QString szWo;
 	QString szIp;
+	SDevDBInfo info;
 	int nStatus;
 };
 
@@ -67,7 +74,7 @@ protected:
 	CXmlConfig m_xmlConfig;
 
 	QString m_szXmlFile;
-	CSQLiteStore m_db;
+	CBaseStore *m_pDB;
 	int m_nStatus;
 public:
 	CDoAction(SRunDev *dev);
@@ -77,6 +84,8 @@ public:
 
 	virtual void close();
 	virtual int run();
+
+	void setDB(CBaseStore *ptr);
 
 signals:
 	void sigAddShowItem(QVariant item);

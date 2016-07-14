@@ -66,7 +66,9 @@ bool CTelnetIO::open(char *sz) {
 }
 
 size_t CTelnetIO::write(char *data, size_t nLeng) {
+	m_mutex.lock();
 	size_t nSize=static_cast<size_t>(::send(m_io, data, nLeng, 0));
+	m_mutex.unlock();
 	return nSize;
 }
 

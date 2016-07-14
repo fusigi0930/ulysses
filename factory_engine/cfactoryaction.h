@@ -6,6 +6,7 @@
 #include <map>
 #include <QTimer>
 #include <QVariant>
+#include <csqlitestore.h>
 
 class CFactoryAction : public QObject, public CBaseAction
 {
@@ -25,7 +26,10 @@ protected:
 
 	QString m_szXmlName;
 
+	CSQLiteStore m_db;
+
 	void wait(int msec);
+	long long processTarget(SRunDev *dev);
 public:
 	CFactoryAction();
 	virtual ~CFactoryAction();

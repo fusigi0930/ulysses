@@ -37,6 +37,7 @@ CNetcatIO::~CNetcatIO() {
 size_t CNetcatIO::write(char *data, size_t nLeng) {
 	if (-1 == m_io) return 0;
 
+	m_mutex.lock();
 	size_t nSize=static_cast<size_t>(::send(m_io, data, nLeng, 0));
 	QString szData=data;
 	if (szData.contains("boot") || szData.contains("run mmcboot") || szData.contains("run localboot") ||
@@ -44,6 +45,7 @@ size_t CNetcatIO::write(char *data, size_t nLeng) {
 		DMSG("emit sigStartKernel!!!!");
 		emit sigStartKernel(m_nPort-7000);
 	}
+	m_mutex.unlock();
 	return nSize;
 }
 
@@ -63,6 +65,7 @@ size_t CNetcatIO::read(char *data, size_t nLimit) {
 	size_t nRet=0;
 	// pause thread
 
+	m_mutex.lock();
 	if (nLimit > m_szRecvData.length()) {
 		memcpy(data, QSZ(m_szRecvData), m_szRecvData.length());
 		nRet=m_szRecvData.length();
@@ -74,6 +77,7 @@ size_t CNetcatIO::read(char *data, size_t nLimit) {
 		nRet=nLimit;
 	}
 
+	m_mutex.unlock();
 	// resume thread
 
 	return nRet;
@@ -82,12 +86,14 @@ size_t CNetcatIO::read(char *data, size_t nLimit) {
 size_t CNetcatIO::read(QString &data) {
 	// pause thread
 
+	m_mutex.lock();
 	size_t nRet=m_szRecvData.length();
 	data=m_szRecvData;
 	m_szRecvData.clear();
 
 	// resume thread
 
+	m_mutex.unlock();
 	return nRet;
 }
 
@@ -252,8 +258,10 @@ int CNetcatIO::run() {
 		if (-1 == readSocket(m_readBuf, sizeof(m_readBuf)-1))
 			break;
 
+		m_mutex.lock();
 		m_szRecvData.append(m_readBuf);
 		if (7500 == m_nPort) m_szRecvData.append("\n");
+		m_mutex.unlock();
 	}
 #ifdef Q_OS_WIN
 	m_hThread=NULL;

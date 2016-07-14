@@ -59,6 +59,7 @@ bool CSQLiteStore::open(char *szFile) {
 // "tdate": test date
 
 long long CSQLiteStore::add(const QVariant &item) {
+	m_mutex.lock();
 	QVariantMap mapItem=item.toMap();
 	long long nRet=0;
 	if (0 == mapItem["type"].toString().compare("target")) {
@@ -70,10 +71,12 @@ long long CSQLiteStore::add(const QVariant &item) {
 	else if (0 == mapItem["type"].toString().compare("item")) {
 		nRet=addItem(mapItem);
 	}
+	m_mutex.unlock();
 	return nRet;
 }
 
 bool CSQLiteStore::update(const QVariant &item) {
+	m_mutex.lock();
 	QVariantMap mapItem=item.toMap();
 	bool bRet=false;
 	if (0 == mapItem["type"].toString().compare("target")) {
@@ -85,10 +88,12 @@ bool CSQLiteStore::update(const QVariant &item) {
 	else if (0 == mapItem["type"].toString().compare("item")) {
 		bRet=updateItem(mapItem);
 	}
+	m_mutex.unlock();
 	return false;
 }
 
 void CSQLiteStore::remove(const QVariant &item) {
+	m_mutex.lock();
 	QVariantMap mapItem=item.toMap();
 	if (0 == mapItem["type"].toString().compare("target")) {
 		removeTarget(mapItem);
@@ -99,6 +104,7 @@ void CSQLiteStore::remove(const QVariant &item) {
 	else if (0 == mapItem["type"].toString().compare("item")) {
 		removeItem(mapItem);
 	}
+	m_mutex.unlock();
 }
 
 bool CSQLiteStore::query(std::list<QVariant> &result, char *fmt, ...) {
@@ -121,12 +127,24 @@ bool CSQLiteStore::query(std::list<QVariant> &result, char *fmt, ...) {
 	while (query.next()) {
 		QVariantMap item;
 		for (int i=0; i < rinfo.count(); i++) {
-			item.insert(rinfo.fieldName(i), query.value(i));
+			insertItemMap(item, rinfo, query, i);
 		}
 		result.push_back(QVariant::fromValue(item));
 	}
 
 	return bRet;
+}
+
+void CSQLiteStore::insertItemMap(QVariantMap &item, QSqlRecord &rinfo, QSqlQuery &query, int nIndex, int nCount) {
+	QString szField;
+	if (0 == nCount) szField=rinfo.fieldName(nIndex);
+	else szField.sprintf("%s.%d", QSZ(rinfo.fieldName(nIndex)), nCount);
+	if (item.find(szField) == item.end()) {
+		item.insert(szField, query.value(nIndex));
+	}
+	else {
+		insertItemMap(item, rinfo, query, nIndex, nCount+1);
+	}
 }
 
 bool CSQLiteStore::query(QSqlQuery &q, char *fmt, ...) {
@@ -142,6 +160,7 @@ bool CSQLiteStore::query(QSqlQuery &q, char *fmt, ...) {
 
 void CSQLiteStore::close() {
 	m_db.close();
+	QSqlDatabase::removeDatabase("QSQLITE");
 }
 
 bool CSQLiteStore::initDB() {
@@ -297,14 +316,25 @@ long long CSQLiteStore::addItem(const QVariantMap &item) {
 
 	QSqlQuery query=m_db.exec();
 
-	query.prepare("insert into item_info (tid,bid,name,tdate) "
-				  "values (?,?,?,?);"
-				  );
-
-	query.bindValue(0, item["tid"]);
-	query.bindValue(1, item["bid"]);
-	query.bindValue(2, item["name"]);
-	query.bindValue(3, item["tdate"]);
+	if (item.find("result") == item.end()) {
+		query.prepare("insert into item_info (tid,bid,name,tdate) "
+					  "values (?,?,?,?);"
+					  );
+		query.bindValue(0, item["tid"]);
+		query.bindValue(1, item["bid"]);
+		query.bindValue(2, item["name"]);
+		query.bindValue(3, item["tdate"]);
+	}
+	else {
+		query.prepare("insert into item_info (tid,bid,name,tdate,result) "
+					  "values (?,?,?,?,?);"
+					  );
+		query.bindValue(0, item["tid"]);
+		query.bindValue(1, item["bid"]);
+		query.bindValue(2, item["name"]);
+		query.bindValue(3, item["tdate"]);
+		query.bindValue(4, item["result"]);
+	}
 
 	query.exec();
 	if (QSqlError::NoError != query.lastError().type()) {

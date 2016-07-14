@@ -5,6 +5,14 @@
 #include "base_store.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
+#include <QMutex>
+
+enum EDBResult {
+	_DB_RESULT_NA,
+	_DB_RESULT_PASS,
+	_DB_RESULT_FAIL,
+	_DB_RESULT_UNKNOW
+};
 
 class RESULTCORESHARED_EXPORT CSQLiteStore : public CBaseStore
 {
@@ -24,8 +32,11 @@ private:
 protected:
 	QString m_szFile;
 	QSqlDatabase m_db;
+	QMutex m_mutex;
 
 	virtual bool initDB();
+
+	void insertItemMap(QVariantMap &item, QSqlRecord &rinfo, QSqlQuery &query, int nIndex, int nCount=0);
 
 public:
 	CSQLiteStore();

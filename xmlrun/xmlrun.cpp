@@ -214,6 +214,7 @@ bool CXmlRun::writer() {
 #define XML_SETTINGS			"settings"
 
 #define XML_SETT_SERIAL			"serial"
+#define XML_SETT_BOARDNAME		"board_name"
 #define XML_SETT_MAC_FILE		"mac_file"
 #define XML_SETT_ID_FILE		"id_file"
 
@@ -346,6 +347,7 @@ bool CXmlFactoryRun::getSettings() {
 				continue;
 			case QXmlStreamReader::StartElement:
 				XML_GET_VAULE_TEXT((*m_reader), XML_SETT_SERIAL, m_Config.szSerial);
+				XML_GET_VAULE_TEXT((*m_reader), XML_SETT_BOARDNAME, m_Config.szBoardName);
 				break;
 			case QXmlStreamReader::EndElement:
 				break;
@@ -399,6 +401,7 @@ bool CXmlFactoryRun::writeItems() {
 bool CXmlFactoryRun::writeSettings() {
 	XML_SET_ATTR_BEGIN((*m_writer), XML_SETTINGS);
 	XML_SET_VAULE((*m_writer), XML_SETT_SERIAL, m_Config.szSerial);
+	XML_SET_VAULE((*m_writer), XML_SETT_BOARDNAME, m_Config.szBoardName);
 	XML_SET_ATTR_END((*m_writer)); // XML_FAC_ITEM
 	return true;
 }
