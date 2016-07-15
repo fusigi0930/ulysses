@@ -27,6 +27,7 @@ TabView {
 	onSigAddHost: {
 		for (var i=0; i<tabView.count; i++) {
 			if (tabView.getTab(i).title === defaultMonitorTabName) {
+				console.log("add item: "+item.ip)
 				tabView.getTab(i).item.sigAddItem(item)
 				break;
 			}
@@ -44,6 +45,7 @@ TabView {
 	}
 	
 	onSigUpdateHost: {
+		console.log("tab update host!")
 		for (var i=0; i<tabView.count; i++) {
 			if (tabView.getTab(i).title === defaultMonitorTabName) {
 				//tabView.sigRemoveTab(item.ip)
@@ -165,7 +167,8 @@ TabView {
 					if (tabView.getTab(i).title === ip) {
 						return;
 					}
-				}				
+				}	
+				console.log("start client: "+ip)
 				tabView.sigStartClient(ip)
 			}
 			

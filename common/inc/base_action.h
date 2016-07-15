@@ -20,6 +20,10 @@ public:
 	virtual void close() = 0;
 	
 	virtual int run() = 0;
+
+    virtual void actionBlock() = 0;
+
+    virtual void actionUnblock() = 0;
 };
 
 #endif // __BASE_ACTION_H__

@@ -7,6 +7,7 @@
 #include "xmlcfg.h"
 #include "xmlrun.h"
 #include "csqlitestore.h"
+#include <QMutex>
 
 class CTimer : public QTimer {
 	Q_OBJECT
@@ -76,6 +77,8 @@ protected:
 	QString m_szXmlFile;
 	CBaseStore *m_pDB;
 	int m_nStatus;
+
+	QMutex m_mutex;
 public:
 	CDoAction(SRunDev *dev);
 	CDoAction(SRunDev *dev, QString item);
@@ -84,6 +87,9 @@ public:
 
 	virtual void close();
 	virtual int run();
+
+	virtual void actionBlock();
+	virtual void actionUnblock();
 
 	void setDB(CBaseStore *ptr);
 

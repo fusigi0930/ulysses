@@ -58,6 +58,12 @@ size_t CNetcatIO::readSocket(char *data, size_t nLimit) {
 	if (-1 == m_io) return 0;
 
 	size_t nSize=static_cast<size_t>(::recv(m_io, data, nLimit, 0));
+#ifdef Q_OS_WIN
+	if (nSize == SOCKET_ERROR) {
+		DMSG("socket error: %d", WSAGetLastError());
+		return 0;
+	}
+#endif
 	return nSize;
 }
 
@@ -232,6 +238,7 @@ void CNetcatIO::close() {
 	if (-1 != m_io) {
 #ifdef Q_OS_WIN
 		::closesocket(m_io);
+		DMSG("close socket %s", typeid(*this).name());
 #else
 		::close(m_io);
 #endif
@@ -244,6 +251,7 @@ void CNetcatIO::close() {
 		delete m_thread;
 		m_thread=NULL;
 	}
+
 	m_hThread=NULL;
 }
 
@@ -255,12 +263,19 @@ int CNetcatIO::run() {
 #endif
 	while (-1 != m_io) {
 		memset (m_readBuf, 0, sizeof(m_readBuf));
-		if (-1 == readSocket(m_readBuf, sizeof(m_readBuf)-1))
+		if (0 == readSocket(m_readBuf, sizeof(m_readBuf)-1)) {
+#ifdef Q_OS_WIN
+			DMSG("~!!!!!!!!!!! %s, %d", typeid(*this).name(), WSAGetLastError());
+#endif
 			break;
+		}
 
 		m_mutex.lock();
 		m_szRecvData.append(m_readBuf);
-		if (7500 == m_nPort) m_szRecvData.append("\n");
+		if (7500 == m_nPort) {
+			//DMSG("data: %s", m_readBuf);
+			m_szRecvData.append("\n");
+		}
 		m_mutex.unlock();
 	}
 #ifdef Q_OS_WIN
@@ -282,8 +297,9 @@ int CNetcatIO::setPrompt(QString szPrompt) {
 int CNetcatIO::waitPrompt(int nTimeout) {
 	QRegExp prompt(m_szPrompt);
 	QDateTime startTime=QDateTime::currentDateTime();
+	QString szData;
 	while (nTimeout > (QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch())) {
-		QString szData=m_szRecvData;
+		szData=m_szRecvData;
 		szData.replace('\r', '\n');
 
 		QStringList recvList=m_szRecvData.split("\n",  QString::SkipEmptyParts);

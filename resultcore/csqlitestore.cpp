@@ -109,13 +109,22 @@ void CSQLiteStore::remove(const QVariant &item) {
 
 bool CSQLiteStore::query(std::list<QVariant> &result, char *fmt, ...) {
 	result.clear();
+	DMSG("get a query object");
 	QSqlQuery query=m_db.exec();
 
+	char szBuf[1024]={0};
+
+	DMSG("process query command: %s", fmt);
 	va_list vlist;
 	va_start (vlist, fmt);
-	char szBuf[1024]={0};
+#ifdef Q_OS_WIN
+	vsprintf_s(szBuf, sizeof(szBuf)-1, fmt, vlist);
+#else
 	vsprintf(szBuf, fmt, vlist);
+#endif
 	va_end(vlist);
+
+	DMSG("query command: %s", szBuf);
 	bool bRet=query.exec(szBuf);
 
 	if (!bRet) {
@@ -123,8 +132,9 @@ bool CSQLiteStore::query(std::list<QVariant> &result, char *fmt, ...) {
 		return false;
 	}
 
+	DMSG("move records: %d to list contianer", query.size());
 	QSqlRecord rinfo=query.record();
-	while (query.next()) {
+	while (0 < query.size() && query.next()) {
 		QVariantMap item;
 		for (int i=0; i < rinfo.count(); i++) {
 			insertItemMap(item, rinfo, query, i);
@@ -139,12 +149,14 @@ void CSQLiteStore::insertItemMap(QVariantMap &item, QSqlRecord &rinfo, QSqlQuery
 	QString szField;
 	if (0 == nCount) szField=rinfo.fieldName(nIndex);
 	else szField.sprintf("%s.%d", QSZ(rinfo.fieldName(nIndex)), nCount);
+	DMSG("+++ recursive count: %d", nCount);
 	if (item.find(szField) == item.end()) {
 		item.insert(szField, query.value(nIndex));
 	}
 	else {
 		insertItemMap(item, rinfo, query, nIndex, nCount+1);
 	}
+	DMSG("--- recursive count: %d", nCount);
 }
 
 bool CSQLiteStore::query(QSqlQuery &q, char *fmt, ...) {

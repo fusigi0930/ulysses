@@ -38,6 +38,9 @@ bool CNotifyRecv::open() {
 }
 
 void CNotifyRecv::close() {
+	DMSG("close broadcast reciver");
+	CNetcatIO::close();
+
 	if (NULL != m_parserThread) {
 		if (m_parserThread->isRunning())
 			m_parserThread->terminate();
@@ -45,8 +48,6 @@ void CNotifyRecv::close() {
 		m_parserThread=NULL;
 	}
 	m_hParserThread=NULL;
-
-	CNetcatIO::close();
 }
 
 int CNotifyRecv::runParser() {
@@ -64,10 +65,12 @@ int CNotifyRecv::runParser() {
 }
 
 int CNotifyRecv::parseBroadcast() {
-	//m_szRecvData.replace('\r', '\n');
+	m_mutex.lock();
+	m_szRecvData.replace('\r', '\n');
 	QStringList dataList=m_szRecvData.split('\n', QString::SkipEmptyParts);
 	QStringList::iterator data;
 
+	//DMSG("parse broadcast string: %d", dataList.size());
 	// for bootloader
 	for (std::map<int, QString>::iterator pBootDev=m_mapBootDev.begin();
 		pBootDev != m_mapBootDev.end(); pBootDev++) {
@@ -113,14 +116,14 @@ int CNotifyRecv::parseBroadcast() {
 					m_mapSysDev.find(ipList.at(2));
 
 			if (findSys == m_mapSysDev.end()) {
-				DMSG("add %s", QSZ(ipList.at(2)));
+				DMSG("add sys %s", QSZ(ipList.at(2)));
 				m_mapSysDev[ipList.at(2)]=QString("%1:%2").arg(ipList.at(1)).arg(ipList.at(2));
 				emit sigStartNewSysDev(QString("%1:%2").arg(ipList.at(1)).arg(ipList.at(2)));
 			}
 		}
 	}
 	m_szRecvData.clear();
-
+	m_mutex.unlock();
 	return 0;
 }
 

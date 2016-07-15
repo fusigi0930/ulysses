@@ -100,6 +100,7 @@ int CDoAction::run() {
 
 	bool bFinalResult=true;
 	do {
+		m_mutex.lock();
 		SFactoryItem &item=m_xmlRun.getCurrentItem();
 
 		DMSG("current status: %d", m_nStatus);
@@ -107,6 +108,7 @@ int CDoAction::run() {
 			int nRet = (this->*runArray[m_nStatus])(&item);
 			if (0 != nRet) {
 				DMSG("run failed!");
+				m_mutex.unlock();
 				return nRet;
 			}
 		}
@@ -138,7 +140,7 @@ int CDoAction::run() {
 		}
 		dbItem.insert("tdate", QDateTime::currentMSecsSinceEpoch());
 		m_pDB->add(QVariant::fromValue(dbItem));
-
+		m_mutex.unlock();
 	} while (m_xmlRun.nextItem());
 
 	QVariantMap itemMap;
@@ -169,7 +171,7 @@ int CDoAction::runFinalAlarm(bool bResult) {
 	if (NULL == m_ptrDev) return -1;
 
 	QString szCmd;
-	szCmd.sprintf("/nfs/common/rootfs/usr/bin/ebx-alarm %s\n", (bResult ? "pass" : "fail"));
+	szCmd.sprintf("/nfs/common/rootfs/usr/bin/ebx-alarm %s &\n", (bResult ? "pass" : "fail"));
 
 	if (m_ptrDev->tio) {
 		m_ptrDev->tio->write(szCmd);
@@ -294,6 +296,7 @@ void CDoAction::slotSetXMLFile(QString szFile) {
 
 void CDoAction::slotStartKernel(int status) {
 	DMSG("start kernel-----");
+	m_mutex.lock();
 	m_nStatus=_RUN_STATUS_RAMDISK;
 }
 
@@ -325,4 +328,12 @@ void CDoAction::slotShowItems() {
 
 void CDoAction::setDB(CBaseStore *ptr) {
 	m_pDB=ptr;
+}
+
+void CDoAction::actionBlock() {
+	m_mutex.lock();
+}
+
+void CDoAction::actionUnblock() {
+	m_mutex.unlock();
 }

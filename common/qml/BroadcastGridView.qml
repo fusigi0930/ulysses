@@ -45,7 +45,8 @@ GridView {
 		else if (item.style == "yocto") {
 			item.image = "qrc:/image/res/png/icon-yocto.png"
 		}	
-		listItems.append(item);
+		console.log("add item: " + item.ip + ", " + item.style)
+		listItems.append(item)
 	}
 	
 	onSigRemoveItem: {
@@ -58,6 +59,7 @@ GridView {
 	}
 	
 	onSigUpdateItem: {
+		console.log("broadcast update item")
 		for (var i=0; i<listItems.count; i++) {
 			if (listItems.get(i).ip === item.ip) {
 				if (item.style == "android") {

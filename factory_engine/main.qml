@@ -43,11 +43,13 @@ ApplicationWindow {
 		id: actionFactory
 
 		onSigStartNewBootDev: {
+			console.log("start new boot dev: " + szIp)
 			baseTabHost.sigAddHost({"mac":szMac,"ip":szIp,"style":"boot","itemcolor":"#C0C0E0"})
 			baseTabHost.sigStartClient(szIp)
 		}
 
 		onSigUpdateHost: {
+			console.log("main update host!")
 			baseTabHost.sigUpdateHost(item)
 		}
 

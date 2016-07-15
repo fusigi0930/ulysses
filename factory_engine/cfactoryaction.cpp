@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <QVariantMap>
 #include <QDateTime>
+#include <vector>
 
 #ifdef Q_OS_WIN
 #include <shlobj.h>
@@ -79,11 +80,6 @@ int CFactoryAction::run() {
 
 void CFactoryAction::destoryDev(SRunDev *dev) {
 	if (dev) {
-		if (dev->thread) {
-			if (dev->thread->isRunning())
-				dev->thread->terminate();
-			delete dev->thread;
-		}
 		if (dev->rio) {
 			dev->rio->close();
 			delete dev->rio;
@@ -95,6 +91,11 @@ void CFactoryAction::destoryDev(SRunDev *dev) {
 		if (dev->tio) {
 			dev->tio->close();
 			delete dev->tio;
+		}
+		if (dev->thread) {
+			if (dev->thread->isRunning())
+				dev->thread->terminate();
+			delete dev->thread;
 		}
 		if (dev->timer) {
 			dev->timer->stop();
@@ -156,15 +157,19 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 
 	DMSG("start communicate: %s", QSZ(szIp));
 	QString szBuf;
-	wait(900);
+	wait(1200);
+
+	DMSG("start connect to udp port: %d", 7000+nPort);
 
 	szBuf.sprintf("net:client:%s:%d", QSZ(szIp), 7000+nPort);
 	newDev->wio->open(QSZ(szBuf));
 	szBuf.sprintf("net:server:%d", 7000+nPort);
 	newDev->rio->open(QSZ(szBuf));
+	wait(1500);
 
 	newDev->rio->setPrompt("EMBUX-TAURUS");
 
+	DMSG("ready to get mac address");
 	wait(600);
 
 	// get mac address
@@ -192,6 +197,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	newDev->szWo=szWo;
 	newDev->nStatus=_TS_RUNNING;
 
+	DMSG("add ui item!");
 	emit sigStartNewBootDev(szIp, szMac);
 
 	if (szMac.isEmpty()) {
@@ -199,6 +205,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 
 		mapItem.insert(HOST_ITEM_IP, szIp);
 		mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_FAIL);
+		mapItem.insert(HOST_ITEM_STYLE, "boot");
 		newDev->nStatus = _TS_FAIL;
 		emit sigUpdateHost(QVariant::fromValue(mapItem));
 		return;
@@ -254,6 +261,7 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 		DMSG("init telnet res: %s", QSZ(szCmd));
 
 		pFind->second->tio->setPrompt("#");
+		pFind->second->action->actionUnblock();
 
 #if 0
 		if (szCmd.isEmpty()) {
@@ -286,6 +294,7 @@ void CFactoryAction::slotHeltSysDev(QString ip) {
 	emit sigRemoveHost(QVariant::fromValue(mapItem));
 
 	m_mapDevice.erase(pFind);
+
 }
 
 void CFactoryAction::slotEndBootDev(int nPort) {
@@ -302,6 +311,7 @@ void CFactoryAction::slotEndBootDev(int nPort) {
 	QVariantMap mapItem;
 
 	mapItem.insert(HOST_ITEM_IP, pFind->first);
+	mapItem.insert(HOST_ITEM_STYLE, "boot");
 	mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_WAIT);
 
 	emit sigUpdateHost(QVariant::fromValue(mapItem));
@@ -331,6 +341,7 @@ void CFactoryAction::slotTimerTimeout(QTimer *timer) {
 			QVariantMap mapItem;
 
 			mapItem.insert(HOST_ITEM_IP, pItem->first);
+			mapItem.insert(HOST_ITEM_STYLE, "boot");
 			mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_HALT);
 
 			emit sigUpdateHost(QVariant::fromValue(mapItem));
@@ -377,6 +388,7 @@ void CFactoryAction::slotRemoveHost(QVariant item) {
 
 void CFactoryAction::slotRemoveFailedHosts() {
 	std::map<QString, SRunDev*>::iterator pItem;
+	std::vector<QString> vt;
 	for (pItem = m_mapDevice.begin(); pItem != m_mapDevice.end(); pItem++) {
 		if (_TS_FAIL == pItem->second->nStatus) {
 			QVariantMap mapItem;
@@ -386,8 +398,12 @@ void CFactoryAction::slotRemoveFailedHosts() {
 			emit sigRemoveHost(QVariant::fromValue(mapItem));
 
 			destoryDev(pItem->second);
-			m_mapDevice.erase(pItem);
+			vt.push_back(pItem->first);
 		}
+	}
+
+	for (std::vector<QString>::iterator pIP=vt.begin(); pIP!=vt.end(); pIP++) {
+		m_mapDevice.erase(*pIP);
 	}
 
 }
@@ -410,14 +426,17 @@ long long CFactoryAction::processTarget(SRunDev *dev) {
 		return -1;
 	}
 	// check duplicate mac address
+	DMSG("detect report status!");
 	QString szSQL;
 	std::list<QVariant> lst;
 
+	DMSG("query database file");
 	m_db.query(lst, "select * from target, board_info where "
 					"target.mac='%s' and target.id=board_info.tid "
 					"order by board_info.id desc limit 1;",
 					QSZ(dev->szMac));
 
+	DMSG("ready to process, target status: %d", lst.size());
 	QVariantMap dbItem;
 
 	if (0 == lst.size()) {
@@ -437,6 +456,7 @@ long long CFactoryAction::processTarget(SRunDev *dev) {
 	switch (nResult) {
 		default:
 			dev->info.nTargetID=lst.begin()->toMap()["id"].toLongLong();
+			DMSG("start factory test thread! tid: %d", dev->info.nTargetID);
 			dev->thread->start();
 			break;
 		case _DB_RESULT_PASS:
@@ -444,4 +464,12 @@ long long CFactoryAction::processTarget(SRunDev *dev) {
 			break;
 	}
 	return dev->info.nTargetID;
+}
+
+void CFactoryAction::actionBlock() {
+
+}
+
+void CFactoryAction::actionUnblock() {
+
 }

@@ -37,6 +37,8 @@ public:
 	int init();
 	virtual int run();
 	virtual void close();
+	virtual void actionBlock();
+	virtual void actionUnblock();
 
 	QString getXmlFile() {
 		return m_szXmlName;
