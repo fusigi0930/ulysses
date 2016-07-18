@@ -80,13 +80,9 @@ int CFactoryAction::run() {
 
 void CFactoryAction::destoryDev(SRunDev *dev) {
 	if (dev) {
-		if (dev->rio) {
-			dev->rio->close();
-			delete dev->rio;
-		}
-		if (dev->wio) {
-			dev->tio->close();
-			delete dev->wio;
+		if (dev->ncio) {
+			dev->ncio->close();
+			delete dev->ncio;
 		}
 		if (dev->tio) {
 			dev->tio->close();
@@ -95,6 +91,7 @@ void CFactoryAction::destoryDev(SRunDev *dev) {
 		if (dev->thread) {
 			if (dev->thread->isRunning())
 				dev->thread->terminate();
+			dev->thread->exit(0);
 			delete dev->thread;
 		}
 		if (dev->timer) {
@@ -135,8 +132,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	}
 
 	SRunDev *newDev=new SRunDev;
-	newDev->rio=new CNetcatIO();
-	newDev->wio=new CNetcatIO();
+	newDev->ncio=new CNcIO();
 	newDev->tio=new CTelnetIO();
 	newDev->action=new CDoAction(newDev, m_szXmlName);
 	dynamic_cast<CDoAction*>(newDev->action)->setDB(&m_db);
@@ -146,8 +142,8 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 
 	connect(newDev->timer, SIGNAL(sigTimeout(QTimer*)), this, SLOT(slotTimerTimeout(QTimer*)));
 	connect(newDev->timer, SIGNAL(sigTimeoutClose(QTimer*)), this, SLOT(slotTimeoutClose(QTimer*)));
-	connect(dynamic_cast<CNetcatIO*>(newDev->wio), SIGNAL(sigStartKernel(int)), dynamic_cast<CDoAction*>(newDev->action), SLOT(slotStartKernel(int)));
-	connect(dynamic_cast<CNetcatIO*>(newDev->wio), SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)));
+	connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), dynamic_cast<CDoAction*>(newDev->action), SLOT(slotStartKernel(int)));
+	connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)));
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigAddShowItem(QVariant)), this, SIGNAL(sigAddShowItem(QVariant)));
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateShowItem(QVariant)), this, SIGNAL(sigUpdateShowItem(QVariant)));
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateHost(QVariant)), this, SIGNAL(sigUpdateHost(QVariant)));
@@ -162,22 +158,20 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	DMSG("start connect to udp port: %d", 7000+nPort);
 
 	szBuf.sprintf("net:client:%s:%d", QSZ(szIp), 7000+nPort);
-	newDev->wio->open(QSZ(szBuf));
-	szBuf.sprintf("net:server:%d", 7000+nPort);
-	newDev->rio->open(QSZ(szBuf));
+	newDev->ncio->open(QSZ(szBuf));
 	wait(1500);
 
-	newDev->rio->setPrompt("EMBUX-TAURUS");
+	newDev->ncio->setPrompt("EMBUX-TAURUS");
 
 	DMSG("ready to get mac address");
 	wait(600);
 
 	// get mac address
 	szBuf="printenv ethaddr\n";
-	newDev->wio->write(szBuf);
+	newDev->ncio->write(szBuf);
 
-	newDev->rio->waitPrompt(300);
-	newDev->rio->read(szMac);
+	newDev->ncio->waitPrompt(300);
+	newDev->ncio->read(szMac);
 	int nPos=szMac.lastIndexOf("=");
 	int nEnd=szMac.indexOf('\n',nPos+1);
 	szMac=szMac.mid(nPos+1, nEnd-nPos);
@@ -186,10 +180,10 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 
 	// get wo number
 	szBuf="printenv wonum\n";
-	newDev->wio->write(szBuf);
+	newDev->ncio->write(szBuf);
 
-	newDev->rio->waitPrompt(300);
-	newDev->rio->read(szWo);
+	newDev->ncio->waitPrompt(300);
+	newDev->ncio->read(szWo);
 	nPos=szWo.lastIndexOf("=");
 	nEnd=szWo.indexOf('\n',nPos+1);
 	szWo=szWo.mid(nPos+1, nEnd-nPos);
@@ -320,8 +314,7 @@ void CFactoryAction::slotEndBootDev(int nPort) {
 		pFind->second->timer->setSingleShot(true);
 		pFind->second->timer->start();
 
-		pFind->second->rio->close();
-		pFind->second->wio->close();
+		pFind->second->ncio->close();
 	}
 }
 

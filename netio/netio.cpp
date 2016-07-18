@@ -143,9 +143,9 @@ bool CNetcatIO::openClient(QStringList &szList) {
 	::memset(&m_addr.sin_zero, 0, sizeof(m_addr.sin_zero));
 
 	::connect(m_io, reinterpret_cast<SOCKADDR*>(&m_addr), sizeof(m_addr));
+
 	m_bIsServer=false;
 
-	//connect(this, SIGNAL(sigStartKernel(int)), this, SLOT(slotStartKernel()), Qt::QueuedConnection);
 	return true;
 }
 
@@ -261,6 +261,7 @@ int CNetcatIO::run() {
 #ifdef Q_OS_WIN
 	m_hThread=::GetCurrentThread();
 #endif
+	QThread::msleep(600);
 	while (-1 != m_io) {
 		memset (m_readBuf, 0, sizeof(m_readBuf));
 		if (0 == readSocket(m_readBuf, sizeof(m_readBuf)-1)) {
@@ -269,7 +270,6 @@ int CNetcatIO::run() {
 #endif
 			break;
 		}
-
 		m_mutex.lock();
 		m_szRecvData.append(m_readBuf);
 		if (7500 == m_nPort) {
@@ -341,4 +341,64 @@ void CNetcatIO::slotStartKernel() {
 
 bool CNetcatIO::isOpened() {
 	return (0 < m_io ? true : false);
+}
+
+CNcIO::CNcIO() : CNetcatIO() {
+	m_rio=-1;
+}
+
+CNcIO::~CNcIO() {
+}
+
+void CNcIO::close() {
+	if (-1 != m_rio) {
+#ifdef Q_OS_WIN
+		::closesocket(m_rio);
+		DMSG("close socket %s", typeid(*this).name());
+#else
+		::close(m_wio);
+#endif
+		m_rio=-1;
+	}
+	CNetcatIO::close();
+}
+
+bool CNcIO::openClient(QStringList &szList) {
+	if (!CNetcatIO::openClient(szList)) {
+		return false;
+	}
+
+	m_rio=::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+	if (-1 == m_rio) {
+		return false;
+	}
+
+	QThread::msleep(150);
+
+	m_raddr.sin_family=AF_INET;
+	m_raddr.sin_port=::htons(m_nPort);
+	m_raddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	::memset(&m_raddr.sin_zero, 0, sizeof(m_raddr.sin_zero));
+
+	long option=1;
+	if (0 != ::bind(m_rio, reinterpret_cast<sockaddr*>(&m_raddr), sizeof(m_raddr))) {
+		DMSG("bind failed!!");
+		return false;
+	}
+	::setsockopt(m_rio, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&option), sizeof(option));
+	::setsockopt(m_rio, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&option), sizeof(option));
+	return true;
+}
+
+size_t CNcIO::readSocket(char *data, size_t nLimit) {
+	if (-1 == m_rio) return 0;
+	size_t nSize=static_cast<size_t>(::recv(m_rio, data, nLimit, 0));
+#ifdef Q_OS_WIN
+	if (nSize == SOCKET_ERROR) {
+		DMSG("socket error: %d", WSAGetLastError());
+		return 0;
+	}
+#endif
+	return nSize;
 }

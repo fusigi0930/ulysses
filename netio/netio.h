@@ -77,7 +77,7 @@ protected:
 	virtual bool openClient(QStringList &szList);
 	virtual bool openServer(QStringList &szList);
 
-	size_t readSocket(char *data, size_t nLimit);
+	virtual size_t readSocket(char *data, size_t nLimit);
 
 	char m_readBuf[1024];
 	QMutex m_mutex;
@@ -173,6 +173,22 @@ signals:
 
 public slots:
 
+};
+
+class NETIOSHARED_EXPORT CNcIO : public CNetcatIO {
+	Q_OBJECT
+protected:
+	virtual bool openClient(QStringList &szList);
+
+public:
+	sockaddr_in m_raddr;
+	int m_rio;
+public:
+	CNcIO();
+	virtual ~CNcIO();
+
+	void close();
+	virtual size_t readSocket(char *data, size_t nLimit);
 };
 
 #endif // NETIO_H

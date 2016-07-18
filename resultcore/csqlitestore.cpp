@@ -134,7 +134,7 @@ bool CSQLiteStore::query(std::list<QVariant> &result, char *fmt, ...) {
 
 	DMSG("move records: %d to list contianer", query.size());
 	QSqlRecord rinfo=query.record();
-	while (0 < query.size() && query.next()) {
+	while (query.next()) {
 		QVariantMap item;
 		for (int i=0; i < rinfo.count(); i++) {
 			insertItemMap(item, rinfo, query, i);

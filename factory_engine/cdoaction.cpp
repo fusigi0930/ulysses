@@ -143,6 +143,14 @@ int CDoAction::run() {
 		m_mutex.unlock();
 	} while (m_xmlRun.nextItem());
 
+	dbItem.clear();
+	dbItem.insert("type", "board");
+	dbItem.insert("id", m_ptrDev->info.nBoardID);
+	dbItem.insert("result", bFinalResult ? _DB_RESULT_PASS : _DB_RESULT_FAIL);
+	m_pDB->update(QVariant::fromValue(dbItem));
+
+	runFinalAlarm(bFinalResult);
+
 	QVariantMap itemMap;
 	itemMap.insert(ITEM_INFO_IP, m_ptrDev->szIp);
 	itemMap.insert(XML_FAC_ITEM_COLOR, (bFinalResult ?
@@ -151,14 +159,6 @@ int CDoAction::run() {
 	m_ptrDev->nStatus=(bFinalResult ? _TS_PASS : _TS_FAIL);
 
 	emit sigUpdateHost(QVariant::fromValue(itemMap));
-
-	dbItem.clear();
-	dbItem.insert("type", "board");
-	dbItem.insert("id", m_ptrDev->info.nBoardID);
-	dbItem.insert("result", bFinalResult ? _DB_RESULT_PASS : _DB_RESULT_FAIL);
-	m_pDB->update(QVariant::fromValue(dbItem));
-
-	runFinalAlarm(bFinalResult);
 
 	return 0;
 }
@@ -191,12 +191,12 @@ int CDoAction::runPrePostCmd(QString szCmd) {
 	switch (m_nStatus) {
 		default: break;
 		case _RUN_STATUS_BOOTLOADER:
-			in=m_ptrDev->rio;
-			out=m_ptrDev->wio;
+			in=m_ptrDev->ncio;
+			out=m_ptrDev->ncio;
 			break;
 		case _RUN_STATUS_RAMDISK:
 			in=m_ptrDev->tio;
-			out=m_ptrDev->rio;
+			out=m_ptrDev->tio;
 			break;
 	}
 
@@ -245,15 +245,15 @@ int CDoAction::runBootCmd(SFactoryItem *item) {
 	QString szRes;
 
 	runPrePostCmd(item->szPreCmd);
-	m_ptrDev->rio->waitPrompt(300);
-	m_ptrDev->rio->read(szRes);
+	m_ptrDev->ncio->waitPrompt(300);
+	m_ptrDev->ncio->read(szRes);
 
-	m_ptrDev->wio->write(item->szCmd);
+	m_ptrDev->ncio->write(item->szCmd);
 	DMSG("send command: %s", QSZ(item->szCmd));
 
-	m_ptrDev->rio->waitPrompt(500+item->nDelay);
+	m_ptrDev->ncio->waitPrompt(500+item->nDelay);
 	szRes.clear();
-	m_ptrDev->rio->read(szRes);
+	m_ptrDev->ncio->read(szRes);
 	szRes=szRes.mid(item->szCmd.length());
 
 	DMSG("get response: %s", QSZ(szRes));

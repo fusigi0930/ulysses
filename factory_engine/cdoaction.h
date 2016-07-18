@@ -36,8 +36,7 @@ struct SDevDBInfo {
 };
 
 struct SRunDev {
-	CRootIO *rio;
-	CRootIO *wio;
+	CRootIO *ncio;
 	CRootIO *tio;
 	CNetActionThread *thread;
 	CBaseAction *action;
