@@ -25,6 +25,11 @@ CNetcatIO::CNetcatIO() : CBaseIO<int>() {
 	m_thread=NULL;
 	m_bIsServer=false;
 	m_hThread=NULL;
+
+#ifdef Q_OS_WIN
+	WSADATA wsa;
+	WSAStartup(MAKEWORD(2,2),&wsa);
+#endif
 }
 
 CNetcatIO::~CNetcatIO() {
@@ -186,11 +191,6 @@ bool CNetcatIO::open(char *sz) {
 	QString szOpen=sz;
 	QStringList szList=szOpen.split(":");
 
-#ifdef Q_OS_WIN
-	WSADATA wsa;
-	WSAStartup(MAKEWORD(2,2),&wsa);
-#endif
-
 	if (0 != szList.at(0).compare("net", Qt::CaseInsensitive)) {
 		DMSG("open type is not net io type!");
 		return false;
@@ -297,12 +297,13 @@ int CNetcatIO::setPrompt(QString szPrompt) {
 int CNetcatIO::waitPrompt(int nTimeout) {
 	QRegExp prompt(m_szPrompt);
 	QDateTime startTime=QDateTime::currentDateTime();
-	QString szData;
 	while (nTimeout > (QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch())) {
-		szData=m_szRecvData;
-		szData.replace('\r', '\n');
+		m_mutex.lock();
+		m_szData=m_szRecvData;
+		m_mutex.unlock();
+		m_szData.replace('\r', '\n');
 
-		QStringList recvList=m_szRecvData.split("\n",  QString::SkipEmptyParts);
+		QStringList recvList=m_szData.split("\n",  QString::SkipEmptyParts);
 		if (1 < recvList.count()) {
 			QString szLastLine=recvList.at(recvList.count()-1);
 			if (szLastLine.contains(prompt)) {

@@ -21,6 +21,7 @@ signals:
 
 private slots:
 	void slotTimeout();
+	void slotTimeoutClose();
 };
 
 enum ETEST_STATUS {

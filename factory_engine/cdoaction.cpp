@@ -24,7 +24,7 @@
 #define ITEM_INFO_IP "ip"
 
 CTimer::CTimer() : QTimer() {
-	connect(this, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+	connect(this, SIGNAL(timeout()), this, SLOT(slotTimeout()), Qt::QueuedConnection);
 }
 
 CTimer::~CTimer() {
@@ -33,6 +33,11 @@ CTimer::~CTimer() {
 
 void CTimer::slotTimeout() {
 	emit sigTimeout(this);
+	QTimer::singleShot(2000, this, SLOT(slotTimeoutClose()));
+}
+
+void CTimer::slotTimeoutClose() {
+	emit sigTimeoutClose(this);
 }
 
 CDoAction::CDoAction(SRunDev *dev) : QObject(), CBaseAction(),

@@ -80,6 +80,7 @@ protected:
 	virtual size_t readSocket(char *data, size_t nLimit);
 
 	char m_readBuf[1024];
+	QString m_szData;
 	QMutex m_mutex;
 
 public:

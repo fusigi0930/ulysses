@@ -41,10 +41,10 @@ CFactoryAction::CFactoryAction() : QObject() ,CBaseAction(),
 {
 	m_bIsRunning=false;
 
-	connect(&m_broadcastRecv, SIGNAL(sigStartNewBootDev(int)), this, SLOT(slotStartNewBootDev(int)));
-	connect(&m_broadcastRecv, SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)));
-	connect(&m_broadcastRecv, SIGNAL(sigStartNewSysDev(QString)), this, SLOT(slotStartNewSysDev(QString)));
-	connect(&m_broadcastRecv, SIGNAL(sigHaltSysDev(QString)), this, SLOT(slotHeltSysDev(QString)));
+	connect(&m_broadcastRecv, SIGNAL(sigStartNewBootDev(int)), this, SLOT(slotStartNewBootDev(int)), Qt::QueuedConnection);
+	connect(&m_broadcastRecv, SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)), Qt::QueuedConnection);
+	connect(&m_broadcastRecv, SIGNAL(sigStartNewSysDev(QString)), this, SLOT(slotStartNewSysDev(QString)), Qt::QueuedConnection);
+	connect(&m_broadcastRecv, SIGNAL(sigHaltSysDev(QString)), this, SLOT(slotHeltSysDev(QString)), Qt::QueuedConnection);
 
 	m_broadcastRecv.open();
 
@@ -140,13 +140,13 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	newDev->timer=new CTimer();
 	newDev->szIp=szIp;
 
-	connect(newDev->timer, SIGNAL(sigTimeout(QTimer*)), this, SLOT(slotTimerTimeout(QTimer*)));
-	connect(newDev->timer, SIGNAL(sigTimeoutClose(QTimer*)), this, SLOT(slotTimeoutClose(QTimer*)));
-	connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), dynamic_cast<CDoAction*>(newDev->action), SLOT(slotStartKernel(int)));
-	connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)));
-	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigAddShowItem(QVariant)), this, SIGNAL(sigAddShowItem(QVariant)));
-	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateShowItem(QVariant)), this, SIGNAL(sigUpdateShowItem(QVariant)));
-	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateHost(QVariant)), this, SIGNAL(sigUpdateHost(QVariant)));
+	connect(newDev->timer, SIGNAL(sigTimeout(QTimer*)), this, SLOT(slotTimerTimeout(QTimer*)), Qt::QueuedConnection);
+	connect(newDev->timer, SIGNAL(sigTimeoutClose(QTimer*)), this, SLOT(slotTimeoutClose(QTimer*)), Qt::QueuedConnection);
+	connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), dynamic_cast<CDoAction*>(newDev->action), SLOT(slotStartKernel(int)), Qt::QueuedConnection);
+	connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)), Qt::QueuedConnection);
+	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigAddShowItem(QVariant)), this, SIGNAL(sigAddShowItem(QVariant)), Qt::QueuedConnection);
+	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateShowItem(QVariant)), this, SIGNAL(sigUpdateShowItem(QVariant)), Qt::QueuedConnection);
+	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateHost(QVariant)), this, SIGNAL(sigUpdateHost(QVariant)), Qt::QueuedConnection);
 
 	DMSG("add to device map: %s", QSZ(szIp));
 	m_mapDevice[szIp]=newDev;
@@ -352,7 +352,14 @@ void CFactoryAction::slotTimeoutClose(QTimer *timer) {
 		pItem != m_mapDevice.end(); pItem++) {
 
 		if (pItem->second->timer == timer) {
+			QVariantMap mapItem;
 
+			mapItem.insert(HOST_ITEM_IP, pItem->first);
+			emit sigRemoveHost(QVariant::fromValue(mapItem));
+			destoryDev(pItem->second);
+
+			m_mapDevice.erase(pItem);
+			break;
 		}
 	}
 }
