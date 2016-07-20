@@ -9,7 +9,8 @@ SUBDIRS += \
     factory_engine \
     xmlcfg \
     luacore \
-    resultcore
+    resultcore \
+    dhcp_ip_viewer
 
 engine.depends = \
 	netio \
@@ -34,4 +35,14 @@ factory_engine.depends = \
 	xmlrun \
     xmlcfg \
     comio \
+    luacore \
+    resultcore
+
+dhcp_ip_viewer.depends = \
+    engine \
+    netio \
+    xmlrun \
+    xmlcfg \
+    comio \
+    luacore \
     resultcore
