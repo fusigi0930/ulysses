@@ -31,6 +31,7 @@
 #define HOST_COLOR_WAIT			"#F0F050"
 #define HOST_COLOR_HALT			"#909090"
 #define HOST_COLOR_PASS			"#70F070"
+#define HOST_COLOR_ALREADY_PASS "#90FF90"
 #define HOST_COLOR_FAIL			"#F07070"
 
 
@@ -124,6 +125,8 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	QString szWo;
 	szIp.sprintf(IP_PREFIX, nPort);
 
+	int nRetryTimes=3;
+
 	DMSG("start new boot dev: %s", QSZ(szIp));
 	std::map<QString, SRunDev*>::iterator pFind=m_mapDevice.find(szIp);
 	if (pFind != m_mapDevice.end()) {
@@ -153,30 +156,33 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 
 	DMSG("start communicate: %s", QSZ(szIp));
 	QString szBuf;
-	wait(1200);
 
-	DMSG("start connect to udp port: %d", 7000+nPort);
+	do {
+		wait(1200);
+		newDev->ncio->close();
+		DMSG("start connect to udp port: %d, %d", 7000+nPort, nRetryTimes);
 
-	szBuf.sprintf("net:client:%s:%d", QSZ(szIp), 7000+nPort);
-	newDev->ncio->open(QSZ(szBuf));
-	wait(1500);
+		szBuf.sprintf("net:client:%s:%d", QSZ(szIp), 7000+nPort);
+		newDev->ncio->open(QSZ(szBuf));
+		wait(1500);
 
-	newDev->ncio->setPrompt("EMBUX-TAURUS");
+		newDev->ncio->setPrompt("EMBUX-TAURUS");
 
-	DMSG("ready to get mac address");
-	wait(600);
+		DMSG("ready to get mac address");
+		wait(600);
 
-	// get mac address
-	szBuf="printenv ethaddr\n";
-	newDev->ncio->write(szBuf);
+		// get mac address
+		szBuf="printenv ethaddr\n";
+		newDev->ncio->write(szBuf);
 
-	newDev->ncio->waitPrompt(300);
-	newDev->ncio->read(szMac);
-	int nPos=szMac.lastIndexOf("=");
-	int nEnd=szMac.indexOf('\n',nPos+1);
-	szMac=szMac.mid(nPos+1, nEnd-nPos);
-	szMac=szMac.trimmed();
-	newDev->szMac=szMac;
+		newDev->ncio->waitPrompt(300);
+		newDev->ncio->read(szMac);
+		int nPos=szMac.lastIndexOf("=");
+		int nEnd=szMac.indexOf('\n',nPos+1);
+		szMac=szMac.mid(nPos+1, nEnd-nPos);
+		szMac=szMac.trimmed();
+		newDev->szMac=szMac;
+	} while (szMac.isEmpty() && nRetryTimes--);
 
 	// get wo number
 	szBuf="printenv wonum\n";
@@ -184,8 +190,8 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 
 	newDev->ncio->waitPrompt(300);
 	newDev->ncio->read(szWo);
-	nPos=szWo.lastIndexOf("=");
-	nEnd=szWo.indexOf('\n',nPos+1);
+	int nPos=szWo.lastIndexOf("=");
+	int nEnd=szWo.indexOf('\n',nPos+1);
 	szWo=szWo.mid(nPos+1, nEnd-nPos);
 	szWo=szWo.trimmed();
 	newDev->szWo=szWo;
@@ -206,6 +212,15 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	}
 
 	processTarget(newDev);
+
+	if (_TS_ALREADY_TESTED == newDev->nStatus) {
+		QVariantMap mapItem;
+
+		mapItem.insert(HOST_ITEM_IP, szIp);
+		mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_ALREADY_PASS);
+		mapItem.insert(HOST_ITEM_STYLE, "boot");
+		emit sigUpdateHost(QVariant::fromValue(mapItem));
+	}
 }
 
 void CFactoryAction::slotStartNewSysDev(QString ip) {
@@ -257,16 +272,6 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 		pFind->second->tio->setPrompt("#");
 		pFind->second->action->actionUnblock();
 
-#if 0
-		if (szCmd.isEmpty()) {
-			QVariantMap mapItem;
-
-			mapItem.insert(HOST_ITEM_IP, szIp);
-			mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_FAIL);
-			emit sigUpdateHost(QVariant::fromValue(mapItem));
-			pFind->second->thread->terminate();
-		}
-#endif
 	}
 }
 
@@ -289,6 +294,7 @@ void CFactoryAction::slotHeltSysDev(QString ip) {
 
 	m_mapDevice.erase(pFind);
 
+	wait(1500);
 }
 
 void CFactoryAction::slotEndBootDev(int nPort) {
@@ -408,6 +414,28 @@ void CFactoryAction::slotRemoveFailedHosts() {
 
 }
 
+void CFactoryAction::slotRemovePassedHosts() {
+	std::map<QString, SRunDev*>::iterator pItem;
+	std::vector<QString> vt;
+	for (pItem = m_mapDevice.begin(); pItem != m_mapDevice.end(); pItem++) {
+		if (_TS_ALREADY_TESTED == pItem->second->nStatus) {
+			QVariantMap mapItem;
+
+			mapItem.insert(HOST_ITEM_IP, pItem->first);
+
+			emit sigRemoveHost(QVariant::fromValue(mapItem));
+
+			destoryDev(pItem->second);
+			vt.push_back(pItem->first);
+		}
+	}
+
+	for (std::vector<QString>::iterator pIP=vt.begin(); pIP!=vt.end(); pIP++) {
+		m_mapDevice.erase(*pIP);
+	}
+
+}
+
 void CFactoryAction::wait(int msec) {
 	QDateTime startTime=QDateTime::currentDateTime();
 	int nTimes=msec/30;
@@ -461,6 +489,7 @@ long long CFactoryAction::processTarget(SRunDev *dev) {
 			break;
 		case _DB_RESULT_PASS:
 			dev->info.nTargetID=lst.begin()->toMap()["id"].toLongLong();
+			dev->nStatus=_TS_ALREADY_TESTED;
 			break;
 	}
 	return dev->info.nTargetID;

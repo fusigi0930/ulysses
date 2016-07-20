@@ -7,7 +7,7 @@ import FactoryAction 1.0
 
 ApplicationWindow {
     visible: true
-	title: qsTr("Ulysses - factory")
+	title: qsTr("Ulysses - Fortress") // 要塞
 	visibility: "Maximized"
 
 	onClosing: {
@@ -18,14 +18,11 @@ ApplicationWindow {
 		id: factoryToolBar
 
 		onSigClickButton: {
-			if (button == "run") {
-
+			if (button == "clean_pass") {
+				actionFactory.slotRemovePassedHosts()
 			}
-			else if (button == "stop") {
+			else if (button == "clean_fail") {
 				actionFactory.slotRemoveFailedHosts()
-			}
-			else if (button == "reset") {
-
 			}
 		}
 	}

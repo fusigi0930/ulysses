@@ -59,6 +59,7 @@ signals:
 public slots:
 	void slotRemoveHost(QVariant item);
 	void slotRemoveFailedHosts();
+	void slotRemovePassedHosts();
 
 	void slotStartNewBootDev(int nPort);
 	void slotEndBootDev(int nPort);

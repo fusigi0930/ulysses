@@ -207,6 +207,7 @@ bool CSQLiteStore::initDB() {
 		"(id integer primary key autoincrement, "
 		"tid integer not null, "
 		"result integer, "
+		"mode integer, "
 		"idate integer);"
 		);
 
@@ -300,11 +301,16 @@ long long CSQLiteStore::addBoard(const QVariantMap &item) {
 
 	QSqlQuery query=m_db.exec();
 
-	query.prepare("insert into board_info (tid) "
-				  "values (?);"
+	query.prepare("insert into board_info (tid,mode) "
+				  "values (?,?);"
 				  );
 
 	query.bindValue(0, item["tid"]);
+#ifdef DEBUG
+	query.bindValue(1, 1);
+#else
+	query.bindValue(1, 0);
+#endif
 
 	query.exec();
 	if (QSqlError::NoError != query.lastError().type()) {

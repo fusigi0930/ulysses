@@ -28,6 +28,7 @@ enum ETEST_STATUS {
 	_TS_RUNNING,
 	_TS_PASS,
 	_TS_FAIL,
+	_TS_ALREADY_TESTED,
 };
 
 struct SDevDBInfo {
