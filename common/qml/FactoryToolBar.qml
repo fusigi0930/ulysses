@@ -22,7 +22,7 @@ ToolBar {
 		IconButton {
 			id: buttonRun
 			text: qsTr("clean pass")
-			image: "qrc:/image/res/png/run.png"
+			image: "qrc:/image/res/png/clean_pass.png"
 			tooltip: qsTr("run")
 			onClicked: {
 				toolBar.sigClickButton("clean_pass")
@@ -31,7 +31,7 @@ ToolBar {
 		IconButton {
 			id: buttonStop
 			text: qsTr("clean fail")
-			image: "qrc:/image/res/png/stop.png"
+			image: "qrc:/image/res/png/clean_fail.png"
 			tooltip: qsTr("stop")
 			onClicked: {
 				toolBar.sigClickButton("clean_fail")

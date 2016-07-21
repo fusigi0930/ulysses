@@ -149,14 +149,14 @@ void CSQLiteStore::insertItemMap(QVariantMap &item, QSqlRecord &rinfo, QSqlQuery
 	QString szField;
 	if (0 == nCount) szField=rinfo.fieldName(nIndex);
 	else szField.sprintf("%s.%d", QSZ(rinfo.fieldName(nIndex)), nCount);
-	DMSG("+++ recursive count: %d", nCount);
+	//DMSG("+++ recursive count: %d", nCount);
 	if (item.find(szField) == item.end()) {
 		item.insert(szField, query.value(nIndex));
 	}
 	else {
 		insertItemMap(item, rinfo, query, nIndex, nCount+1);
 	}
-	DMSG("--- recursive count: %d", nCount);
+	//DMSG("--- recursive count: %d", nCount);
 }
 
 bool CSQLiteStore::query(QSqlQuery &q, char *fmt, ...) {

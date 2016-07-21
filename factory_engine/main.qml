@@ -38,6 +38,7 @@ ApplicationWindow {
 
 	FactoryAction {
 		id: actionFactory
+		xmlFile: "debug-items.xml"
 
 		onSigStartNewBootDev: {
 			console.log("start new boot dev: " + szIp)

@@ -19,5 +19,7 @@
 		<file>res/png/icon-ubuntu.png</file>
 		<file>res/png/icon-yocto.png</file>
 		<file>res/png/back-device.png</file>
+		<file>res/png/clean_pass.png</file>
+		<file>res/png/clean_fail.png</file>
 	</qresource>
 </RCC>	

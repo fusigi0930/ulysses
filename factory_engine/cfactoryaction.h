@@ -11,7 +11,7 @@
 class CFactoryAction : public QObject, public CBaseAction
 {
 	Q_OBJECT
-	Q_PROPERTY(QString getXmlFile READ getXmlFile WRITE setXmlFile)
+	Q_PROPERTY(QString xmlFile READ getXmlFile WRITE setXmlFile)
 
 protected:
 	CNotifyRecv m_broadcastRecv;
@@ -30,6 +30,8 @@ protected:
 
 	void wait(int msec);
 	long long processTarget(SRunDev *dev);
+
+	QThread *m_thread;
 public:
 	CFactoryAction();
 	virtual ~CFactoryAction();

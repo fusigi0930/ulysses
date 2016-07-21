@@ -13,6 +13,7 @@
 #include <QDir>
 
 #define IP_PREFIX "192.168.48.%d"
+//#define ANOTHER_THREAD
 
 //
 // mac: -- mac address
@@ -47,6 +48,14 @@ CFactoryAction::CFactoryAction() : QObject() ,CBaseAction(),
 	connect(&m_broadcastRecv, SIGNAL(sigStartNewSysDev(QString)), this, SLOT(slotStartNewSysDev(QString)), Qt::QueuedConnection);
 	connect(&m_broadcastRecv, SIGNAL(sigHaltSysDev(QString)), this, SLOT(slotHeltSysDev(QString)), Qt::QueuedConnection);
 
+#if defined(ANOTHER_THREAD)
+	m_thread = new QThread(this);
+	this->moveToThread(m_thread);
+
+	m_thread->start();
+#else
+	m_thread=NULL;
+#endif
 	m_broadcastRecv.open();
 
 	QString szFolder;
@@ -68,6 +77,13 @@ CFactoryAction::CFactoryAction() : QObject() ,CBaseAction(),
 
 CFactoryAction::~CFactoryAction() {
 	m_db.close();
+	m_broadcastRecv.close();
+	if (m_thread) {
+		m_thread->exit();
+		delete m_thread;
+		m_thread=NULL;
+	}
+
 }
 
 int CFactoryAction::init() {
@@ -254,7 +270,17 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 	if (pFind->second->tio) {
 		QString szCmd="\nroot\n";
 
-		pFind->second->tio->open(QSZ(pFind->first));
+		if (!pFind->second->tio->open(QSZ(pFind->first))) {
+			QVariantMap mapItem;
+
+			mapItem.insert(HOST_ITEM_IP, szIp);
+			mapItem.insert(HOST_ITEM_COLOR, HOST_COLOR_FAIL);
+			mapItem.insert(HOST_ITEM_STYLE, "factory");
+			pFind->second->nStatus = _TS_FAIL;
+			emit sigUpdateHost(QVariant::fromValue(mapItem));
+			pFind->second->thread->terminate();
+			return;
+		}
 		wait(5000);
 
 		szCmd="\nroot\n";
@@ -437,6 +463,9 @@ void CFactoryAction::slotRemovePassedHosts() {
 }
 
 void CFactoryAction::wait(int msec) {
+#if defined(ANOTHER_THREAD)
+	QThread::msleep(msec);
+#else
 	QDateTime startTime=QDateTime::currentDateTime();
 	int nTimes=msec/30;
 	while (msec > (QDateTime::currentDateTime().toMSecsSinceEpoch() - startTime.toMSecsSinceEpoch())) {
@@ -446,6 +475,7 @@ void CFactoryAction::wait(int msec) {
 		if (0 > nTimes)
 			break;
 	}
+#endif
 }
 
 long long CFactoryAction::processTarget(SRunDev *dev) {
