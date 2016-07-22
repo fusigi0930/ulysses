@@ -37,6 +37,14 @@ ToolBar {
 				toolBar.sigClickButton("clean_fail")
 			}
 		}
-
+		IconButton {
+			id: buttonReload
+			text: qsTr("open xml")
+			image: "qrc:/image/res/png/reset.png"
+			tooltip: qsTr("change a xml file")
+			onClicked: {
+				toolBar.sigClickButton("open-xml")
+			}
+		}		
 	}
 }

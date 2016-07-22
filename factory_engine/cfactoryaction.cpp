@@ -119,6 +119,10 @@ void CFactoryAction::destoryDev(SRunDev *dev) {
 			dev->timer->stop();
 			delete dev->timer;
 		}
+		if (dev->action) {
+			dev->action->close();
+			delete dev->action;
+		}
 		delete dev;
 	}
 }

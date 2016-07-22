@@ -1,11 +1,13 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.2
+import QtQuick.Dialogs 1.2
 
 import "qrc:/ulysses/"
 
 import FactoryAction 1.0
 
 ApplicationWindow {
+	id: mainWnd
     visible: true
 	title: qsTr("Ulysses - Fortress") // 要塞
 	visibility: "Maximized"
@@ -24,6 +26,28 @@ ApplicationWindow {
 			else if (button == "clean_fail") {
 				actionFactory.slotRemoveFailedHosts()
 			}
+			else if (button == "open-xml") {
+				fileDialog.open()
+			}
+		}
+	}
+
+	FileDialog {
+		id: fileDialog
+		modality: Qt.WindowModal
+		selectMultiple: false
+		selectFolder: false
+		selectExisting: true
+		title: qsTr("Select a factory test xml file...")
+
+		nameFilters: [ "XML files (*.xml)", "All files (*.*)" ]
+
+		onAccepted: {
+			var file=fileDialog.fileUrl.toString()
+			var n=file.lastIndexOf("/")
+			file=file.substring(n+1)
+			console.log("filename: " + file)
+			actionFactory.xmlFile=file
 		}
 	}
 
@@ -34,6 +58,7 @@ ApplicationWindow {
 			baseTabHost.sigAddTab(ip, "qrc:/ulysses/FactoryGridView.qml")
 			actionFactory.slotShowItem(ip)
 		}
+
 	}
 
 	FactoryAction {
