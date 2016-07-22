@@ -95,6 +95,7 @@ int CNotifyRecv::parseBroadcast() {
 	}
 	// for system
 	for (data=dataList.begin(); data != dataList.end(); data++) {
+		//DMSG("broadcast ip: %s", QSZ(QString(*data)));
 		if (0 == data->left(4).compare(UBOOT_BCAST_PREFIX)) {
 			QString szIp=data->mid(5);
 

@@ -58,6 +58,8 @@ signals:
 	void sigAddShowItem(QVariant item);
 	void sigUpdateShowItem(QVariant item);
 
+	void sigHeltDevLater(QString ip);
+
 public slots:
 	void slotRemoveHost(QVariant item);
 	void slotRemoveFailedHosts();

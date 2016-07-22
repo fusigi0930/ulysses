@@ -38,7 +38,7 @@ ApplicationWindow {
 
 	FactoryAction {
 		id: actionFactory
-		xmlFile: "debug-items.xml"
+		xmlFile: "items.xml"
 
 		onSigStartNewBootDev: {
 			console.log("start new boot dev: " + szIp)
@@ -60,6 +60,7 @@ ApplicationWindow {
 		}
 
 		onSigUpdateShowItem: {
+			console.log("update show item: " + item.ip)
 			baseTabHost.sigUpdateItemResult(item.ip, item)
 		}
 	}

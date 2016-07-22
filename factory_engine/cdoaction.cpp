@@ -71,6 +71,7 @@ CDoAction::CDoAction() : QObject(), CBaseAction(),
 
 void CDoAction::init() {
 	m_xmlRun.open(m_szXmlFile);
+	connect(this, SIGNAL(sigStartKernel(int)), this, SLOT(slotStartKernel(int)), Qt::QueuedConnection);
 }
 
 CDoAction::~CDoAction() {
@@ -226,8 +227,10 @@ int CDoAction::runPrePostCmd(QString szCmd) {
 			continue;
 		}
 		// boot
-		else if(!p->compare(XML_COMMAND_BOOT)) {
+		else if(!p->compare(XML_COMMAND_BOOT) || !p->compare("run mmcboot")) {
 			//
+			DMSG("---- run boot command");
+			emit sigStartKernel(0);
 		}
 		p->append("\r");
 

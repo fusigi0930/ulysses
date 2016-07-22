@@ -2,12 +2,13 @@
 #define __DEBUG_H__
 
 #include <qDebug>
+#include <QDateTime>
 
 #define QSZ(sz) sz.toUtf8().data()
 
 #ifdef DEBUG
 #define DMSG(e,...) \
-	qDebug("[%s:%d] " e "\n", __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
+    qDebug("%lld [%s:%d] " e "\n", QDateTime::currentMSecsSinceEpoch(), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
 
 #else
 #define DMSG(e,...) \

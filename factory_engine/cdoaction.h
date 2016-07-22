@@ -31,6 +31,11 @@ enum ETEST_STATUS {
 	_TS_ALREADY_TESTED,
 };
 
+enum ERUNTIME_STATUS {
+	_RT_STANDBY,
+	_RT_PROCESSING,
+};
+
 struct SDevDBInfo {
 	long long nTargetID;
 	long long nBoardID;
@@ -48,6 +53,7 @@ struct SRunDev {
 	QString szIp;
 	SDevDBInfo info;
 	int nStatus;
+	int nRuntimeStatus;
 };
 
 enum ERunStatus {
@@ -98,6 +104,7 @@ signals:
 	void sigAddShowItem(QVariant item);
 	void sigUpdateShowItem(QVariant item);
 	void sigUpdateHost(QVariant item);
+	void sigStartKernel(int status);
 
 public slots:
 	void slotSetXMLFile(QString szFile);

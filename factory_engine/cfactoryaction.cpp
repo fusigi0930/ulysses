@@ -14,6 +14,8 @@
 
 #define IP_PREFIX "192.168.48.%d"
 //#define ANOTHER_THREAD
+#define BOOT_TIMEOUT 80000
+#define MAX_GOING_DEV 3
 
 //
 // mac: -- mac address
@@ -47,6 +49,8 @@ CFactoryAction::CFactoryAction() : QObject() ,CBaseAction(),
 	connect(&m_broadcastRecv, SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)), Qt::QueuedConnection);
 	connect(&m_broadcastRecv, SIGNAL(sigStartNewSysDev(QString)), this, SLOT(slotStartNewSysDev(QString)), Qt::QueuedConnection);
 	connect(&m_broadcastRecv, SIGNAL(sigHaltSysDev(QString)), this, SLOT(slotHeltSysDev(QString)), Qt::QueuedConnection);
+
+	connect (this, SIGNAL(sigHeltDevLater(QString)), this, SLOT(slotHeltSysDev(QString)), Qt::QueuedConnection);
 
 #if defined(ANOTHER_THREAD)
 	m_thread = new QThread(this);
@@ -158,10 +162,11 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 	newDev->thread=new CNetActionThread(newDev->action);
 	newDev->timer=new CTimer();
 	newDev->szIp=szIp;
+	newDev->nRuntimeStatus=_RT_PROCESSING;
 
 	connect(newDev->timer, SIGNAL(sigTimeout(QTimer*)), this, SLOT(slotTimerTimeout(QTimer*)), Qt::QueuedConnection);
 	connect(newDev->timer, SIGNAL(sigTimeoutClose(QTimer*)), this, SLOT(slotTimeoutClose(QTimer*)), Qt::QueuedConnection);
-	connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), dynamic_cast<CDoAction*>(newDev->action), SLOT(slotStartKernel(int)), Qt::QueuedConnection);
+	//connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), dynamic_cast<CDoAction*>(newDev->action), SLOT(slotStartKernel(int)), Qt::QueuedConnection);
 	connect(dynamic_cast<CNcIO*>(newDev->ncio), SIGNAL(sigStartKernel(int)), this, SLOT(slotEndBootDev(int)), Qt::QueuedConnection);
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigAddShowItem(QVariant)), this, SIGNAL(sigAddShowItem(QVariant)), Qt::QueuedConnection);
 	connect(dynamic_cast<CDoAction*>(newDev->action), SIGNAL(sigUpdateShowItem(QVariant)), this, SIGNAL(sigUpdateShowItem(QVariant)), Qt::QueuedConnection);
@@ -224,6 +229,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 		mapItem.insert(HOST_ITEM_STYLE, "boot");
 		newDev->nStatus = _TS_FAIL;
 		emit sigUpdateHost(QVariant::fromValue(mapItem));
+		newDev->nRuntimeStatus=_RT_STANDBY;
 		return;
 	}
 
@@ -237,6 +243,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 		mapItem.insert(HOST_ITEM_STYLE, "boot");
 		emit sigUpdateHost(QVariant::fromValue(mapItem));
 	}
+	newDev->nRuntimeStatus=_RT_STANDBY;
 }
 
 void CFactoryAction::slotStartNewSysDev(QString ip) {
@@ -253,6 +260,7 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 		DMSG("the device is not exist");
 		return;
 	}
+	pFind->second->nRuntimeStatus=_RT_PROCESSING;
 
 	QVariantMap mapItem;
 
@@ -264,8 +272,11 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 	if (pFind->second->timer) {
 		pFind->second->timer->stop();
 	}
+	if (pFind->second->ncio) {
+		pFind->second->ncio->close();
+	}
 
-	QThread::msleep(350);
+	wait(350);
 
 	if (pFind->second->tio) {
 		QString szCmd="\nroot\n";
@@ -279,6 +290,7 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 			pFind->second->nStatus = _TS_FAIL;
 			emit sigUpdateHost(QVariant::fromValue(mapItem));
 			pFind->second->thread->terminate();
+			pFind->second->nRuntimeStatus=_RT_STANDBY;
 			return;
 		}
 		wait(5000);
@@ -299,6 +311,7 @@ void CFactoryAction::slotStartNewSysDev(QString ip) {
 		pFind->second->action->actionUnblock();
 
 	}
+	pFind->second->nRuntimeStatus=_RT_STANDBY;
 }
 
 void CFactoryAction::slotHeltSysDev(QString ip) {
@@ -310,6 +323,11 @@ void CFactoryAction::slotHeltSysDev(QString ip) {
 		return;
 	}
 
+	if (_RT_PROCESSING == pFind->second->nRuntimeStatus) {
+		DMSG("event still processing, kill later: %s", QSZ(pFind->first));
+		emit sigHeltDevLater(pFind->first);
+		return;
+	}
 	destoryDev(pFind->second);
 
 	QVariantMap mapItem;
@@ -342,11 +360,13 @@ void CFactoryAction::slotEndBootDev(int nPort) {
 
 	emit sigUpdateHost(QVariant::fromValue(mapItem));
 	if (pFind->second->timer) {
-		pFind->second->timer->setInterval(80000);
+		pFind->second->timer->setInterval(MAX_GOING_DEV * BOOT_TIMEOUT);
 		pFind->second->timer->setSingleShot(true);
 		pFind->second->timer->start();
 
-		pFind->second->ncio->close();
+		QString szRes;
+		pFind->second->ncio->read(szRes);
+		DMSG("boot msg: %s", QSZ(szRes));
 	}
 }
 
