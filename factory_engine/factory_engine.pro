@@ -33,6 +33,14 @@ CONFIG(release, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/release
 }
 
+GITVER = $$system("genver.sh")
+
+VERSION = $$GITVER
+QMAKE_TARGET_PRODUCT = "ulysses - fortress"
+QMAKE_TARGET_DESCRIPTION = "ulysses version factory production tool"
+QMAKE_TARGET_COPYRIGHT = "Copyright(c) 2016 Embux Inc. All rights reserved"
+QMAKE_TARGET_COMPANY = "Embux Inc."
+
 OBJECTS_DIR = $$OUTDIR/factory/obj
 MOC_DIR = $$OUTDIR/factory/obj/moc
 DESTDIR = $$OUTDIR/bin
