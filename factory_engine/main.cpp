@@ -21,6 +21,5 @@ int main(int argc, char *argv[])
 
 	int nRet=app.exec();
 
-
 	return nRet;
 }

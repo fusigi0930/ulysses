@@ -26,6 +26,14 @@ CONFIG(release, debug|release) {
 	OUTDIR = $$_PRO_FILE_PWD_/../out/release
 }
 
+GITVER = $$system("genver.sh")
+
+VERSION = $$GITVER
+QMAKE_TARGET_PRODUCT = "ulysses - unit test tools"
+QMAKE_TARGET_DESCRIPTION = "Unit test tool for DHCP server"
+QMAKE_TARGET_COPYRIGHT = "Copyright(c) 2016 Embux Inc. All rights reserved"
+QMAKE_TARGET_COMPANY = "Embux Inc."
+
 OBJECTS_DIR = $$OUTDIR/dhcpview/obj
 MOC_DIR = $$OUTDIR/dhcpview/obj/moc
 DESTDIR = $$OUTDIR/bin

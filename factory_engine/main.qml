@@ -65,6 +65,13 @@ ApplicationWindow {
 		id: actionFactory
 		xmlFile: "items.xml"
 
+		Component.onCompleted: {
+			if (Qt.application.arguments[1].length !== 0)
+				xmlFile=Qt.application.arguments[1]
+			else
+				xmlFile="items.xml"
+		}
+
 		onSigStartNewBootDev: {
 			console.log("start new boot dev: " + szIp)
 			baseTabHost.sigAddHost({"mac":szMac,"ip":szIp,"style":"boot","itemcolor":"#C0C0E0"})
