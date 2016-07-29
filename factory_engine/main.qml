@@ -18,6 +18,7 @@ ApplicationWindow {
 
 	toolBar: FactoryToolBar {
 		id: factoryToolBar
+		itemName: items.xml
 
 		onSigClickButton: {
 			if (button == "clean_pass") {
@@ -67,7 +68,7 @@ ApplicationWindow {
 		xmlFile: "items.xml"
 
 		Component.onCompleted: {
-			if (Qt.application.arguments[1].length !== 0)
+			if (Qt.application.arguments.length > 1)
 				xmlFile=Qt.application.arguments[1]
 			else
 				xmlFile="items.xml"
