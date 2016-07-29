@@ -18,6 +18,8 @@ ToolBar {
 	signal sigClickButton(var button)
 	signal sigSignal(var sig)
 	
+	property var itemName
+	
 	RowLayout {
 		IconButton {
 			id: buttonRun
@@ -45,6 +47,30 @@ ToolBar {
 			onClicked: {
 				toolBar.sigClickButton("open-xml")
 			}
-		}		
+		}
+		Rectangle {
+			anchors.left: buttonReload.right
+			anchors.leftMargin: 30
+			anchors.verticalCenter: buttonReload.verticalCenter
+			
+			Text {
+				id: labelFilename
+				text: qsTr("Item:")
+				font.pixelSize: 32
+				font.family: "tohama"
+				anchors.verticalCenter: parent.verticalCenter
+				color: "#A0A0FF"
+			}
+			Text {
+				id: textItemName
+				anchors.left: labelFilename.right
+				anchors.leftMargin: 5
+				text: itemName
+				font.pixelSize: 32
+				font.family: "tohama"
+				anchors.verticalCenter: parent.verticalCenter
+				color: "#A0A0FF"
+			}			
+		}
 	}
 }

@@ -48,6 +48,7 @@ ApplicationWindow {
 			file=file.substring(n+1)
 			console.log("filename: " + file)
 			actionFactory.xmlFile=file
+			factoryToolBar.itemName=file
 		}
 	}
 
@@ -70,6 +71,8 @@ ApplicationWindow {
 				xmlFile=Qt.application.arguments[1]
 			else
 				xmlFile="items.xml"
+
+			factoryToolBar.itemName=xmlFile
 		}
 
 		onSigStartNewBootDev: {
