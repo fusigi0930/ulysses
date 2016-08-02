@@ -181,8 +181,16 @@ int CDoAction::runFinalAlarm(bool bResult) {
 
 	if (m_ptrDev->tio) {
 		m_ptrDev->tio->write(szCmd);
-
+		m_ptrDev->tio->waitPrompt(3000);
 	}
+
+
+	szCmd.sprintf("cat /nfs/media/image/raw/%s > /dev/fb0\n", (bResult ? "pass" : "fail"));
+
+	if (m_ptrDev->tio) {
+		m_ptrDev->tio->write(szCmd);
+	}
+
 	return 0;
 }
 
