@@ -40,7 +40,8 @@ CONFIG(release, debug|release) {
 
 GITVER = $$system("genver.sh")
 
-#VERSION = $$GITVER
+VERSION = $$GITVER
+CONFIG += skip_target_version_ext
 QMAKE_TARGET_PRODUCT = "ulysses - libraries"
 QMAKE_TARGET_DESCRIPTION = "ulysses network library"
 QMAKE_TARGET_COPYRIGHT = "Copyright(c) 2016 Embux Inc. All rights reserved"

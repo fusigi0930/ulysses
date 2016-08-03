@@ -10,3 +10,5 @@ release
 lua.exe
 luac.exe
 liblua.a
+Makefile
+*.rc
