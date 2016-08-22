@@ -14,7 +14,9 @@ CONFIG += dll
 
 DEFINES += RESULTCORE_LIBRARY
 
-SOURCES += csqlitestore.cpp
+SOURCES += csqlitestore.cpp \
+    culyssesstore.cpp \
+    cdbsyncstore.cpp
 
 HEADERS += csqlitestore.h\
         resultcore_global.h

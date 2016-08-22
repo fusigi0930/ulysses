@@ -71,6 +71,9 @@ long long CSQLiteStore::add(const QVariant &item) {
 	else if (0 == mapItem["type"].toString().compare("item")) {
 		nRet=addItem(mapItem);
 	}
+	else if (0 == mapItem["type"].toString().compare("sync")) {
+		nRet=addSync(mapItem);
+	}
 	m_mutex.unlock();
 	return nRet;
 }
@@ -88,6 +91,9 @@ bool CSQLiteStore::update(const QVariant &item) {
 	else if (0 == mapItem["type"].toString().compare("item")) {
 		bRet=updateItem(mapItem);
 	}
+	else if (0 == mapItem["type"].toString().compare("sync")) {
+		bRet=updateItem(mapItem);
+	}
 	m_mutex.unlock();
 	return false;
 }
@@ -103,6 +109,9 @@ void CSQLiteStore::remove(const QVariant &item) {
 	}
 	else if (0 == mapItem["type"].toString().compare("item")) {
 		removeItem(mapItem);
+	}
+	else if (0 == mapItem["type"].toString().compare("sync")) {
+		removeSync(mapItem);
 	}
 	m_mutex.unlock();
 }
@@ -259,6 +268,14 @@ bool CSQLiteStore::initDB() {
 		return false;
 	}
 
+	// create sync table
+	m_db.exec(
+		"create table sync_info "
+		"(id integer primary key autoincrement, "
+		"sdate integer not null, "
+		"sid interger, "
+		"type integer);"
+		);
 	return true;
 }
 
@@ -353,6 +370,33 @@ long long CSQLiteStore::addItem(const QVariantMap &item) {
 		query.bindValue(3, item["tdate"]);
 		query.bindValue(4, item["result"]);
 	}
+
+	query.exec();
+	if (QSqlError::NoError != query.lastError().type()) {
+		return nRet;
+	}
+
+	nRet=query.lastInsertId().toLongLong();
+
+	return nRet;
+}
+
+long long CSQLiteStore::addSync(const QVariantMap &item) {
+	// sync type
+	// "id":id
+	// "sid": server id
+	// "sdate": sync time
+	// "type": sync type
+	long long nRet=0;
+
+	QSqlQuery query=m_db.exec();
+
+	query.prepare("insert into sync_info (sdate,type) "
+				  "values (?,?);"
+				  );
+
+	query.bindValue(0, item["sdate"]);
+	query.bindValue(1, item["type"]);
 
 	query.exec();
 	if (QSqlError::NoError != query.lastError().type()) {
@@ -532,6 +576,57 @@ bool CSQLiteStore::updateItem(const QVariantMap &item) {
 	return bRet;
 }
 
+bool CSQLiteStore::updateSync(const QVariantMap &item) {
+	// sync type
+	// "id":id
+	// "sid": server id
+	// "sdate": sync time
+	// "type": sync type
+	bool bRet=false;
+	QString szCond[] = {
+		"id",
+		""
+	};
+
+	QString szField[] = {
+		"sid",
+		""
+	};
+
+	QSqlQuery query=m_db.exec();
+
+	query.exec("begin;");
+	int nCondIndex=0;
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+		int nIndex=0;
+		while (!szField[nIndex].isEmpty()) {
+			if (item.find(szField[nIndex]) == item.end()) {
+				nIndex++;
+				continue;
+			}
+
+			QString szCmd;
+			szCmd.sprintf("update sync_info set %s=? "
+						  "where %s=?", QSZ(szField[nIndex]), QSZ(szCond[nCondIndex]));
+
+			query.prepare(szCmd);
+			query.bindValue(0, item[szField[nIndex]]);
+			query.bindValue(1, item[szCond[nCondIndex]]);
+			query.exec();
+			nIndex++;
+		}
+		nCondIndex++;
+	}
+
+	query.exec("commit;");
+
+	return bRet;
+}
+
 void CSQLiteStore::removeTarget(const QVariantMap &item) {
 	// target type
 	// "mac": mac address
@@ -678,6 +773,44 @@ void CSQLiteStore::removeItem(const QVariantMap &item) {
 		nCondIndex++;
 		break;
 	}
+	query.exec("commit;");
+
+
+}
+
+void CSQLiteStore::removeSync(const QVariantMap &item) {
+	// sync type
+	// "id":id
+	// "sdate": sync date
+	// "sid": server id
+	// "type":
+
+	QSqlQuery query=m_db.exec();
+	query.exec("begin;");
+	QString szCond[] = {
+		"id",
+		"sdate",
+		""
+	};
+
+	int nCondIndex=0;
+
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+		int nIndex=0;
+		QString szCmd;
+		szCmd.sprintf("delete from item_info where %s=?;", QSZ(szCond[nCondIndex]));
+
+		query.prepare(szCmd);
+		query.bindValue(0, item[szCond[nCondIndex]]);
+		query.exec();
+
+		nCondIndex++;
+	}
+
 	query.exec("commit;");
 
 
