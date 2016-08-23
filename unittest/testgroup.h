@@ -52,6 +52,8 @@ private slots:
 	void testCSQLiteStore_removeTarget();
 	void testCSQLiteStore_removeBoard();
 	void testCSQLiteStore_removeItem();
+
+	void testCDBSyncStore_initDB();
 };
 
 #endif // __TESTGROUP_H__

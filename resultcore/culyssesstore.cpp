@@ -4,6 +4,11 @@
 #include <QSqlError>
 #include <QSqlRecord>
 
+#define DB_HOST "192.168.48.2"
+#define DB_NAME "testlinkdb"
+#define DB_USER "ulysses"
+#define DB_PASS "ulysses"
+
 CUlyStore::CUlyStore()
 {
 	/*
@@ -15,8 +20,6 @@ CUlyStore::CUlyStore()
 	 * DB_TABLE_PREFIX:
 	 *
 	 */
-
-	m_db = QSqlDatabase::addDatabase("MYSQL");
 }
 
 CUlyStore::~CUlyStore()
@@ -81,4 +84,104 @@ void CUlyStore::remove(const QVariant &item) {
  */
 bool CUlyStore::initDB() {
 	return true;
+}
+
+bool CUlyStore::open(char *szFile) {
+	// szFile replace to open data base string
+	// format:
+	// <ip>::<database>::<user>::<password>
+	if (NULL == szFile) {
+		return initDB();
+	}
+	m_szDBName=szFile;
+
+	m_db = QSqlDatabase::addDatabase("QMYSQL", m_szDBName);
+
+	QStringList initCmd=QString(szFile).split("::");
+	if (4 != initCmd.size()) {
+		return false;
+	}
+
+	if (m_db.isOpen()) {
+		m_db.close();
+	}
+
+	m_db.setHostName(initCmd.at(0));
+	m_db.setDatabaseName(initCmd.at(1));
+	m_db.setUserName(initCmd.at(2));
+	m_db.setPassword(initCmd.at(3));
+
+	if (!m_db.open()) {
+		return false;
+	}
+
+	return true;
+}
+
+void CUlyStore::close() {
+	m_db.close();
+	QSqlDatabase::removeDatabase(m_szDBName);
+}
+
+void CUlyStore::insertItemMap(QVariantMap &item, QSqlRecord &rinfo, QSqlQuery &query, int nIndex, int nCount) {
+	QString szField;
+	if (0 == nCount) szField=rinfo.fieldName(nIndex);
+	else szField.sprintf("%s.%d", QSZ(rinfo.fieldName(nIndex)), nCount);
+	//DMSG("+++ recursive count: %d", nCount);
+	if (item.find(szField) == item.end()) {
+		item.insert(szField, query.value(nIndex));
+	}
+	else {
+		insertItemMap(item, rinfo, query, nIndex, nCount+1);
+	}
+	//DMSG("--- recursive count: %d", nCount);
+}
+
+bool CUlyStore::query(QSqlQuery &q, char *fmt, ...) {
+	q=m_db.exec();
+
+	va_list vlist;
+	va_start (vlist, fmt);
+	char szBuf[1024]={0};
+	vsprintf(szBuf, fmt, vlist);
+	va_end(vlist);
+	return q.exec(szBuf);
+}
+
+bool CUlyStore::query(std::list<QVariant> &result, char *fmt, ...) {
+	result.clear();
+	DMSG("get a query object");
+	QSqlQuery query=m_db.exec();
+
+	char szBuf[1024]={0};
+
+	DMSG("process query command: %s", fmt);
+	va_list vlist;
+	va_start (vlist, fmt);
+#ifdef Q_OS_WIN
+	vsprintf_s(szBuf, sizeof(szBuf)-1, fmt, vlist);
+#else
+	vsprintf(szBuf, fmt, vlist);
+#endif
+	va_end(vlist);
+
+	DMSG("query command: %s", szBuf);
+	bool bRet=query.exec(szBuf);
+
+	if (!bRet) {
+		DMSG("exec failed!");
+		return false;
+	}
+
+	DMSG("move records: %d to list contianer", query.size());
+	QSqlRecord rinfo=query.record();
+	while (query.next()) {
+		QVariantMap item;
+		for (int i=0; i < rinfo.count(); i++) {
+			insertItemMap(item, rinfo, query, i);
+		}
+		result.push_back(QVariant::fromValue(item));
+	}
+
+	return bRet;
 }

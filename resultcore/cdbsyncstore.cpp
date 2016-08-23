@@ -4,6 +4,11 @@
 #include <QSqlError>
 #include <QSqlRecord>
 
+#define DB_HOST "192.168.48.2"
+#define DB_NAME "test_product_report"
+#define DB_USER "fortress"
+#define DB_PASS "fortress"
+
 CDBSyncStore::CDBSyncStore()
 {
 	/*
@@ -16,7 +21,6 @@ CDBSyncStore::CDBSyncStore()
 	 *
 	 */
 
-	m_db = QSqlDatabase::addDatabase("MYSQL");
 }
 
 CDBSyncStore::~CDBSyncStore()
@@ -45,6 +49,24 @@ void CDBSyncStore::remove(const QVariant &item) {
 }
 
 bool CDBSyncStore::initDB() {
+	m_szDBName.sprintf("%s::%d::%s::%s");
+
+	m_db = QSqlDatabase::addDatabase("QMYSQL", m_szDBName);
+
+	if (m_db.isOpen()) {
+		m_db.close();
+	}
+
+	m_db.setHostName(DB_HOST);
+	m_db.setDatabaseName(DB_NAME);
+	m_db.setUserName(DB_USER);
+	m_db.setPassword(DB_PASS);
+
+	if (!m_db.open()) {
+		return false;
+	}
+
 	return true;
 }
+
 

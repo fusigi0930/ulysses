@@ -370,3 +370,15 @@ void CTestGroup::testCSQLiteStore_removeItem() {
 	db.close();
 	QFile::remove(TEST_DB);
 }
+
+void CTestGroup::testCDBSyncStore_initDB() {
+	CDBSyncStore syncStore;
+	QCOMPARE(syncStore.open(NULL), true);
+
+	std::list<QVariant> lst;
+	syncStore.query(lst, "select * from target where id=1;");
+
+	QCOMPARE((lst.size() != 0), true);
+
+	QCOMPARE(lst.begin()->toMap()["mac"].toString().compare("F80278810055"), 0);
+}

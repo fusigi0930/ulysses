@@ -11,6 +11,8 @@ TARGET = unittest
 CONFIG   += console
 CONFIG   -= app_bundle
 
+QTPLUGIN += QSQLMYSQL
+
 TEMPLATE = app
 
 SOURCES += main.cpp \

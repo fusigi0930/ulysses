@@ -7,7 +7,7 @@
 CSQLiteStore::CSQLiteStore() : CBaseStore(),
 	m_szFile()
 {
-	m_db = QSqlDatabase::addDatabase("QSQLITE");
+
 }
 
 CSQLiteStore::~CSQLiteStore() {
@@ -21,7 +21,10 @@ bool CSQLiteStore::open(char *szFile) {
 	bool bResult=false;
 
 	m_szFile=szFile;
+	QString szDBName;
+	szDBName.sprintf("LocalDB-%s", szFile);
 
+	m_db = QSqlDatabase::addDatabase("QSQLITE", szDBName);
 	m_db.setDatabaseName(m_szFile);
 
 	if (!QFile::exists(m_szFile)) {
@@ -181,7 +184,10 @@ bool CSQLiteStore::query(QSqlQuery &q, char *fmt, ...) {
 
 void CSQLiteStore::close() {
 	m_db.close();
-	QSqlDatabase::removeDatabase("QSQLITE");
+	QString szDBName;
+	szDBName.sprintf("LocalDB-%s", QSZ(m_szFile));
+
+	QSqlDatabase::removeDatabase(szDBName);
 }
 
 bool CSQLiteStore::initDB() {
@@ -396,7 +402,7 @@ long long CSQLiteStore::addSync(const QVariantMap &item) {
 				  );
 
 	query.bindValue(0, item["sdate"]);
-	query.bindValue(1, item["type"]);
+	query.bindValue(1, item["stype"]);
 
 	query.exec();
 	if (QSqlError::NoError != query.lastError().type()) {

@@ -12,6 +12,8 @@ TARGET = resultcore
 TEMPLATE = lib
 CONFIG += dll
 
+QTPLUGIN += QSQLMYSQL
+
 DEFINES += RESULTCORE_LIBRARY
 
 SOURCES += csqlitestore.cpp \

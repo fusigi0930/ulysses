@@ -65,24 +65,46 @@ public:
 	virtual void close();
 };
 
-class RESULTCORESHARED_EXPORT CUlyStore : public CSQLiteStore {
+class RESULTCORESHARED_EXPORT CUlyStore : public CBaseStore {
 protected:
 	virtual bool initDB();
+	void insertItemMap(QVariantMap &item, QSqlRecord &rinfo, QSqlQuery &query, int nIndex, int nCount=0);
+	QSqlDatabase m_db;
+	QMutex m_mutex;
+	QString m_szDBName;
 
 public:
 	CUlyStore();
 	virtual ~CUlyStore();
+
+	virtual bool open(char *szFile);
 
 	virtual long long add(const QVariant &item);
 
 	virtual bool update(const QVariant &item);
 
 	virtual void remove(const QVariant &item);
+
+	virtual void close();
+
+	virtual bool query(std::list<QVariant> &result, char *fmt, ...);
+
+	virtual bool query(QSqlQuery &q, char *fmt, ...);
 };
 
-class RESULTCORESHARED_EXPORT CDBSyncStore : public CSQLiteStore {
+class RESULTCORESHARED_EXPORT CDBSyncStore : public CUlyStore {
 protected:
 	virtual bool initDB();
+
+	long long addTarget(const QVariantMap &item);
+	long long addBoard(const QVariantMap &item);
+	long long addItem(const QVariantMap &item);
+	long long addSync(const QVariantMap &item);
+
+	bool updateTarget(const QVariantMap &item);
+	bool updateBoard(const QVariantMap &item);
+	bool updateItem(const QVariantMap &item);
+	bool updateSync(const QVariantMap &item);
 
 public:
 	CDBSyncStore();
@@ -91,8 +113,6 @@ public:
 	virtual long long add(const QVariant &item);
 
 	virtual bool update(const QVariant &item);
-
-	virtual void remove(const QVariant &item);
 };
 
 #endif // CSQLITESTORE_H
