@@ -61,7 +61,7 @@ bool CDBSyncStore::update(const QVariant &item) {
 }
 
 bool CDBSyncStore::initDB() {
-	m_szDBName.sprintf("%s::%d::%s::%s");
+	m_szDBName.sprintf("%s::%s::%s::%s", DB_HOST, DB_NAME, DB_USER, DB_PASS);
 
 	m_db = QSqlDatabase::addDatabase("QMYSQL", m_szDBName);
 

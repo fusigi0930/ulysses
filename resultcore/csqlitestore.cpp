@@ -808,7 +808,7 @@ void CSQLiteStore::removeSync(const QVariantMap &item) {
 		}
 		int nIndex=0;
 		QString szCmd;
-		szCmd.sprintf("delete from item_info where %s=?;", QSZ(szCond[nCondIndex]));
+		szCmd.sprintf("delete from sync_info where %s=?;", QSZ(szCond[nCondIndex]));
 
 		query.prepare(szCmd);
 		query.bindValue(0, item[szCond[nCondIndex]]);

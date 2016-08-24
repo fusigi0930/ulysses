@@ -12,15 +12,25 @@ ApplicationWindow {
 	property var isSerial;
 
 	id: winDBSync;
-	title: qsTr("Ulysses - Corridor") // 艦隊
+	title: qsTr("Ulysses - Corridor") // 迴廊
 
 	DBSync {
 		id: syncBlock
 
+		onSigSetFilename: {
+			interfaceUi.slotSetFilePath(filename)
+		}
+
+		onSigStartSync: {
+			interfaceUi.slotStartSync()
+		}
 	}
 
 	InterfaceUi {
 		id: interfaceUi
 
+		onSigUpdateInfo: {
+			syncBlock.updateInfo(szInfo)
+		}
 	}
 }

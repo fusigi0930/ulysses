@@ -8,18 +8,25 @@
 class CInterfaceUi : public QObject
 {
 	Q_OBJECT
+protected:
+	bool checkDB(int nType);
+
+
 public:
 	CInterfaceUi(QObject *parent = 0);
 	~CInterfaceUi();
 
-	CSQLiteStore m_db;
+	CSQLiteStore m_Localdb;
+	CDBSyncStore m_Remotedb;
 
+	QString m_szDBFile;
 signals:
-	void sigUpdateUi(QString szResult);
+	void sigUpdateInfo(QString szInfo);
+	void sigUpdateProgress(QVariant vInfo);
 
 public slots:
-	void slotUpdateResult(QString szMac, QString szSerial);
-	void slotGetResult(QString szMac);
+	void slotSetFilePath(QString szFile);
+	void slotStartSync();
 };
 
 #endif // CINTERFACEUI_H

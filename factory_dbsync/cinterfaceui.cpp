@@ -7,6 +7,16 @@
 
 #include <QDir>
 
+enum EDBTYPE {
+	DB_LOCAL,
+	DB_REMOTE,
+};
+
+#define DB_HOST "192.168.48.2"
+#define DB_NAME "test_product_report"
+#define DB_USER "fortress"
+#define DB_PASS "fortress"
+
 CInterfaceUi::CInterfaceUi(QObject *parent) : QObject(parent)
 {
 	QString szFolder;
@@ -19,63 +29,52 @@ CInterfaceUi::CInterfaceUi(QObject *parent) : QObject(parent)
 	szFolder.sprintf("~/.embux");
 #endif
 	szDBFile.sprintf("%s/product.db", QSZ(szFolder));
-	if (!QDir().exists(szFolder)) {
-		QDir().mkpath(szFolder);
+	m_szDBFile=szDBFile;
+	if (!QFile::exists(m_szDBFile)) {
+		emit sigUpdateInfo("default file is not exist");
 	}
-
-	m_db.open(QSZ(szDBFile));
 }
 
 CInterfaceUi::~CInterfaceUi() {
-	m_db.close();
+	m_Localdb.close();
+	m_Remotedb.close();
 }
 
-void CInterfaceUi::slotUpdateResult(QString szMac, QString szSerial) {
-	QVariantMap dbItem;
-
-	QString szCurrentMac;
-	szCurrentMac.sprintf("%s:%s:%s:%s:%s:%s", QSZ(szMac.mid(0,2)), QSZ(szMac.mid(2,2)), QSZ(szMac.mid(4,2)),
-												QSZ(szMac.mid(6,2)), QSZ(szMac.mid(8,2)), QSZ(szMac.mid(10,2)));
-
-	szCurrentMac=szCurrentMac.toLower();
-
-	dbItem.insert("type", "target");
-	dbItem.insert("mac", szCurrentMac);
-	dbItem.insert("unum", szSerial);
-	m_db.update(QVariant::fromValue(dbItem));
+void CInterfaceUi::slotSetFilePath(QString szFile) {
+	m_szDBFile=szFile;
 }
 
-void CInterfaceUi::slotGetResult(QString szMac) {
-	std::list<QVariant> lst;
-	QString szCurrentMac;
-	szCurrentMac.sprintf("%s:%s:%s:%s:%s:%s", QSZ(szMac.mid(0,2)), QSZ(szMac.mid(2,2)), QSZ(szMac.mid(4,2)),
-												QSZ(szMac.mid(6,2)), QSZ(szMac.mid(8,2)), QSZ(szMac.mid(10,2)));
-
-	szCurrentMac=szCurrentMac.toLower();
-
-	DMSG("current Mac: %s", QSZ(szCurrentMac));
-
-	m_db.query(lst, "select * from target, board_info where "
-					"target.mac='%s' and target.id=board_info.tid "
-					"order by board_info.id desc limit 1;",
-					QSZ(szCurrentMac));
-
-	if (0 == lst.size()) {
-		emit sigUpdateUi("NA");
+void CInterfaceUi::slotStartSync() {
+	QVariantMap item;
+	// check database status
+	if (!checkDB(DB_LOCAL) || !checkDB(DB_REMOTE)) {
 		return;
 	}
 
-	switch(lst.begin()->toMap()["result"].toLongLong()) {
-		default:
-		case _DB_RESULT_NA:
-			emit sigUpdateUi("NA");
-			break;
-		case _DB_RESULT_PASS:
-			emit sigUpdateUi("PASS");
-			break;
-		case _DB_RESULT_FAIL:
-			emit sigUpdateUi("FAIL");
-			break;
 
+	// success
+	emit sigUpdateInfo("Sync Completed");
+}
+
+bool CInterfaceUi::checkDB(int nType) {
+	switch (nType) {
+		default: return false;
+		case DB_LOCAL:
+			if (!m_Localdb.open(QSZ(m_szDBFile))) {
+				emit sigUpdateInfo("open local db failed");
+				return false;
+			}
+			return true;
+		case DB_REMOTE:
+			// <ip>::<database>::<user>::<password>
+			QString szBuf;
+			szBuf.sprintf("%s::%s::%s::%s", DB_HOST, DB_NAME, DB_USER, DB_PASS);
+			if (!m_Remotedb.open(QSZ(szBuf))) {
+				emit sigUpdateInfo("open remote db failed");
+				return false;
+			}
+			return true;
 	}
+
+	return false;
 }

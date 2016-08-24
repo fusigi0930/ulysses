@@ -15,6 +15,9 @@ Rectangle {
 	anchors.horizontalCenter: parent.horizontalCenter;
 	anchors.verticalCenter: parent.verticalCenter;
 
+	signal sigSetFilename(string filename)
+	signal sigStartSync()
+
 	property var szFilename: ""
 
 	FileDialog {
@@ -29,6 +32,7 @@ Rectangle {
 
 		onAccepted: {
 			szFilename=fileDialog.fileUrl.toString()
+			sigSetFilename(szFilename)
 		}
 	}
 
@@ -37,8 +41,11 @@ Rectangle {
 		focus: true
 		enabled: true
 		Keys.onPressed: {
-			if(event.modifiers & Qt.ControlModifier) {
+			if(event.modifiers & Qt.ControlModifier && event.key === Qt.Key_O) {
 				fileDialog.open()
+			}
+			else if (event.modifiers & Qt.AltModifier && event.modifiers & Qt.ControlModifier && event.key === Qt.Key_U) {
+				sigStartSync()
 			}
 		}
 	}
@@ -110,5 +117,8 @@ Rectangle {
 		}
 	}
 
+	function updateInfo(info) {
+		textResult.text=info
+	}
 }
 
