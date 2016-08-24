@@ -11,7 +11,8 @@ SUBDIRS += \
     luacore \
     resultcore \
     dhcp_ip_viewer \
-    factory_postbarcode
+    factory_postbarcode \
+    factory_dbsync
 
 engine.depends = \
 	netio \
@@ -57,3 +58,11 @@ factory_postbarcode.depends = \
     luacore \
     resultcore
 
+factory_dbsync.depends = \
+    engine \
+    netio \
+    xmlrun \
+    xmlcfg \
+    comio \
+    luacore \
+    resultcore
