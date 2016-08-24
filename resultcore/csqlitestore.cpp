@@ -95,10 +95,10 @@ bool CSQLiteStore::update(const QVariant &item) {
 		bRet=updateItem(mapItem);
 	}
 	else if (0 == mapItem["type"].toString().compare("sync")) {
-		bRet=updateItem(mapItem);
+		bRet=updateSync(mapItem);
 	}
 	m_mutex.unlock();
-	return false;
+	return bRet;
 }
 
 void CSQLiteStore::remove(const QVariant &item) {

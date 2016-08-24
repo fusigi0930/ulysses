@@ -382,3 +382,49 @@ void CTestGroup::testCDBSyncStore_initDB() {
 
 	QCOMPARE(lst.begin()->toMap()["mac"].toString().compare("F80278810055"), 0);
 }
+
+void CTestGroup::testDBSyncInfo() {
+	CSQLiteStore dbLocal;
+	CDBSyncStore dbRemote;
+
+	dbLocal.open(TEST_DB);
+	dbRemote.open(NULL);
+
+	qint64 sTime=QDateTime::currentMSecsSinceEpoch();
+
+	QVariantMap itemLocal, itemRemote;
+	std::list<QVariant> lst;
+
+	itemLocal.insert("type", "sync");
+	itemLocal.insert("stype", _DB_TYPE_ADD_BOARD);
+	itemLocal.insert("sdate", sTime);
+
+	itemRemote.insert("type", "sync");
+	itemRemote.insert("stype", _DB_TYPE_ADD_BOARD);
+	itemRemote.insert("sdate", sTime);
+
+	long long nIdLocal=dbLocal.add(itemLocal);
+	long long nIdRemote=dbRemote.add(itemRemote);
+
+	QCOMPARE((0 != nIdLocal), true);
+	QCOMPARE((0 != nIdRemote), true);
+
+	itemLocal.clear();
+	itemRemote.clear();
+
+	itemLocal.insert("type", "sync");
+	itemLocal.insert("id", nIdLocal);
+	itemLocal.insert("sid", nIdRemote);
+
+	itemRemote.insert("type", "sync");
+	itemRemote.insert("id", nIdRemote);
+	itemRemote.insert("value", 1989);
+
+	dbLocal.update(itemLocal);
+	dbRemote.update(itemRemote);
+
+	dbLocal.query(lst, "select sid from sync_info where id=%d;",nIdLocal);
+	QCOMPARE(lst.begin()->toMap()["sid"].toLongLong(), nIdRemote);
+
+	QFile::remove(TEST_DB);
+}
