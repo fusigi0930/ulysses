@@ -17,8 +17,15 @@ Rectangle {
 
 	signal sigSetFilename(string filename)
 	signal sigStartSync()
+	signal sigTestProgress()
+	signal sigUpdateProgress(var info)
 
 	property var szFilename: ""
+
+	onSigUpdateProgress: {
+		progInfo.maximumValue=info["max"]
+		progInfo.setValue(info["current"])
+	}
 
 	FileDialog {
 		id: fileDialog
@@ -41,11 +48,14 @@ Rectangle {
 		focus: true
 		enabled: true
 		Keys.onPressed: {
-			if(event.modifiers & Qt.ControlModifier && event.key === Qt.Key_O) {
+			if (event.modifiers & Qt.ControlModifier && event.key === Qt.Key_O) {
 				fileDialog.open()
 			}
 			else if (event.modifiers & Qt.AltModifier && event.modifiers & Qt.ControlModifier && event.key === Qt.Key_U) {
 				sigStartSync()
+			}
+			else if (event.modifiers & Qt.ControlModifier && event.key === Qt.Key_T) {
+				sigTestProgress()
 			}
 		}
 	}

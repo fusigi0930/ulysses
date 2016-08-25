@@ -24,6 +24,10 @@ ApplicationWindow {
 		onSigStartSync: {
 			interfaceUi.slotStartSync()
 		}
+
+		onSigTestProgress: {
+			interfaceUi.slotTestProg()
+		}
 	}
 
 	InterfaceUi {
@@ -31,6 +35,10 @@ ApplicationWindow {
 
 		onSigUpdateInfo: {
 			syncBlock.updateInfo(szInfo)
+		}
+
+		onSigUpdateProgress: {
+			syncBlock.sigUpdateProgress(vInfo)
 		}
 	}
 }
