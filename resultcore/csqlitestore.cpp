@@ -324,8 +324,8 @@ long long CSQLiteStore::addBoard(const QVariantMap &item) {
 
 	QSqlQuery query=m_db.exec();
 
-	query.prepare("insert into board_info (tid,mode) "
-				  "values (?,?);"
+	query.prepare("insert into board_info (tid,mode,idate) "
+				  "values (?,?,?);"
 				  );
 
 	query.bindValue(0, item["tid"]);
@@ -334,6 +334,7 @@ long long CSQLiteStore::addBoard(const QVariantMap &item) {
 #else
 	query.bindValue(1, 0);
 #endif
+	query.bindValue(2, item["idate"]);
 
 	query.exec();
 	if (QSqlError::NoError != query.lastError().type()) {

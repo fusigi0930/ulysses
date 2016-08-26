@@ -34,7 +34,7 @@ CTaskThread::~CTaskThread() {
 void CTaskThread::run() {
 	if (!m_ui) return;
 
-	m_ui->testProg();
+	m_ui->startSync();
 }
 
 //////////////////////////////////////////////////////
@@ -78,44 +78,9 @@ void CInterfaceUi::slotSetFilePath(QString szFile) {
 }
 
 void CInterfaceUi::slotStartSync() {
-	QVariantMap item;
-	// check database status
-	if (!checkDB(DB_LOCAL) || !checkDB(DB_REMOTE)) {
-		return;
+	if (m_thread) {
+		m_thread->start();
 	}
-
-	std::list<QVariant> recordLocal, recordRemote;
-	long long nLocalSyncId=0, nRemoteSyncId=0;
-
-	do {
-		nLocalSyncId=getLastSyncInfo(&m_Localdb, recordLocal);
-
-		if (0 > nLocalSyncId) {
-			return;
-		}
-
-		if (0 == nLocalSyncId) {
-			// not have sync data, sync directly
-			break;
-		}
-
-		// check is remote id exist?
-		if (0 > (nRemoteSyncId = checkSyncInfo(*recordLocal.begin())))
-		{
-			// remote dose not have this record, remove local
-			item.clear();
-			item.insert("type", "sync");
-			item.insert("id", nLocalSyncId);
-			m_Localdb.remove(item);
-			continue;
-		}
-
-	} while (0 < nLocalSyncId && 0 < nRemoteSyncId);
-
-	startSync(*recordLocal.begin());
-
-	// success
-	emit sigUpdateInfo("Sync Completed");
 }
 
 bool CInterfaceUi::checkDB(int nType) {
@@ -150,7 +115,7 @@ long long CInterfaceUi::getLastSyncInfo(CBaseStore *db, std::list<QVariant> &lst
 
 	lst.clear();
 	QString szInfo;
-	if (!db->query(lst, "select * from sync_info order by desc limit 1;")) {
+	if (!db->query(lst, "select * from sync_info order by id desc limit 1;")) {
 		szInfo.sprintf("%s query failed", typeid(*db).name());
 		emit sigUpdateInfo(szInfo);
 		return -1;
@@ -209,8 +174,93 @@ long long CInterfaceUi::checkSyncInfo(QVariant info) {
 	return lst.begin()->toMap()["id"].toLongLong();
 }
 
-long long CInterfaceUi::startSync(QVariant local) {
+long long CInterfaceUi::startSync() {
+	QVariantMap item;
+	long long nRet=-1;
+	// check database status
+	if (!checkDB(DB_LOCAL) || !checkDB(DB_REMOTE)) {
+		return -1;
+	}
+
+	std::list<QVariant> recordLocal, recordRemote;
+	long long nLocalSyncId=0, nRemoteSyncId=0;
+
+	do {
+		nLocalSyncId=getLastSyncInfo(&m_Localdb, recordLocal);
+
+		if (0 > nLocalSyncId) {
+			return -1;
+		}
+
+		if (0 == nLocalSyncId) {
+			// not have sync data, sync directly
+			break;
+		}
+
+		// check is remote id exist?
+		if (0 > (nRemoteSyncId = checkSyncInfo(*recordLocal.begin())))
+		{
+			// remote dose not have this record, remove local
+			item.clear();
+			item.insert("type", "sync");
+			item.insert("id", nLocalSyncId);
+			m_Localdb.remove(item);
+			continue;
+		}
+
+	} while (0 < nLocalSyncId && 0 < nRemoteSyncId);
+
+	QVariant local;
+	std::list<QVariant> lstTarget;
+	if (0 <recordLocal.size()) {
+		local=*recordLocal.begin();
+	}
+	else {
+		QVariantMap map;
+		map.insert("sdate", 0);
+		local=map;
+	}
+	emit sigUpdateInfo("Updating...");
+
 	// get total sync records number
+	if (!m_Localdb.query(lstTarget,
+						 "select * from target where sdate>%lld;", local.toMap()["sdate"].toLongLong()))
+	{
+		emit sigUpdateInfo("fetch target error");
+		return -1;
+	}
+
+	if (0 < lstTarget.size()) {
+		nRet=syncTarget(local);
+	}
+	else {
+		nRet=syncBoard(local);
+	}
+
+	// success
+	emit sigUpdateInfo("Sync Completed");
+	return nRet;
+}
+
+void CInterfaceUi::slotTestProg() {
+	if (m_thread) {
+		m_thread->start();
+	}
+}
+
+void CInterfaceUi::testProg() {
+	QVariantMap info;
+	int nMax=100;
+	for (int i=0; i<nMax; i++) {
+		info.clear();
+		info.insert("max", nMax);
+		info.insert("current", i);
+		QThread::msleep(10);
+		emit sigUpdateProgress(info);
+	}
+}
+
+long long CInterfaceUi::syncTarget(QVariant local) {
 	std::list<QVariant> lstTarget, lstBoard, lstItem;
 	if (!m_Localdb.query(lstTarget,
 						 "select * from target where sdate>%lld;", local.toMap()["sdate"].toLongLong()))
@@ -233,9 +283,8 @@ long long CInterfaceUi::startSync(QVariant local) {
 		return -1;
 	}
 
-	long nType=(0 < lstTarget.size() ? _DB_TYPE_ADD_TARGET : _DB_TYPE_ADD_BOARD);
-	long long nTotalCount=lstTarget.size() + lstBoard.size() + lstItem.size();
-	long long nCurrent=0;
+	m_nTotalCount=lstTarget.size() + lstBoard.size() + lstItem.size();
+	m_nCurrentCount=0;
 
 	// start update information
 	std::list<QVariant>::iterator pData;
@@ -247,45 +296,144 @@ long long CInterfaceUi::startSync(QVariant local) {
 		item.insert("unum", pData->toMap()["unum"]);
 		item.insert("board_name", pData->toMap()["board_name"]);
 		item.insert("sdate", pData->toMap()["sdate"]);
-		m_Remotedb.add(item);
-		nCurrent++;
+		long long nRemoteTargetId=m_Remotedb.add(item);
+		m_nCurrentCount++;
+		updateUiInfo();
+
+		item.clear();
+		item.insert("o_tid", pData->toMap()["id"]);
+		item.insert("n_tid", nRemoteTargetId);
+
+		replaceBoard(item);
 	}
 
+
+	return 0;
+}
+
+long long CInterfaceUi::syncBoard(QVariant local) {
+	std::list<QVariant> lstBoard, lstItem;
+	if (!m_Localdb.query(lstBoard,
+						 "select * from board_info where idate>%lld;", local.toMap()["sdate"].toLongLong()))
+	{
+		emit sigUpdateInfo("fetch board_info error");
+		return -1;
+	}
+
+	if (!m_Localdb.query(lstItem,
+						 "select * from item_info where tdate>%lld;", local.toMap()["sdate"].toLongLong()))
+	{
+		emit sigUpdateInfo("fetch item error");
+		return -1;
+	}
+
+	m_nTotalCount = lstBoard.size() + lstItem.size();
+	m_nCurrentCount=0;
+
+	// start update information
+	std::list<QVariant>::iterator pData;
+	for (pData=lstBoard.begin(); pData != lstBoard.end(); pData++) {
+		QVariantMap item;
+
+		item.insert("o_tid", pData->toMap()["tid"]);
+		std::list<QVariant> lstTemp;
+		if (!m_Localdb.query(lstTemp, "select * from target where id=%lld;", pData->toMap()["tid"].toLongLong())) {
+			continue;
+		}
+		if (0 == lstTemp.size()) {
+			continue;
+		}
+
+		QString szMac=lstTemp.begin()->toMap()["mac"].toString();
+		lstTemp.clear();
+		if (!m_Remotedb.query(lstTemp, "select * from target where mac=%s;"), QSZ(szMac)) {
+			continue;
+		}
+		if (0 == lstTemp.size()) {
+			continue;
+		}
+
+		item.insert("n_tid", lstTemp.begin()->toMap()["id"]);
+
+		replaceBoard(item);
+	}
+	return 0;
+}
+
+long long CInterfaceUi::replaceBoard(QVariant replaceInfo) {
+	// info fields:
+	// o_tid: original local target id
+	// n_tid: new remote target id
+	std::list<QVariant> lstBoard;
+
+	if (!m_Localdb.query(lstBoard,
+						 "select * from board_info where tid=%lld;", replaceInfo.toMap()["o_tid"].toLongLong()))
+	{
+		emit sigUpdateInfo("fetch board_info error");
+		return -1;
+	}
+
+	// start update information
+	std::list<QVariant>::iterator pData;
 	for (pData=lstBoard.begin(); pData != lstBoard.end(); pData++) {
 		QVariantMap item;
 		item.insert("type", "board");
-		item.insert("tid", pData->toMap()["tid"]);
+		item.insert("tid", replaceInfo.toMap()["n_tid"]);
 		item.insert("result", pData->toMap()["result"]);
+		item.insert("mode", pData->toMap()["mode"]);
 		item.insert("idate", pData->toMap()["idate"]);
-		m_Remotedb.add(item);
-		nCurrent++;
+
+		long long nRemoteBoardId=m_Remotedb.add(item);
+		m_nCurrentCount++;
+		updateUiInfo();
+
+		item.clear();
+		item.insert("n_tid", replaceInfo.toMap()["n_tid"]);
+		item.insert("o_bid", pData->toMap()["id"]);
+		item.insert("n_bid", nRemoteBoardId);
+
+		replaceItem(item);
+	}
+	return 0;
+}
+
+long long CInterfaceUi::replaceItem(QVariant replaceInfo) {
+	// info fields:
+	// n_tid: new remote target id
+	// o_bid: original local board_id
+	// n_bid: new remote board id
+
+	std::list<QVariant> lstItem;
+
+	if (!m_Localdb.query(lstItem,
+						 "select * from item_info where bid=%lld;", replaceInfo.toMap()["o_bid"].toLongLong()))
+	{
+		emit sigUpdateInfo("fetch item_info error");
+		return -1;
 	}
 
-	for (pData=lstBoard.begin(); pData != lstBoard.end(); pData++) {
+	// start update information
+	std::list<QVariant>::iterator pData;
+	for (pData=lstItem.begin(); pData != lstItem.end(); pData++) {
 		QVariantMap item;
-		item.insert("type", "board");
-		item.insert("tid", pData->toMap()["tid"]);
+		item.insert("type", "item");
+		item.insert("tid", replaceInfo.toMap()["n_tid"]);
+		item.insert("bid", replaceInfo.toMap()["n_bid"]);
+		item.insert("name", pData->toMap()["name"]);
 		item.insert("result", pData->toMap()["result"]);
-		item.insert("idate", pData->toMap()["idate"]);
+		item.insert("tdate", pData->toMap()["tdate"]);
+
 		m_Remotedb.add(item);
-		nCurrent++;
+		m_nCurrentCount++;
+		updateUiInfo();
 	}
+
+	return 0;
 }
 
-void CInterfaceUi::slotTestProg() {
-	if (m_thread) {
-		m_thread->start();
-	}
-}
-
-void CInterfaceUi::testProg() {
+void CInterfaceUi::updateUiInfo() {
 	QVariantMap info;
-	int nMax=100;
-	for (int i=0; i<nMax; i++) {
-		info.clear();
-		info.insert("max", nMax);
-		info.insert("current", i);
-		QThread::msleep(10);
-		emit sigUpdateProgress(info);
-	}
+	info.insert("max", m_nTotalCount);
+	info.insert("current", m_nCurrentCount);
+	emit sigUpdateProgress(info);
 }

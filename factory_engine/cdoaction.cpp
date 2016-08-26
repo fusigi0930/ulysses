@@ -94,6 +94,7 @@ int CDoAction::run() {
 	QVariantMap dbItem;
 	dbItem.insert("type", "board");
 	dbItem.insert("tid", m_ptrDev->info.nTargetID);
+	dbItem.insert("idate", QDateTime::currentMSecsSinceEpoch());
 	dbItem.insert("result", _DB_RESULT_NA);
 	m_ptrDev->info.nBoardID=m_pDB->add(QVariant::fromValue(dbItem));
 

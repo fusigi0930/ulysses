@@ -23,6 +23,7 @@ Rectangle {
 	property var szFilename: ""
 
 	onSigUpdateProgress: {
+		textInfo.text= info["current"] + " / " + info["max"]
 		progInfo.maximumValue=info["max"]
 		progInfo.setValue(info["current"])
 	}

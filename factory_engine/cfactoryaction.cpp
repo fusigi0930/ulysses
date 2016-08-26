@@ -206,6 +206,8 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 		int nEnd=szMac.indexOf('\n',nPos+1);
 		szMac=szMac.mid(nPos+1, nEnd-nPos);
 		szMac=szMac.trimmed();
+		szMac.replace(":", "");
+		szMac.toUpper();
 		newDev->szMac=szMac;
 	} while (szMac.isEmpty() && nRetryTimes--);
 

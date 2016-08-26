@@ -34,7 +34,13 @@ protected:
 	long long getLastSyncInfo(CBaseStore *db, std::list<QVariant> &lst);
 	long long checkSyncInfo(QVariant info);
 
-	long long startSync(QVariant local);
+	long long syncTarget(QVariant local);
+	long long syncBoard(QVariant local);
+
+	long long replaceBoard(QVariant replaceInfo);
+	long long replaceItem(QVariant replaceInfo);
+
+	void updateUiInfo();
 
 public:
 	CInterfaceUi(QObject *parent = 0);
@@ -43,9 +49,13 @@ public:
 	CSQLiteStore m_Localdb;
 	CDBSyncStore m_Remotedb;
 
+	long long m_nTotalCount;
+	long long m_nCurrentCount;
+
 	QString m_szDBFile;
 
 	void testProg();
+	long long startSync();
 signals:
 	void sigUpdateInfo(QString szInfo);
 	void sigUpdateProgress(QVariant vInfo);
