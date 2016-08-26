@@ -208,7 +208,7 @@ long long CInterfaceUi::startSync() {
 			continue;
 		}
 
-	} while (0 < nLocalSyncId && 0 < nRemoteSyncId);
+	} while (0 > nLocalSyncId || 0 > nRemoteSyncId);
 
 	QVariant local;
 	std::list<QVariant> lstTarget;
@@ -232,9 +232,12 @@ long long CInterfaceUi::startSync() {
 
 	if (0 < lstTarget.size()) {
 		nRet=syncTarget(local);
+		addSyncRecord(_DB_TYPE_ADD_TARGET);
 	}
 	else {
 		nRet=syncBoard(local);
+		if (m_nTotalCount > 0)
+			addSyncRecord(_DB_TYPE_ADD_BOARD);
 	}
 
 	// success
@@ -436,4 +439,39 @@ void CInterfaceUi::updateUiInfo() {
 	info.insert("max", m_nTotalCount);
 	info.insert("current", m_nCurrentCount);
 	emit sigUpdateProgress(info);
+}
+
+long long CInterfaceUi::addSyncRecord(int nType) {
+	QVariantMap item;
+	std::list<QVariant> lst;
+	qint64 nDate=QDateTime::currentMSecsSinceEpoch();
+	item.insert("type", "sync");
+	item.insert("stype", nType);
+	item.insert("sdate", nDate);
+	long long nLocalSyncId=m_Localdb.add(item);
+
+	item.clear();
+	item.insert("type", "sync");
+	item.insert("stype", nType);
+	item.insert("sdate", nDate);
+	switch (nType) {
+		default: break;
+		case _DB_TYPE_ADD_BOARD:
+			m_Localdb.query(lst, "select * from board_info order by id desc limit 1;");
+			break;
+		case _DB_TYPE_ADD_TARGET:
+			m_Localdb.query(lst, "select * from target order by id desc limit 1;");
+			break;
+	}
+	if (0 < lst.size()) {
+		item.insert("value", lst.begin()->toMap()["id"]);
+	}
+	long long nRemoteSyncId=m_Remotedb.add(item);
+
+	item.clear();
+	item.insert("type", "sync");
+	item.insert("id", nLocalSyncId);
+	item.insert("sid", nRemoteSyncId);
+	m_Localdb.update(item);
+	return nLocalSyncId;
 }

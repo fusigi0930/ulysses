@@ -181,14 +181,15 @@ long long CDBSyncStore::addSync(const QVariantMap &item) {
 
 	QSqlQuery query=m_db.exec();
 
-	query.prepare("insert into sync_info (`sdate`,`type`,`from`) "
-				  "values (?,?,?);"
+	query.prepare("insert into sync_info (`sdate`,`type`,`from`,`value`) "
+				  "values (?,?,?,?);"
 				  );
 
 	query.bindValue(0, item["sdate"]);
 	query.bindValue(1, item["stype"]);
 	QList<QNetworkInterface> netList=QNetworkInterface::allInterfaces();
 	query.bindValue(2, netList.at(0).hardwareAddress());
+	query.bindValue(3, item["value"]);
 
 	query.exec();
 	if (QSqlError::NoError != query.lastError().type()) {

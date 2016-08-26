@@ -41,6 +41,7 @@ protected:
 	long long replaceItem(QVariant replaceInfo);
 
 	void updateUiInfo();
+	long long addSyncRecord(int nType);
 
 public:
 	CInterfaceUi(QObject *parent = 0);

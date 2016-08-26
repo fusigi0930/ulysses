@@ -53,11 +53,14 @@ Rectangle {
 				fileDialog.open()
 			}
 			else if (event.modifiers & Qt.AltModifier && event.modifiers & Qt.ControlModifier && event.key === Qt.Key_U) {
+				textInfo.text= "0 / 0"
+				progInfo.maximumValue=1
+				progInfo.setValue(0)
 				sigStartSync()
 			}
-			else if (event.modifiers & Qt.ControlModifier && event.key === Qt.Key_T) {
-				sigTestProgress()
-			}
+			//else if (event.modifiers & Qt.ControlModifier && event.key === Qt.Key_T) {
+			//	sigTestProgress()
+			//}
 		}
 	}
 
@@ -93,7 +96,7 @@ Rectangle {
 			font.pixelSize: 28;
 			font.family: "tohama";
 			color: "#C08080";
-			text: "progress"
+			text: "0 / 0"
 		}
 
 		ProgressBar {
@@ -124,7 +127,7 @@ Rectangle {
 			font.pixelSize: 28;
 			font.family: "tohama";
 			color: "#C01080";
-			text: "result"
+			text: ""
 		}
 	}
 
