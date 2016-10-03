@@ -191,7 +191,7 @@ void CFactoryAction::slotStartNewBootDev(int nPort) {
 		newDev->ncio->open(QSZ(szBuf));
 		wait(1500);
 
-		newDev->ncio->setPrompt("EMBUX-TAURUS");
+		newDev->ncio->setPrompt("EMBUX-GEMINI");
 
 		DMSG("ready to get mac address");
 		wait(600);
