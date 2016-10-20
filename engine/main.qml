@@ -1,39 +1,58 @@
 import QtQuick 2.1
-import QtQuick.Controls 1.2
+import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.1
 import "qrc:/ulysses/"
 
 ApplicationWindow {
     visible: true
-    width: 640
-    height: 480
-    title: qsTr("Hello World")
+	title: qsTr("Thor Hammer")
 
     menuBar: MenuBar {
         Menu {
             title: qsTr("File")
             MenuItem {
-                text: qsTr("&Open")
-                onTriggered: console.log("Open action triggered");
-            }
-            MenuItem {
                 text: qsTr("Exit")
                 onTriggered: Qt.quit();
             }
         }
+		Menu {
+			title: "test"
+			MenuItem {
+				text: qsTr("add pannel")
+				onTriggered: {
+					pannelBottom.addInfoPanel("test");
+				}
+			}
+			MenuItem {
+				text: qsTr("find pannel")
+				onTriggered: {
+					pannelBottom.findInfoPannel("abc");
+				}
+			}
+		}
     }
 
-	IconButton {
-		id: testButton
-		text: qsTr("YAS")
-		image: "image/res/png/run.png"
-		tooltip: qsTr("Test")
-		onClicked: {
-			setIcon("/image/res/png/run.png");
-		}
+	Component.onCompleted: {
+		showMaximized();
 	}
 
-    Label {
-        text: qsTr("Hello World")
-        anchors.centerIn: parent
-    }
+	SplitView {
+		id: splitMainPannel
+		anchors.fill: parent
+		orientation: Qt.Vertical
+
+		BroadcastGridView {
+			id: broadcastView
+			height: 150
+			anchors.fill: undefined
+			Layout.maximumHeight: 250
+			Layout.minimumHeight: 150
+		}
+
+		BottomPannel {
+			id: pannelBottom
+			Layout.fillHeight: true
+			Layout.fillWidth: true
+		}
+	}
 }

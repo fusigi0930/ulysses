@@ -1,0 +1,59 @@
+import QtQuick 2.1
+import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.1
+import "qrc:/ulysses/"
+
+Rectangle {
+	id: rectBottomPanel
+
+	property int nCount: 0
+	property var lstItems: []
+	property var compInfoPannel
+
+	Component.onCompleted: {
+		compInfoPannel=Qt.createComponent("InfoPannel.qml");
+	}
+
+	function addInfoPanel(name) {
+		// name format:
+		// <system>:<ip>
+		var object=compInfoPannel.createObject(rectBottomPanel);
+
+		console.log("add pannel name: " + name)
+		object.objectName=name;
+		object.visible=true;
+		object.treeCurrentName=name;
+		object.listCurrentName=name;
+		lstItems.push(object);
+	}
+
+	function removeInfoPanel(name) {
+		for (var i = 0; i < lstItems.length; i++) {
+			if (name === lstItems[i].objectName) {
+				lstItems.splice(i, 1);
+				return;
+			}
+		}
+	}
+
+	function findInfoPannel(name) {
+		for (var i = 0; i < lstItems.length; i++) {
+			console.log("item name: " + lstItems[i].objectName);
+			if (name === lstItems[i].objectName) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	function activateInfoPannel(index) {
+		for (var i = 0; i < lstItems.length; i++) {
+			lstItems[i].visible=false;
+		}
+		lstItems[index].visible=true;
+	}
+
+	function clear() {
+		lstItems.erase();
+	}
+}
