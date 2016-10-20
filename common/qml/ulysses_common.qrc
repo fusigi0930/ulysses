@@ -21,5 +21,7 @@
 		<file>res/png/back-device.png</file>
 		<file>res/png/clean_pass.png</file>
 		<file>res/png/clean_fail.png</file>
+		<file>res/png/check-all.png</file>
+		<file>res/png/uncheck-all.png</file>
 	</qresource>
 </RCC>	
