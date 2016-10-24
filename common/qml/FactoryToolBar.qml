@@ -25,7 +25,7 @@ ToolBar {
 			id: buttonRun
 			text: qsTr("clean pass")
 			image: "qrc:/image/res/png/clean_pass.png"
-			tooltip: qsTr("run")
+			tooltip: qsTr("clean all passed devices")
 			onClicked: {
 				toolBar.sigClickButton("clean_pass")
 			}
@@ -34,7 +34,7 @@ ToolBar {
 			id: buttonStop
 			text: qsTr("clean fail")
 			image: "qrc:/image/res/png/clean_fail.png"
-			tooltip: qsTr("stop")
+			tooltip: qsTr("clean all failed devices")
 			onClicked: {
 				toolBar.sigClickButton("clean_fail")
 			}

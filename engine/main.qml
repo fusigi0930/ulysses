@@ -2,6 +2,7 @@ import QtQuick 2.1
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import "qrc:/ulysses/"
+import InterfaceUi 1.0
 
 ApplicationWindow {
     visible: true
@@ -20,17 +21,35 @@ ApplicationWindow {
 			MenuItem {
 				text: qsTr("add pannel")
 				onTriggered: {
-					pannelBottom.addInfoPanel("test");
+					var newTreeModel=interfaceUi.newTreeModel();
+					pannelBottom.addInfoPanel(newTreeModel.getQMLName(), newTreeModel);
 				}
 			}
 			MenuItem {
-				text: qsTr("find pannel")
+				text: qsTr("list pannel in console")
 				onTriggered: {
-					pannelBottom.findInfoPannel("abc");
+					pannelBottom.listInfoIname();
+				}
+			}
+			MenuItem {
+				text: qsTr("active pannel")
+				onTriggered: {
+					var i=pannelBottom.findInfoPannel("treeModel-00000");
+					pannelBottom.activateInfoPannel(i);
+				}
+			}
+			MenuItem {
+				text: qsTr("deactive all pannel")
+				onTriggered: {
+					pannelBottom.deactivateInfoPannels();
 				}
 			}
 		}
     }
+
+	InterfaceUi {
+		id: interfaceUi
+	}
 
 	Component.onCompleted: {
 		showMaximized();

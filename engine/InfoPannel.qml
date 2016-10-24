@@ -11,19 +11,24 @@ SplitView {
 	property alias treeCurrentName: pannelLeft.currentName
 	property alias listCurrentName: pannelRight.currentName
 
+	signal sigNewTreeModel(var newTreeModel)
+
+	onSigNewTreeModel: {
+		pannelLeft.sigNewTreeModel(newTreeModel);
+	}
+
 	LeftPannel {
 		id: pannelLeft
-		width: 200
-		Layout.maximumWidth: 250
+		width: 300
+		Layout.maximumWidth: 550
 		Layout.minimumWidth: 150
-		color: "blue"
 	}
 
 	RightPannel {
 		id: pannelRight
 		Layout.fillWidth: true
 		Layout.minimumWidth: 150
-		color: "red"
+		color: "#F0F0F0"
 	}
 
 	Component.onCompleted: {

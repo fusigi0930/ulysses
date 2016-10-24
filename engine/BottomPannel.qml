@@ -14,16 +14,18 @@ Rectangle {
 		compInfoPannel=Qt.createComponent("InfoPannel.qml");
 	}
 
-	function addInfoPanel(name) {
+	function addInfoPanel(name, newTreeModel) {
 		// name format:
 		// <system>:<ip>
-		var object=compInfoPannel.createObject(rectBottomPanel);
 
+		var object=compInfoPannel.createObject(rectBottomPanel);
+		deactivateInfoPannels();
 		console.log("add pannel name: " + name)
 		object.objectName=name;
 		object.visible=true;
 		object.treeCurrentName=name;
 		object.listCurrentName=name;
+		object.sigNewTreeModel(newTreeModel);
 		lstItems.push(object);
 	}
 
@@ -33,6 +35,9 @@ Rectangle {
 				lstItems.splice(i, 1);
 				return;
 			}
+		}
+		if (lstItems.length > 0) {
+			lstItems[lstItems.length-1].visible=true;
 		}
 	}
 
@@ -46,10 +51,20 @@ Rectangle {
 		return -1;
 	}
 
-	function activateInfoPannel(index) {
+	function listInfoIname() {
+		for (var i = 0; i < lstItems.length; i++) {
+			console.log("item name: " + lstItems[i].objectName);
+		}
+	}
+
+	function deactivateInfoPannels() {
 		for (var i = 0; i < lstItems.length; i++) {
 			lstItems[i].visible=false;
 		}
+	}
+
+	function activateInfoPannel(index) {
+		deactivateInfoPannels();
 		lstItems[index].visible=true;
 	}
 

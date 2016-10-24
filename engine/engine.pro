@@ -2,7 +2,10 @@ TEMPLATE = app
 
 QT += qml quick widgets sql
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    ctreemodel.cpp \
+    ctreeitem.cpp \
+    cinterfaceui.cpp
 
 RESOURCES += qml.qrc
 
@@ -47,3 +50,8 @@ QML_IMPORT_PATH =
 
 # Default rules for deployment.
 include(deployment.pri)
+
+HEADERS += \
+    ctreemodel.h \
+    ctreeitem.h \
+    cinterfaceui.h
