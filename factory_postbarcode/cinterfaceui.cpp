@@ -40,7 +40,7 @@ void CInterfaceUi::slotUpdateResult(QString szMac, QString szSerial) {
 	szCurrentMac=szCurrentMac.toLower();
 
 	dbItem.insert("type", "target");
-	dbItem.insert("mac", szCurrentMac);
+	dbItem.insert("mac", szMac);
 	dbItem.insert("unum", szSerial);
 	m_db.update(QVariant::fromValue(dbItem));
 }
