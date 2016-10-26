@@ -74,6 +74,17 @@ ApplicationWindow {
 			anchors.fill: undefined
 			Layout.maximumHeight: 250
 			Layout.minimumHeight: 150
+
+			onSigOpenClient: {
+				console.log("item: " + item.ip + ", " + item.style);
+				var name=item.style+":"+item.ip;
+				if (-1 === pannelBottom.findInfoPannel(name)) {
+					console.log("open client: " + name)
+					var newTreeModel=interfaceUi.newTreeModel();
+					newTreeModel.setQMLName(name);
+					pannelBottom.addInfoPanel(name, newTreeModel);
+				}
+			}
 		}
 
 		BottomPannel {

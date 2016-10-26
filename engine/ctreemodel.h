@@ -22,8 +22,6 @@ public:
 	CTreeModel();
 	virtual ~CTreeModel();
 
-	void setQMLName(QString szName);
-
 	QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
 	Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
 	QVariant headerData(int section, Qt::Orientation orientation,
@@ -36,6 +34,7 @@ public:
 	QHash<int, QByteArray> roleNames() const override;
 	Q_INVOKABLE QVariantList getAllIndex();
 	Q_INVOKABLE QVariant getQMLName();
+	Q_INVOKABLE void setQMLName(QString szName);
 
 public slots:
 

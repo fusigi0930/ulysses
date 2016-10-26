@@ -30,7 +30,7 @@ Rectangle {
 
 		property var treeM
 
-		TableViewColumn { id: mainColumn; role: "enabled"; title: "v"; width: 120; delegate: checkboxTree }
+		TableViewColumn { id: mainColumn; role: "enabled"; title: currentName; width: 150; delegate: checkboxTree }
 		TableViewColumn { role: "name"; title: "Name"; width: 200 }
 		TableViewColumn { role: "id"; title: "id"; width: 0; visible: false }
 		TableViewColumn { role: "pid"; title: "pid"; width: 0; visible: false }

@@ -46,6 +46,10 @@ void CInterfaceUi::slotNewDev(QString szIp) {
 	QStringList listData=szIp.split(":");
 
 	QString szType=listData.at(0);
+	if (0 == szType.compare("factory")) {
+		DMSG("need not process facotry code in thor hammer!!!");
+		return;
+	}
 	szIp=listData.at(1);
 	//{"mac":szMac,"ip":szIp,"style":"boot","itemcolor":"#C0C0E0"}
 

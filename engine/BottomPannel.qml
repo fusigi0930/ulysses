@@ -18,6 +18,13 @@ Rectangle {
 		// name format:
 		// <system>:<ip>
 
+		for (var i=0; i<lstItems.length; i++) {
+			if (name === lstItems[i].objectName) {
+				console.log("duplicate device: " + name);
+				return;
+			}
+		}
+
 		var object=compInfoPannel.createObject(rectBottomPanel);
 		deactivateInfoPannels();
 		console.log("add pannel name: " + name)

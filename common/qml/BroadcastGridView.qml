@@ -28,6 +28,9 @@ GridView {
 	signal sigFinalResult(var nameIp, var item)
 	signal sigStartClient(var ip)
 	signal sigEndClient(var ip)
+	
+	// thor hammer specific signal
+	signal sigOpenClient(var item)
 			
 	onSigAddItem: {
 		if (item.style == "android") {
@@ -96,6 +99,14 @@ GridView {
 			if (nItem !== -1 && mouse.button === Qt.LeftButton) {
 				console.log("ip: " + listItems.get(nItem).ip)
 				gridItems.sigStartClient(listItems.get(nItem).ip)
+				
+				// thor hammer specific code
+				var item = {
+					'style': listItems.get(nItem).style,
+					'ip': listItems.get(nItem).ip,
+				};
+				
+				gridItems.sigOpenClient(item);
 			}
 		}
 		
