@@ -40,7 +40,7 @@ void CInterfaceUi::slotUpdateResult(QString szMac, QString szSerial) {
 	szCurrentMac=szCurrentMac.toLower();
 
 	dbItem.insert("type", "target");
-	dbItem.insert("mac", szMac);
+	dbItem.insert("mac", szMac.toLower());
 	dbItem.insert("unum", szSerial);
 	m_db.update(QVariant::fromValue(dbItem));
 }
@@ -58,7 +58,7 @@ void CInterfaceUi::slotGetResult(QString szMac) {
 	m_db.query(lst, "select * from target, board_info where "
 					"target.mac='%s' and target.id=board_info.tid "
 					"order by board_info.id desc limit 1;",
-					QSZ(szCurrentMac));
+					QSZ(szMac.toLower()));
 
 	if (0 == lst.size()) {
 		emit sigUpdateUi("NA");
