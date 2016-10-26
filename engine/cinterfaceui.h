@@ -3,7 +3,9 @@
 
 #include <QQmlApplicationEngine>
 #include "ctreemodel.h"
+#include "netio.h"
 #include <map>
+#include <QVariant>
 
 class CInterfaceUi : public QObject
 {
@@ -11,6 +13,8 @@ class CInterfaceUi : public QObject
 private:
 	std::map<QString, CTreeModel*> m_mapTreeModel;
 	int m_nTreeModelId;
+	CNotifyRecv m_broadcastRecv;
+
 public:
 	CInterfaceUi(QObject *parent = 0);
 	virtual ~CInterfaceUi();
@@ -25,8 +29,12 @@ public:
 	void clearModels();
 
 signals:
+	void sigNewDev(QVariant item);
+	void sigHeltDev(QVariant item);
 
 public slots:
+	void slotNewDev(QString szIp);
+	void slotHeltDev(QString szIp);
 };
 
 #endif // CINTERFACEUI_H

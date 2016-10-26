@@ -49,6 +49,14 @@ ApplicationWindow {
 
 	InterfaceUi {
 		id: interfaceUi
+
+		onSigNewDev: {
+			broadcastView.sigAddItem(item);
+		}
+
+		onSigHeltDev: {
+			broadcastView.sigRemoveItem(item);
+		}
 	}
 
 	Component.onCompleted: {

@@ -1,14 +1,22 @@
 #include "cinterfaceui.h"
 #include "debug.h"
+#include <QVariantMap>
 
-CInterfaceUi::CInterfaceUi(QObject *parent) : QObject(parent)
+CInterfaceUi::CInterfaceUi(QObject *parent) : QObject(parent),
+	m_broadcastRecv()
 {
 	m_engine=NULL;
 	m_nTreeModelId=0;
+
+	connect(&m_broadcastRecv, SIGNAL(sigStartNewSysDev(QString)), this, SLOT(slotNewDev(QString)), Qt::QueuedConnection);
+	connect(&m_broadcastRecv, SIGNAL(sigHaltSysDev(QString)), this, SLOT(slotHeltDev(QString)), Qt::QueuedConnection);
+
+	m_broadcastRecv.open();
 }
 
 CInterfaceUi::~CInterfaceUi() {
 	clearModels();
+	m_broadcastRecv.close();
 }
 
 void CInterfaceUi::clearModels() {
@@ -32,4 +40,29 @@ QVariant CInterfaceUi::newTreeModel() {
 	model->setQMLName(szName);
 	m_mapTreeModel[szName]=model;
 	return QVariant::fromValue(model);
+}
+
+void CInterfaceUi::slotNewDev(QString szIp) {
+	QStringList listData=szIp.split(":");
+
+	QString szType=listData.at(0);
+	szIp=listData.at(1);
+	//{"mac":szMac,"ip":szIp,"style":"boot","itemcolor":"#C0C0E0"}
+
+	QVariantMap item;
+	item.insert("mac", "SystemTest");
+	item.insert("ip", szIp);
+	item.insert("style", szType);
+	item.insert("itemcolor", "#C0C0E0");
+
+	emit sigNewDev(QVariant::fromValue(item));
+}
+
+void CInterfaceUi::slotHeltDev(QString szIp) {
+	//{"mac":szMac,"ip":szIp,"style":"boot","itemcolor":"#C0C0E0"}
+
+	QVariantMap item;
+	item.insert("ip", szIp);
+
+	emit sigHeltDev(QVariant::fromValue(item));
 }
