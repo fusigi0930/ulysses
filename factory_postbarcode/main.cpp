@@ -5,9 +5,11 @@
 
 #include "debug.h"
 #include "cinterfaceui.h"
+#include "imm.h"
 
 int main(int argc, char *argv[])
 {
+	ImmDisableIME(-1);
     QApplication app(argc, argv);
 
 	qmlRegisterType<CInterfaceUi>("InterfaceUi", 1, 0, "InterfaceUi");
