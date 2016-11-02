@@ -29,7 +29,14 @@ CUlyStore::~CUlyStore()
 
 long long CUlyStore::add(const QVariant &item) {
 	m_mutex.lock();
+	QVariantMap mapItem=item.toMap();
+	long long nRet=0;
+	if (0 == mapItem["type"].toString().compare("tc_result")) {
 
+	}
+	else if (0 == mapItem["type"].toString().compare("ts_result")) {
+
+	}
 	m_mutex.unlock();
 	return 0;
 }

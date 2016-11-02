@@ -5,7 +5,8 @@ QT += qml quick widgets sql
 SOURCES += main.cpp \
     ctreemodel.cpp \
     ctreeitem.cpp \
-    cinterfaceui.cpp
+    cinterfaceui.cpp \
+    ctestlink.cpp
 
 RESOURCES += qml.qrc
 
@@ -54,4 +55,5 @@ include(deployment.pri)
 HEADERS += \
     ctreemodel.h \
     ctreeitem.h \
-    cinterfaceui.h
+    cinterfaceui.h \
+    ctestlink.h
