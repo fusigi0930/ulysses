@@ -79,7 +79,18 @@ Rectangle {
 		anchors.top: layoutTool.bottom
 		anchors.bottom: parent.bottom
 
-		TableViewColumn { role: "enabled"; title: "v"; width: 25; delegate: checkboxTable }
+		TableViewColumn { role: "enabled"; title: "v"; width: 35; delegate: CheckBox {
+				id: cbox
+				anchors.fill: parent
+				anchors.leftMargin: 5
+
+				checked: listM.get(styleData.row).enabled
+
+				onCheckedChanged: {
+					listM.get(styleData.row).enabled=checked;
+				}
+			}
+		}
 		TableViewColumn { role: "name"; title: "Name"; width: 200 }
 		TableViewColumn { role: "id"; title: "id"; width: 0 }
 		TableViewColumn { role: "pid"; title: "pid"; width: 0 }
@@ -89,7 +100,7 @@ Rectangle {
 		console.log("table view current name: " + rectRightPannel.currentName);
 		listM = listModelCreator.createObject();
 		table.model = listM;
-		listM.append( { "name":"YES", "enabled":"" }
+		listM.append( { "name":"YES", "enabled":true }
 					);
 	}
 
@@ -100,18 +111,6 @@ Rectangle {
 		}
 	}
 
-	Component {
-		id: checkboxTable
-		CheckBox {
-			id: cbox
-			MouseArea {
-				anchors.fill: parent
-				onClicked: {
-					cbox.checked = !cbox.checked;
-				}
-			}
-		}
-	}
 
 }
 

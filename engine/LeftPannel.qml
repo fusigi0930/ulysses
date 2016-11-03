@@ -25,6 +25,7 @@ Rectangle {
 		TableViewColumn { id: mainColumn; role: "enabled"; title: currentName; width: 135; delegate: CheckBox {
 				id: ckbox
 				anchors.fill: parent
+				anchors.leftMargin: 5
 
 				checked: tree.treeM.get(styleData.row).enabled
 
