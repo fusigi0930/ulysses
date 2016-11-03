@@ -11,12 +11,23 @@ Rectangle {
 	property var compInfoPannel
 
 	signal sigAddPlan(var item)
+	signal sigGetTC(var item)
+	signal sigCleanTCList(var item)
 
 	onSigAddPlan: {
 		for (var i=0; i<lstItems.length; i++) {
 			if (item.objName === lstItems[i].objectName) {
 				console.log("bottom onSigAddPlan: " + item);
 				lstItems[i].sigAddPlan(item);
+				return;
+			}
+		}
+	}
+
+	onSigCleanTCList: {
+		for (var i=0; i<lstItems.length; i++) {
+			if (item.tlname === lstItems[i].objectName) {
+				lstItems[i].sigCleanTCList();
 				return;
 			}
 		}
@@ -44,12 +55,19 @@ Rectangle {
 		object.visible=true;
 		object.treeCurrentName=name;
 		object.listCurrentName=name;
+		object.sigGetTC.connect(reqGetTC);
 		lstItems.push(object);
+	}
+
+	function reqGetTC(item) {
+		console.log("tlname: " + item.tlname);
+		rectBottomPanel.sigGetTC(item);
 	}
 
 	function removeInfoPanel(name) {
 		for (var i = 0; i < lstItems.length; i++) {
 			if (name === lstItems[i].objectName) {
+				lstItems[i].sigGetTC.disconnect(reqGetTC);
 				lstItems.splice(i, 1);
 				return;
 			}

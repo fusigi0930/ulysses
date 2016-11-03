@@ -9,6 +9,13 @@ Rectangle {
 	property var currentName: ""
 	property var listM
 
+	signal sigCleanTCList()
+
+	onSigCleanTCList: {
+		console.log("right clear!");
+		listM.clear();
+	}
+
 	RowLayout {
 		id: layoutTool
 		anchors.left: parent.left

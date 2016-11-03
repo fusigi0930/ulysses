@@ -89,6 +89,13 @@ ApplicationWindow {
 			id: pannelBottom
 			Layout.fillHeight: true
 			Layout.fillWidth: true
+
+			onSigGetTC: {
+				console.log("main tlname: " + item.tlname);
+				console.log("main name: " + item.name);
+				interfaceUi.reqGetTC(item);
+				pannelBottom.sigCleanTCList(item);
+			}
 		}
 	}
 }

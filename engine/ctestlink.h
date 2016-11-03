@@ -141,10 +141,7 @@ class CTestLinkPlan : public CTestLinkRoot {
 private:
 	CUlyStore *m_db;
 	QString m_szName;
-	QString m_szDev;
 	CTestLinkReader *m_parent;
-
-	std::list<QVariant> m_listPlan;
 
 public:
 	unsigned long long m_nPlanId;

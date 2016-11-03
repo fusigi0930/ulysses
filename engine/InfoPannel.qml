@@ -12,9 +12,15 @@ SplitView {
 	property alias listCurrentName: pannelRight.currentName
 
 	signal sigAddPlan(var item)
+	signal sigGetTC(var item)
+	signal sigCleanTCList()
 
 	onSigAddPlan: {
 		pannelLeft.sigAddPlan(item);
+	}
+
+	onSigCleanTCList: {
+		pannelRight.sigCleanTCList();
 	}
 
 	LeftPannel {
@@ -22,6 +28,10 @@ SplitView {
 		width: 300
 		Layout.maximumWidth: 550
 		Layout.minimumWidth: 150
+
+		onSigGetTC: {
+			splitBottomFrame.sigGetTC(item);
+		}
 	}
 
 	RightPannel {

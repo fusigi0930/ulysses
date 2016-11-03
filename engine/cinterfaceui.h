@@ -7,10 +7,15 @@
 #include <map>
 #include <QVariant>
 
+#define _TTH_DEV_NAME "tlname"
+#define _TTH_PROJID "projid"
+#define _TTH_PLANID "planid"
+
 class CInterfaceUi;
 
 enum ETHREAD_FUNC {
 	_EFUNC_GET_PLANS,
+	_EFUNC_GET_TCS,
 };
 
 class CTaskThread : public QThread {
@@ -25,7 +30,7 @@ public slots:
 public:
 	CTaskThread(CInterfaceUi *ui);
 	int m_nFunc;
-	QString m_szDevName;
+	QVariant m_vItem;
 
 	~CTaskThread();
 
@@ -53,9 +58,11 @@ public:
 
 	Q_INVOKABLE void newDBReader(QString szName);
 	Q_INVOKABLE void getTestPlan(QString szName);
+	Q_INVOKABLE void reqGetTC(QVariant item);
 
 	void clearReaders();
-	void tfuncGetPlan(QString szName);
+	void tfuncGetPlan(QVariant item);
+	void tfuncReqGetTC(QVariant item);
 
 signals:
 	void sigNewDev(QVariant item);

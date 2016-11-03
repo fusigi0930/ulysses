@@ -1,6 +1,7 @@
 #include "cinterfaceui.h"
 #include "debug.h"
 #include <QVariantMap>
+#include <algorithm>
 
 //////////////////////////////////////////////
 /// \brief CTaskThread::CTaskThread
@@ -23,7 +24,10 @@ void CTaskThread::run() {
 	switch (m_nFunc) {
 		default: break;
 		case _EFUNC_GET_PLANS:
-			m_ui->tfuncGetPlan(m_szDevName);
+			m_ui->tfuncGetPlan(m_vItem);
+			break;
+		case _EFUNC_GET_TCS:
+			m_ui->tfuncReqGetTC(m_vItem);
 			break;
 	}
 
@@ -82,13 +86,16 @@ void CInterfaceUi::getTestPlan(QString szName) {
 	CTaskThread	*task=new CTaskThread(this);
 	DMSG("start update test plan thread!");
 	task->m_nFunc=_EFUNC_GET_PLANS;
-	task->m_szDevName=szName;
+	QVariantMap mapItem;
+	mapItem.insert(_TTH_DEV_NAME, szName);
+	task->m_vItem=QVariant::fromValue(mapItem);
 
 	task->start();
 }
 
-void CInterfaceUi::tfuncGetPlan(QString szName) {
-	DMSG("%s", QSZ(szName));
+void CInterfaceUi::tfuncGetPlan(QVariant item) {
+	QVariantMap mapItem=item.toMap();
+	QString szName=mapItem[_TTH_DEV_NAME].toString();
 	std::map<QString, CTestLinkReader*>::iterator pItem=m_mapReaders.find(szName);
 	if (m_mapReaders.end() == pItem) return;
 
@@ -102,6 +109,9 @@ void CInterfaceUi::tfuncGetPlan(QString szName) {
 		QVariantMap mapItem;
 		mapItem.insert("name", (*pPlan)->getName());
 		mapItem.insert("objName", szName);
+		mapItem.insert("planid", (*pPlan)->m_nPlanId);
+		mapItem.insert("projid", (*pPlan)->getRoot()->m_nProjectId);
+		mapItem.insert("enabled", true);
 		emit sigAddPlan(QVariant::fromValue(mapItem));
 	}
 }
@@ -133,4 +143,27 @@ void CInterfaceUi::slotHeltDev(QString szIp) {
 	item.insert("ip", szIp);
 
 	emit sigHeltDev(QVariant::fromValue(item));
+}
+
+void CInterfaceUi::reqGetTC(QVariant item) {
+	// the thread will be destroy after finished automaticlly
+	CTaskThread	*task=new CTaskThread(this);
+	DMSG("start update test case thread!");
+	task->m_nFunc=_EFUNC_GET_TCS;
+	task->m_vItem=item;
+	task->start();
+}
+
+void CInterfaceUi::tfuncReqGetTC(QVariant item) {
+	QVariantMap mapItem=item.toMap();
+	QString szName=mapItem[_TTH_DEV_NAME].toString();
+	std::map<QString, CTestLinkReader*>::iterator pItem=m_mapReaders.find(szName);
+	if (m_mapReaders.end() == pItem) return;
+
+	std::list<CTestLinkPlan*>::iterator pPlan;
+	for (pPlan = pItem->second->m_listPlans.begin(); pPlan != pItem->second->m_listPlans.end(); pPlan++) {
+		if ((*pPlan)->m_nPlanId == mapItem[_TTH_PLANID]) {
+			DMSG("find plan!!");
+		}
+	}
 }
