@@ -17,10 +17,10 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 	QResource::registerResource("ulysses_common.rcc");
 
-	CTreeModel model;
+	//CTreeModel model;
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-	engine.rootContext()->setContextProperty("treeModel", &model);
+	//engine.rootContext()->setContextProperty("treeModel", &model);
 
     return app.exec();
 }

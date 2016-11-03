@@ -87,32 +87,68 @@ enum ETestLinkNodeType {
 	_TL_NTYPE_USER			=	14,
 };
 
-struct STestLinkInfo {
-	unsigned long long nId;
-	unsigned long long nParentId;
-	QString szName;
-	int nStatus;
-	int nResult;
-	int nType;
+class CTestLinkRoot {
+public:
+	unsigned long long m_nProjectId;
+
+	CTestLinkRoot() {}
+	virtual ~CTestLinkRoot() {
+
+	}
+
+	virtual CTestLinkRoot* getParent() { return NULL; }
+	virtual CTestLinkRoot* getRoot() {
+		if (NULL == getParent()) return this;
+
+		return getParent()->getRoot();
+	}
+
+	virtual void duplicateInfo(CTestLinkRoot* item) {
+		this->m_nProjectId=item->m_nProjectId;
+	}
+
+	virtual bool isOpened() { return false; }
 };
 
 class CTestLinkItem;
+class CTestLinkPlan;
 
-class CTestLinkReader {
-private:
-
-public:
-
-};
-
-class CTestLinkPlan {
+class CTestLinkReader : public CTestLinkRoot {
 private:
 	CUlyStore m_db;
 	QString m_szName;
 	QString m_szDev;
-	bool m_bOpened;
+	QString m_szIp;
+	bool m_bIsOpened;
 
 public:
+	std::list<CTestLinkPlan*> m_listPlans;
+
+	CTestLinkReader();
+	virtual ~CTestLinkReader();
+
+	virtual bool open(QString szFile);
+	virtual void close();
+
+	void setDevName(QString szName);
+	void getPlans();
+
+	virtual bool isOpened() { return m_bIsOpened; }
+
+};
+
+class CTestLinkPlan : public CTestLinkRoot {
+private:
+	CUlyStore *m_db;
+	QString m_szName;
+	QString m_szDev;
+	CTestLinkReader *m_parent;
+
+	std::list<QVariant> m_listPlan;
+
+public:
+	unsigned long long m_nPlanId;
+
 
 	CTestLinkPlan();
 	virtual ~CTestLinkPlan();
@@ -120,19 +156,23 @@ public:
 	virtual bool open(QString szFile);
 	virtual void close();
 
-	void setDevName(QString szName);
+	void setDB(CUlyStore *db);
+	virtual CTestLinkRoot* getParent();
+	QString getName();
+
+	virtual void duplicateInfo(CTestLinkRoot *item);
+	virtual bool isOpened() { getRoot()->isOpened(); }
 };
 
-class CTestLinkItem : public CRootItem
+class CTestLinkItem : public CRootItem, public CTestLinkRoot
 {
 private:
+	CTestLinkPlan *m_parent;
 	SItem m_currentItem;
 	CUlyStore *m_db;
 	QString m_szName;
 	QString m_szType;
 	QString m_szIp;
-
-	std::list<STestLinkInfo> m_listInfo;
 
 public:
 	CTestLinkItem();
@@ -150,6 +190,9 @@ public:
 
 	SItem* getItem();
 	void setDB(CUlyStore *db);
+	virtual CTestLinkRoot* getParent();
+	virtual void duplicateInfo(CTestLinkRoot *item);
+	virtual bool isOpened() { getRoot()->isOpened(); }
 };
 
 #endif // CTESTLINKITEM_H

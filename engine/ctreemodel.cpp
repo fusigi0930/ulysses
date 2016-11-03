@@ -107,19 +107,20 @@ QHash<int, QByteArray> CTreeModel::roleNames() const {
 
 void CTreeModel::slotTest() {
 	DMSG("yes!");
-	beginInsertRows(QModelIndex(), rootItem->getChildCount(), rootItem->getChildCount());
-	CTreeItem *item=new CTreeItem(rootItem);
-	QVariantMap mapItem;
-	mapItem.insert("name", m_szQMLName);
-	item->setData(mapItem);
-	rootItem->addChild(item);
-	setData(index(0,0), "1", ROLE_NAME);
+	if (!m_reader.isOpened()) {
+		DMSG("not opend database!");
+		return;
+	}
+	m_reader.getPlans();
+	beginInsertRows(QModelIndex(), rootItem->getChildCount(), m_reader.m_listPlans.size()-1);
+	for (std::list<CTestLinkPlan*>::iterator pItem=m_reader.m_listPlans.begin(); pItem != m_reader.m_listPlans.end(); pItem++) {
+		CTreeItem *item=new CTreeItem(rootItem);
+		QVariantMap mapItem;
 
-	CTreeItem *subitem=new CTreeItem(item);
-	mapItem.clear();
-	mapItem.insert("name", "2");
-	subitem->setData(mapItem);
-	item->addChild(subitem);
+		mapItem.insert("name", (*pItem)->getName());
+		item->setData(mapItem);
+		rootItem->addChild(item);
+	}
 	endInsertRows();
 }
 
@@ -142,6 +143,14 @@ void CTreeModel::getAllIndex(CTreeItem *item, QVariantList &list) {
 
 void CTreeModel::setQMLName(QString szName) {
 	m_szQMLName=szName;
+	DMSG("qmlname: %s", QSZ(szName));
+}
+
+void CTreeModel::setDevName(QString szName) {
+	m_szDevName=szName;
+	DMSG("devname: %s", QSZ(szName));
+	m_reader.setDevName(szName.split(":").at(0));
+	m_reader.open(m_szQMLName);
 }
 
 QVariant CTreeModel::getQMLName() {

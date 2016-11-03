@@ -7,37 +7,35 @@ Rectangle {
 	id: rectLeftPannel
 	property var currentName: ""
 
-	signal sigNewTreeModel(var newTreeModel)
+	signal sigAddPlan(var item)
 
-	onSigNewTreeModel: {
-		tree.model=newTreeModel;
-		tree.treeM=newTreeModel;
-
-		tree.treeM.slotTest();
-		var indexs=tree.treeM.getAllIndex();
-		console.log(indexs);
-		for (var i=0; i<indexs.length; i++) {
-			tree.expand(indexs[i]);
-		}
-
-		tree.resizeColumnsToContents();
+	onSigAddPlan: {
+		tree.treeM.append(item);
 	}
 
-	TreeView {
+	TableView {
 		id: tree
 		anchors.fill: parent
 		//model: treeModel
 
 		property var treeM
 
-		TableViewColumn { id: mainColumn; role: "enabled"; title: currentName; width: 150; delegate: checkboxTree }
+		TableViewColumn { id: mainColumn; role: "enabled"; title: currentName; width: 135; delegate: checkboxTree }
 		TableViewColumn { role: "name"; title: "Name"; width: 200 }
 		TableViewColumn { role: "id"; title: "id"; width: 0; visible: false }
 		TableViewColumn { role: "pid"; title: "pid"; width: 0; visible: false }
 	}
 
 	Component.onCompleted: {
+		tree.treeM = treeModelCreator.createObject();
+		tree.model = tree.treeM;
+	}
 
+	Component {
+		id: treeModelCreator
+		ListModel {
+
+		}
 	}
 
 	Component {

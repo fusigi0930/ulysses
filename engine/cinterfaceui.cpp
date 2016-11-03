@@ -2,6 +2,39 @@
 #include "debug.h"
 #include <QVariantMap>
 
+//////////////////////////////////////////////
+/// \brief CTaskThread::CTaskThread
+/// \param ui
+///
+
+CTaskThread::CTaskThread(CInterfaceUi *ui) {
+	m_ui=ui;
+	m_nFunc=-1;
+	DMSG("alloc address: 0x%x", this);
+}
+
+CTaskThread::~CTaskThread() {
+	DMSG("delete address: 0x%x", this);
+}
+
+void CTaskThread::run() {
+	if (!m_ui) return;
+
+	switch (m_nFunc) {
+		default: break;
+		case _EFUNC_GET_PLANS:
+			m_ui->tfuncGetPlan(m_szDevName);
+			break;
+	}
+
+	deleteLater();
+}
+
+//////////////////////////////////////////////////
+/// \brief CInterfaceUi::CInterfaceUi
+/// \param parent
+///
+
 CInterfaceUi::CInterfaceUi(QObject *parent) : QObject(parent),
 	m_broadcastRecv()
 {
@@ -15,31 +48,62 @@ CInterfaceUi::CInterfaceUi(QObject *parent) : QObject(parent),
 }
 
 CInterfaceUi::~CInterfaceUi() {
-	clearModels();
+	clearReaders();
 	m_broadcastRecv.close();
 }
 
-void CInterfaceUi::clearModels() {
-	for (std::map<QString, CTreeModel*>::iterator pItem=m_mapTreeModel.begin();
-		 pItem != m_mapTreeModel.end(); pItem++) {
+void CInterfaceUi::clearReaders() {
+	for (std::map<QString, CTestLinkReader*>::iterator pItem=m_mapReaders.begin();
+		pItem != m_mapReaders.end(); pItem++) {
 		DMSG("delete address: 0x%x", pItem->second);
+		pItem->second->close();
 		delete pItem->second;
 	}
-	m_mapTreeModel.clear();
+	m_mapReaders.clear();
 }
 
 void CInterfaceUi::setEngine(QQmlApplicationEngine *engine) {
 	m_engine=engine;
 }
 
-QVariant CInterfaceUi::newTreeModel() {
-	CTreeModel *model = new CTreeModel();
-	DMSG("new address: 0x%x", model);
-	QString szName;
-	szName.sprintf("treeModel-%05d", m_nTreeModelId++);
-	model->setQMLName(szName);
-	m_mapTreeModel[szName]=model;
-	return QVariant::fromValue(model);
+void CInterfaceUi::newDBReader(QString szName) {
+	std::map<QString, CTestLinkReader*>::iterator pItem=m_mapReaders.find(szName);
+	if (m_mapReaders.end() != pItem) return;
+
+	CTestLinkReader *reader=new CTestLinkReader();
+	DMSG("new address: 0x%x", reader);
+	reader->setDevName(szName);
+	reader->open(szName);
+	m_mapReaders[szName]=reader;
+}
+
+void CInterfaceUi::getTestPlan(QString szName) {
+	// the thread will be destroy after finished automaticlly
+	CTaskThread	*task=new CTaskThread(this);
+	DMSG("start update test plan thread!");
+	task->m_nFunc=_EFUNC_GET_PLANS;
+	task->m_szDevName=szName;
+
+	task->start();
+}
+
+void CInterfaceUi::tfuncGetPlan(QString szName) {
+	DMSG("%s", QSZ(szName));
+	std::map<QString, CTestLinkReader*>::iterator pItem=m_mapReaders.find(szName);
+	if (m_mapReaders.end() == pItem) return;
+
+	pItem->second->getPlans();
+	DMSG("update plan ui!");
+
+	for (std::list<CTestLinkPlan*>::iterator pPlan=pItem->second->m_listPlans.begin();
+		 pPlan != pItem->second->m_listPlans.end(); pPlan++) {
+
+		DMSG("add test plan item!");
+		QVariantMap mapItem;
+		mapItem.insert("name", (*pPlan)->getName());
+		mapItem.insert("objName", szName);
+		emit sigAddPlan(QVariant::fromValue(mapItem));
+	}
 }
 
 void CInterfaceUi::slotNewDev(QString szIp) {

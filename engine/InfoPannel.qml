@@ -11,10 +11,10 @@ SplitView {
 	property alias treeCurrentName: pannelLeft.currentName
 	property alias listCurrentName: pannelRight.currentName
 
-	signal sigNewTreeModel(var newTreeModel)
+	signal sigAddPlan(var item)
 
-	onSigNewTreeModel: {
-		pannelLeft.sigNewTreeModel(newTreeModel);
+	onSigAddPlan: {
+		pannelLeft.sigAddPlan(item);
 	}
 
 	LeftPannel {

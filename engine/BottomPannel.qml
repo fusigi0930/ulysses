@@ -10,11 +10,23 @@ Rectangle {
 	property var lstItems: []
 	property var compInfoPannel
 
+	signal sigAddPlan(var item)
+
+	onSigAddPlan: {
+		for (var i=0; i<lstItems.length; i++) {
+			if (item.objName === lstItems[i].objectName) {
+				console.log("bottom onSigAddPlan: " + item);
+				lstItems[i].sigAddPlan(item);
+				return;
+			}
+		}
+	}
+
 	Component.onCompleted: {
 		compInfoPannel=Qt.createComponent("InfoPannel.qml");
 	}
 
-	function addInfoPanel(name, newTreeModel) {
+	function addInfoPanel(name) {
 		// name format:
 		// <system>:<ip>
 
@@ -32,7 +44,6 @@ Rectangle {
 		object.visible=true;
 		object.treeCurrentName=name;
 		object.listCurrentName=name;
-		object.sigNewTreeModel(newTreeModel);
 		lstItems.push(object);
 	}
 

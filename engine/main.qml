@@ -19,13 +19,6 @@ ApplicationWindow {
 		Menu {
 			title: "test"
 			MenuItem {
-				text: qsTr("add pannel")
-				onTriggered: {
-					var newTreeModel=interfaceUi.newTreeModel();
-					pannelBottom.addInfoPanel(newTreeModel.getQMLName(), newTreeModel);
-				}
-			}
-			MenuItem {
 				text: qsTr("list pannel in console")
 				onTriggered: {
 					pannelBottom.listInfoIname();
@@ -57,6 +50,11 @@ ApplicationWindow {
 		onSigHeltDev: {
 			broadcastView.sigRemoveItem(item);
 		}
+
+		onSigAddPlan: {
+			console.log("main onSigAddPlan: " + item);
+			pannelBottom.sigAddPlan(item);
+		}
 	}
 
 	Component.onCompleted: {
@@ -80,9 +78,9 @@ ApplicationWindow {
 				var name=item.style+":"+item.ip;
 				if (-1 === pannelBottom.findInfoPannel(name)) {
 					console.log("open client: " + name)
-					var newTreeModel=interfaceUi.newTreeModel();
-					newTreeModel.setQMLName(name);
-					pannelBottom.addInfoPanel(name, newTreeModel);
+					interfaceUi.newDBReader(name);
+					pannelBottom.addInfoPanel(name);
+					interfaceUi.getTestPlan(name);
 				}
 			}
 		}

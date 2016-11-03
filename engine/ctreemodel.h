@@ -6,6 +6,7 @@
 #include <QModelIndex>
 #include "ctreeitem.h"
 #include <QVariantList>
+#include "ctestlink.h"
 
 class CTreeModel : public QAbstractItemModel
 {
@@ -15,6 +16,9 @@ private:
 	CTreeItem *rootItem;
 	QHash<int, QByteArray> m_roleNameMapping;
 	QString m_szQMLName;
+	QString m_szDevName;
+	QString m_szIp;
+	CTestLinkReader m_reader;
 
 	void getAllIndex(CTreeItem *item, QVariantList &list);
 
@@ -35,6 +39,7 @@ public:
 	Q_INVOKABLE QVariantList getAllIndex();
 	Q_INVOKABLE QVariant getQMLName();
 	Q_INVOKABLE void setQMLName(QString szName);
+	Q_INVOKABLE void setDevName(QString szName);
 
 public slots:
 

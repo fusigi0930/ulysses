@@ -105,7 +105,7 @@ bool CUlyStore::open(char *szFile) {
 	m_db = QSqlDatabase::addDatabase("QMYSQL", m_szDBName);
 
 	QStringList initCmd=QString(szFile).split("::");
-	if (4 != initCmd.size()) {
+	if (4 > initCmd.size()) {
 		return false;
 	}
 
