@@ -179,6 +179,7 @@ void CInterfaceUi::tfuncReqGetTC(QVariant item) {
 		tcItem.insert("name", pTC->toMap()["name"]);
 		tcItem.insert("pid", pTC->toMap()["parent_id"]);
 		tcItem.insert("summary", pTC->toMap()["summary"]);
+		tcItem.insert("result", "");
 		tcItem.insert("enabled", true);
 
 		emit sigAddTC(QVariant::fromValue(tcItem));

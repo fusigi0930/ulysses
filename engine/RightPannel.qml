@@ -100,8 +100,13 @@ Rectangle {
 		}
 		TableViewColumn { role: "name"; title: "Name"; width: 200 }
 		TableViewColumn { role: "summary"; title: "Summary"; width: 600 }
+		TableViewColumn { role: "result"; title: "Result"; width: 200 }
 		TableViewColumn { role: "id"; title: "id"; width: 0; visible: false }
 		TableViewColumn { role: "pid"; title: "pid"; width: 0; visible: false }
+
+		onDoubleClicked: {
+
+		}
 
 	}
 

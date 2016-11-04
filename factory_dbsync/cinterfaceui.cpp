@@ -14,7 +14,7 @@ enum EDBTYPE {
 };
 
 #define DB_HOST "192.168.48.2"
-#define DB_NAME "test_product_report"
+#define DB_NAME "product_report"
 #define DB_USER "fortress"
 #define DB_PASS "fortress"
 
