@@ -88,6 +88,8 @@ enum ETestLinkNodeType {
 };
 
 class CTestLinkRoot {
+protected:
+	CTestLinkRoot *m_parent;
 public:
 	unsigned long long m_nProjectId;
 
@@ -105,9 +107,11 @@ public:
 
 	virtual void duplicateInfo(CTestLinkRoot* item) {
 		this->m_nProjectId=item->m_nProjectId;
+		m_parent=item;
 	}
 
 	virtual bool isOpened() { return false; }
+	virtual QString getDevName() { return ""; }
 };
 
 class CTestLinkItem;
@@ -134,6 +138,7 @@ public:
 	void getPlans();
 
 	virtual bool isOpened() { return m_bIsOpened; }
+	virtual QString getDevName() { return m_szName; }
 
 };
 
@@ -141,10 +146,10 @@ class CTestLinkPlan : public CTestLinkRoot {
 private:
 	CUlyStore *m_db;
 	QString m_szName;
-	CTestLinkReader *m_parent;
 
 public:
 	unsigned long long m_nPlanId;
+	std::list<QVariant> m_tcs;
 
 
 	CTestLinkPlan();
@@ -159,6 +164,8 @@ public:
 
 	virtual void duplicateInfo(CTestLinkRoot *item);
 	virtual bool isOpened() { getRoot()->isOpened(); }
+
+	void getTCs();
 };
 
 class CTestLinkItem : public CRootItem, public CTestLinkRoot

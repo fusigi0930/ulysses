@@ -109,8 +109,8 @@ void CInterfaceUi::tfuncGetPlan(QVariant item) {
 		QVariantMap mapItem;
 		mapItem.insert("name", (*pPlan)->getName());
 		mapItem.insert("objName", szName);
-		mapItem.insert("planid", (*pPlan)->m_nPlanId);
-		mapItem.insert("projid", (*pPlan)->getRoot()->m_nProjectId);
+		mapItem.insert(_TTH_PLANID, (*pPlan)->m_nPlanId);
+		mapItem.insert(_TTH_PROJID, (*pPlan)->getRoot()->m_nProjectId);
 		mapItem.insert("enabled", true);
 		emit sigAddPlan(QVariant::fromValue(mapItem));
 	}
@@ -164,6 +164,23 @@ void CInterfaceUi::tfuncReqGetTC(QVariant item) {
 	for (pPlan = pItem->second->m_listPlans.begin(); pPlan != pItem->second->m_listPlans.end(); pPlan++) {
 		if ((*pPlan)->m_nPlanId == mapItem[_TTH_PLANID]) {
 			DMSG("find plan!!");
+			break;
 		}
+	}
+
+	if (pPlan == pItem->second->m_listPlans.end()) return;
+
+	(*pPlan)->getTCs();
+	std::list<QVariant>::iterator pTC;
+	for (pTC=(*pPlan)->m_tcs.begin(); pTC != (*pPlan)->m_tcs.end(); pTC++) {
+		QVariantMap tcItem;
+		tcItem.insert(_TTH_DEV_NAME, (*pPlan)->getRoot()->getDevName());
+		tcItem.insert("id", pTC->toMap()["id"]);
+		tcItem.insert("name", pTC->toMap()["name"]);
+		tcItem.insert("pid", pTC->toMap()["parent_id"]);
+		tcItem.insert("summary", pTC->toMap()["summary"]);
+		tcItem.insert("enabled", true);
+
+		emit sigAddTC(QVariant::fromValue(tcItem));
 	}
 }

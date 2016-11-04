@@ -12,11 +12,17 @@ SplitView {
 	property alias listCurrentName: pannelRight.currentName
 
 	signal sigAddPlan(var item)
+	signal sigAddTC(var item)
 	signal sigGetTC(var item)
 	signal sigCleanTCList()
 
 	onSigAddPlan: {
 		pannelLeft.sigAddPlan(item);
+	}
+
+	onSigAddTC: {
+		console.log("info pannel add tc item: ", item.name);
+		pannelRight.sigAddTC(item);
 	}
 
 	onSigCleanTCList: {

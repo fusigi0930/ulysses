@@ -11,6 +11,7 @@ Rectangle {
 	property var compInfoPannel
 
 	signal sigAddPlan(var item)
+	signal sigAddTC(var item)
 	signal sigGetTC(var item)
 	signal sigCleanTCList(var item)
 
@@ -28,6 +29,15 @@ Rectangle {
 		for (var i=0; i<lstItems.length; i++) {
 			if (item.tlname === lstItems[i].objectName) {
 				lstItems[i].sigCleanTCList();
+				return;
+			}
+		}
+	}
+
+	onSigAddTC: {
+		for (var i=0; i<lstItems.length; i++) {
+			if (item.tlname === lstItems[i].objectName) {
+				lstItems[i].sigAddTC(item);
 				return;
 			}
 		}

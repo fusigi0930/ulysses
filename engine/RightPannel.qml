@@ -10,6 +10,13 @@ Rectangle {
 	property var listM
 
 	signal sigCleanTCList()
+	signal sigAddTC(var item)
+
+	onSigAddTC: {
+		console.log("right pannel add tc item: " + item.name);
+		console.log("right pannel add tc summary: " + item.summary);
+		listM.append(item);
+	}
 
 	onSigCleanTCList: {
 		console.log("right clear!");
@@ -92,16 +99,16 @@ Rectangle {
 			}
 		}
 		TableViewColumn { role: "name"; title: "Name"; width: 200 }
-		TableViewColumn { role: "id"; title: "id"; width: 0 }
-		TableViewColumn { role: "pid"; title: "pid"; width: 0 }
+		TableViewColumn { role: "summary"; title: "Summary"; width: 600 }
+		TableViewColumn { role: "id"; title: "id"; width: 0; visible: false }
+		TableViewColumn { role: "pid"; title: "pid"; width: 0; visible: false }
+
 	}
 
 	Component.onCompleted: {
 		console.log("table view current name: " + rectRightPannel.currentName);
 		listM = listModelCreator.createObject();
 		table.model = listM;
-		listM.append( { "name":"YES", "enabled":true }
-					);
 	}
 
 	Component {

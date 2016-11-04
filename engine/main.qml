@@ -52,8 +52,12 @@ ApplicationWindow {
 		}
 
 		onSigAddPlan: {
-			console.log("main onSigAddPlan: " + item);
 			pannelBottom.sigAddPlan(item);
+		}
+
+		onSigAddTC: {
+			console.log("add tc: " + item.name + " pannel name: " + item.tlname);
+			pannelBottom.sigAddTC(item);
 		}
 	}
 

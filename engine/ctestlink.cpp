@@ -78,7 +78,6 @@ void CTestLinkReader::setDevName(QString szName) {
 ///
 
 CTestLinkPlan::CTestLinkPlan() {
-	m_parent=NULL;
 	m_db=NULL;
 }
 
@@ -115,6 +114,36 @@ QString CTestLinkPlan::getName() {
 	return m_szName;
 }
 
+void CTestLinkPlan::getTCs() {
+	m_tcs.clear();
+	std::list<QVariant> tcs;
+	// get tcversion_id
+	m_db->query(tcs, "select * from `testplan_tcversions` where testplan_id=%d", m_nPlanId);
+
+	for (std::list<QVariant>::iterator pTCVer=tcs.begin(); pTCVer != tcs.end(); pTCVer++) {
+		long long nTCVerId=pTCVer->toMap()["tcversion_id"].toLongLong();
+		// get current tc id
+		std::list<QVariant> tcs_v, tcs_title, tcs_summary;
+
+		m_db->query(tcs_v, "select * from `nodes_hierarchy` T1 where node_type_id=%d and id=%d",
+							  _TL_NTYPE_TC_VERSION, nTCVerId);
+
+		m_db->query(tcs_title, "select * from `nodes_hierarchy` T1 where id=%d",
+							  tcs_v.begin()->toMap()["parent_id"].toLongLong());
+
+		m_db->query(tcs_summary, "select * from `tcversions` T1 where id=%d",
+							  tcs_v.begin()->toMap()["id"].toLongLong());
+
+		QVariant tc=*tcs_title.begin();
+		QVariantMap mapTC=tc.toMap();
+		QString szBuf=tcs_summary.begin()->toMap()["summary"].toString();
+		DMSG("summary: %s", QSZ(szBuf));
+		mapTC.insert("summary", tcs_summary.begin()->toMap()["summary"].toString());
+
+		m_tcs.push_back(QVariant::fromValue(mapTC));
+	}
+}
+
 ////////////////////////////////////////////////////////////
 /// \brief CTestLinkItem::CTestLinkItem
 ///
@@ -122,7 +151,6 @@ QString CTestLinkPlan::getName() {
 CTestLinkItem::CTestLinkItem() : CRootItem()
 {
 	m_db=NULL;
-	m_parent=NULL;
 }
 
 CTestLinkItem::~CTestLinkItem() {

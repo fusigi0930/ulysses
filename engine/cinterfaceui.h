@@ -70,6 +70,8 @@ signals:
 
 	void sigAddPlan(QVariant item);
 
+	void sigAddTC(QVariant item);
+
 public slots:
 	void slotNewDev(QString szIp);
 	void slotHeltDev(QString szIp);
