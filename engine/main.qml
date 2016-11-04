@@ -80,11 +80,15 @@ ApplicationWindow {
 			onSigOpenClient: {
 				console.log("item: " + item.ip + ", " + item.style);
 				var name=item.style+":"+item.ip;
-				if (-1 === pannelBottom.findInfoPannel(name)) {
+				var index=pannelBottom.findInfoPannel(name);
+				if (-1 === index) {
 					console.log("open client: " + name)
 					interfaceUi.newDBReader(name);
 					pannelBottom.addInfoPanel(name);
 					interfaceUi.getTestPlan(name);
+				}
+				else {
+					pannelBottom.activateInfoPannel(index);
 				}
 			}
 		}
