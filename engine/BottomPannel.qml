@@ -15,6 +15,9 @@ Rectangle {
 	signal sigGetTC(var item)
 	signal sigCleanTCList(var item)
 
+	signal sigFetchTCInfo(var item)
+	signal sigShowTCInfo(var item)
+
 	onSigAddPlan: {
 		for (var i=0; i<lstItems.length; i++) {
 			if (item.objName === lstItems[i].objectName) {
@@ -43,6 +46,17 @@ Rectangle {
 		}
 	}
 
+	onSigShowTCInfo: {
+		console.log("bottom panel show tc item: " + item.tlname);
+		for (var i=0; i<lstItems.length; i++) {
+			if (item[0].tlname === lstItems[i].objectName) {
+				console.log("bottom panel show item");
+				lstItems[i].sigShowTCInfo(item);
+				return;
+			}
+		}
+	}
+
 	Component.onCompleted: {
 		compInfoPannel=Qt.createComponent("InfoPannel.qml");
 	}
@@ -66,6 +80,7 @@ Rectangle {
 		object.treeCurrentName=name;
 		object.listCurrentName=name;
 		object.sigGetTC.connect(reqGetTC);
+		object.sigFetchTCInfo.connect(regFetchTCInfo);
 		lstItems.push(object);
 	}
 
@@ -74,10 +89,15 @@ Rectangle {
 		rectBottomPanel.sigGetTC(item);
 	}
 
+	function regFetchTCInfo(item) {
+		rectBottomPanel.sigFetchTCInfo(item);
+	}
+
 	function removeInfoPanel(name) {
 		for (var i = 0; i < lstItems.length; i++) {
 			if (name === lstItems[i].objectName) {
 				lstItems[i].sigGetTC.disconnect(reqGetTC);
+				lstItems[i].sigFetchTCInfo.disconnect(regFetchTCInfo);
 				lstItems.splice(i, 1);
 				return;
 			}

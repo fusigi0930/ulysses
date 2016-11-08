@@ -8,13 +8,17 @@ Rectangle {
 
 	property var currentName: ""
 	property var listM
+	property var dlgTestCase
 
 	signal sigCleanTCList()
 	signal sigAddTC(var item)
 
+	signal sigFetchTCInfo(var item)
+	signal sigShowTCInfo(var item)
+
 	onSigAddTC: {
-		console.log("right pannel add tc item: " + item.name);
-		console.log("right pannel add tc summary: " + item.summary);
+		//console.log("right pannel add tc item: " + item.name);
+		//console.log("right pannel add tc summary: " + item.summary);
 		listM.append(item);
 	}
 
@@ -86,10 +90,13 @@ Rectangle {
 		anchors.top: layoutTool.bottom
 		anchors.bottom: parent.bottom
 
+		signal sigChangeRowHeight(var row, var newHeight)
+
 		TableViewColumn { role: "enabled"; title: "v"; width: 35; delegate: CheckBox {
 				id: cbox
 				anchors.fill: parent
 				anchors.leftMargin: 5
+				anchors.verticalCenter: parent.verticalCenter
 
 				checked: listM.get(styleData.row).enabled
 
@@ -99,19 +106,81 @@ Rectangle {
 			}
 		}
 		TableViewColumn { role: "name"; title: "Name"; width: 200 }
-		TableViewColumn { role: "summary"; title: "Summary"; width: 600 }
+		TableViewColumn { role: "summary"; title: "Summary"; width: 600;
+			delegate: Rectangle {
+				color: "transparent"
+				anchors.fill: parent
+
+				Text {
+					id: textColumn
+					width: parent.width
+					anchors {
+						leftMargin: 5
+					}
+					text: styleData.value !== undefined ? styleData.value : ""
+					wrapMode: Text.WordWrap
+
+					signal sigChangeRowHeight(var row, var newHeight)
+
+					onTextChanged: {
+						//console.log("painterHeight: " + paintedHeight);
+						//sigChangeRowHeight(styleData.row, paintedHeight);
+						listM.get(styleData.row)["s_num"]=paintedHeight;
+					}
+
+					Component.onCompleted: {
+						//sigChangeRowHeight.connect(table.sigChangeRowHeight);
+					}
+				}
+			}
+
+		}
 		TableViewColumn { role: "result"; title: "Result"; width: 200 }
 		TableViewColumn { role: "id"; title: "id"; width: 0; visible: false }
 		TableViewColumn { role: "pid"; title: "pid"; width: 0; visible: false }
+		TableViewColumn { role: "s_num"; title: "pid"; width: 0; visible: false }
+
 
 		onDoubleClicked: {
+			//console.log("click row: " + table.currentRow);
+			var tc=listM.get(table.currentRow);
+			var tcItem = {
+				"id": tc["id"],
+				"pid": tc["pid"],
+				"name": tc["name"],
+				"tlname": rectRightPannel.currentName
+			}
+			var dlg=dlgTestCase.createObject();
+			dlg.sigInitData(tcItem);
+			rectRightPannel.sigShowTCInfo.connect(dlg.sigShowTCInfo);
+			rectRightPannel.sigFetchTCInfo(tcItem);
+		}
 
+		rowDelegate: Rectangle {
+			id: rowDeleRect
+			height: listM.get(styleData.row)["s_num"]
+			width: parent.width
+			color: styleData.row !== undefined ? (styleData.row % 2 ? "#E0FFE0" : "#FFE0FF") : "#FFFFFF"
+			border.color: "#F0F0F0"
+			border.width: 1
+
+			signal sigChangeHeight(var row, var newHeight)
+
+			onSigChangeHeight: {
+				//console.log("data: " + row + ", " + newHeight);
+				//console.log("yes! " + listM.get(row)["summary"]);
+			}
+
+			Component.onCompleted: {
+				table.sigChangeRowHeight.connect(sigChangeHeight);
+			}
 		}
 
 	}
 
 	Component.onCompleted: {
 		console.log("table view current name: " + rectRightPannel.currentName);
+		dlgTestCase=Qt.createComponent("TestCaseInfo.qml");
 		listM = listModelCreator.createObject();
 		table.model = listM;
 	}

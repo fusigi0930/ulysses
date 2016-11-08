@@ -1,12 +1,16 @@
 import QtQuick 2.1
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
+import QtQuick.Window 2.0
 import "qrc:/ulysses/"
 import InterfaceUi 1.0
 
 ApplicationWindow {
-    visible: true
+	id: mainWnd
+	visible: true
 	title: qsTr("Thor Hammer")
+
+	property var dlgTestCase
 
     menuBar: MenuBar {
         Menu {
@@ -25,20 +29,17 @@ ApplicationWindow {
 				}
 			}
 			MenuItem {
-				text: qsTr("active pannel")
+				text: qsTr("show test case dialog")
 				onTriggered: {
-					var i=pannelBottom.findInfoPannel("treeModel-00000");
-					pannelBottom.activateInfoPannel(i);
-				}
-			}
-			MenuItem {
-				text: qsTr("deactive all pannel")
-				onTriggered: {
-					pannelBottom.deactivateInfoPannels();
+					var dlg=dlgTestCase.createObject(mainWnd);
 				}
 			}
 		}
     }
+
+	//Loader {
+	//	id: loaderDlgTestCase
+	//}
 
 	InterfaceUi {
 		id: interfaceUi
@@ -59,10 +60,17 @@ ApplicationWindow {
 			console.log("add tc: " + item.name + " pannel name: " + item.tlname);
 			pannelBottom.sigAddTC(item);
 		}
+
+		onSigShowTCInfo: {
+			console.log("show tc item: " + item.length);
+			console.log("show tc item: " + item[0].tlname);
+			pannelBottom.sigShowTCInfo(item);
+		}
 	}
 
 	Component.onCompleted: {
 		showMaximized();
+		dlgTestCase=Qt.createComponent("TestCaseInfo.qml");
 	}
 
 	SplitView {
@@ -103,6 +111,11 @@ ApplicationWindow {
 				console.log("main name: " + item.name);
 				interfaceUi.reqGetTC(item);
 				pannelBottom.sigCleanTCList(item);
+			}
+
+			onSigFetchTCInfo: {
+				console.log("main tlname: " + item.tlname);
+				interfaceUi.reqFetchTCInfo(item);
 			}
 		}
 	}

@@ -140,6 +140,8 @@ public:
 	virtual bool isOpened() { return m_bIsOpened; }
 	virtual QString getDevName() { return m_szName; }
 
+	QVariant fetchTCInfo(QVariant item);
+
 };
 
 class CTestLinkPlan : public CTestLinkRoot {

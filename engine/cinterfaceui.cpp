@@ -185,3 +185,19 @@ void CInterfaceUi::tfuncReqGetTC(QVariant item) {
 		emit sigAddTC(QVariant::fromValue(tcItem));
 	}
 }
+
+void CInterfaceUi::reqFetchTCInfo(QVariant item) {
+	QVariantMap mapItem=item.toMap();
+	DMSG("id: %d", mapItem["id"].toLongLong());
+
+	QString szName=mapItem[_TTH_DEV_NAME].toString();
+	std::map<QString, CTestLinkReader*>::iterator pItem=m_mapReaders.find(szName);
+
+	if (pItem == m_mapReaders.end()) {
+		DMSG("it is impossible!!");
+		return;
+	}
+
+	QVariant jsonTC = pItem->second->fetchTCInfo(item);
+	emit sigShowTCInfo(jsonTC);
+}

@@ -16,6 +16,9 @@ SplitView {
 	signal sigGetTC(var item)
 	signal sigCleanTCList()
 
+	signal sigFetchTCInfo(var item)
+	signal sigShowTCInfo(var item)
+
 	onSigAddPlan: {
 		pannelLeft.sigAddPlan(item);
 	}
@@ -27,6 +30,10 @@ SplitView {
 
 	onSigCleanTCList: {
 		pannelRight.sigCleanTCList();
+	}
+
+	onSigShowTCInfo: {
+		pannelRight.sigShowTCInfo(item);
 	}
 
 	LeftPannel {
@@ -45,6 +52,10 @@ SplitView {
 		Layout.fillWidth: true
 		Layout.minimumWidth: 150
 		color: "#F0F0F0"
+
+		onSigFetchTCInfo: {
+			splitBottomFrame.sigFetchTCInfo(item);
+		}
 	}
 
 	Component.onCompleted: {

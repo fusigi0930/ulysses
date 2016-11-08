@@ -1,4 +1,6 @@
 #include "ctestlink.h"
+#include <QVariantMap>
+#include <QVariantList>
 
 #define DB_HOST "192.168.48.2"
 #define DB_NAME "testlinkdb"
@@ -71,6 +73,47 @@ void CTestLinkReader::setDevName(QString szName) {
 	m_szName=szName;
 	m_szDev=szName.split(":").at(0);
 	m_szIp=szName.split(":").at(1);
+}
+
+QVariant CTestLinkReader::fetchTCInfo(QVariant item) {
+	// because the test case info only need the test case id
+	// we get it in reader database!
+
+	DMSG("get details tc info!!");
+	std::list<QVariant> tcinfo;
+	QVariantMap mapItem=item.toMap();
+
+	m_db.query(tcinfo, "SELECT TS.id,TV.summary, TV.preconditions, TS.actions, TS.expected_results, TS.execution_type "
+			   "FROM  `tcversions` TV,  `tcsteps` TS "
+			   "WHERE TV.id "
+			   "IN ( "
+				   "SELECT id "
+				   "FROM  `nodes_hierarchy` NH "
+				   "WHERE NH.parent_id = %d "
+			   ") "
+			   "AND TS.id "
+			   "IN ( "
+				   "SELECT id "
+				   "FROM  `nodes_hierarchy` NH "
+				   "WHERE NH.parent_id = TV.id "
+			   ");", mapItem["id"].toLongLong());
+
+	QVariantList json;
+
+	for (std::list<QVariant>::iterator pTC=tcinfo.begin(); pTC != tcinfo.end(); pTC++) {
+		QVariantMap mapJson;
+		mapJson.insert("tlname", mapItem["tlname"]);
+		mapJson.insert("tcid", mapItem["id"]);
+		mapJson.insert("summary", pTC->toMap()["summary"]);
+		mapJson.insert("preconditions", pTC->toMap()["preconditions"]);
+		mapJson.insert("actions", pTC->toMap()["actions"]);
+		mapJson.insert("expected_results", pTC->toMap()["expected_results"]);
+		mapJson.insert("execution_type", pTC->toMap()["execution_type"]);
+
+		json.push_back(QVariant::fromValue(mapJson));
+	}
+
+	return QVariant::fromValue(json);
 }
 
 ///////////////////////////////////////////////

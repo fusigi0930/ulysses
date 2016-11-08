@@ -59,6 +59,7 @@ public:
 	Q_INVOKABLE void newDBReader(QString szName);
 	Q_INVOKABLE void getTestPlan(QString szName);
 	Q_INVOKABLE void reqGetTC(QVariant item);
+	Q_INVOKABLE void reqFetchTCInfo(QVariant item);
 
 	void clearReaders();
 	void tfuncGetPlan(QVariant item);
@@ -71,6 +72,7 @@ signals:
 	void sigAddPlan(QVariant item);
 
 	void sigAddTC(QVariant item);
+	void sigShowTCInfo(QVariant item);
 
 public slots:
 	void slotNewDev(QString szIp);
