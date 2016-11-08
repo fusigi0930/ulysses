@@ -27,7 +27,7 @@ Rectangle {
 				anchors.fill: parent
 				anchors.leftMargin: 5
 
-				checked: tree.treeM.get(styleData.row).enabled
+				checked: tree.treeM.get(styleData.row).enabled === undefined ? false : tree.treeM.get(styleData.row).enabled
 
 				onCheckedChanged: {
 					tree.treeM.get(styleData.row).enabled=checked;

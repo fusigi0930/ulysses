@@ -16,6 +16,9 @@ Rectangle {
 	signal sigFetchTCInfo(var item)
 	signal sigShowTCInfo(var item)
 
+	signal sigStart(var item)
+	signal sigStop(var item)
+
 	onSigAddTC: {
 		//console.log("right pannel add tc item: " + item.name);
 		//console.log("right pannel add tc summary: " + item.summary);
@@ -44,7 +47,9 @@ Rectangle {
 			image: "qrc:/image/res/png/check-all.png"
 			tooltip: qsTr("check all")
 			onClicked: {
-				console.log("check all");
+				for (var i=0; i<listM.count; i++) {
+					listM.get(i)["enabled"]=true;
+				}
 			}
 		}
 		IconButton {
@@ -55,7 +60,9 @@ Rectangle {
 			image: "qrc:/image/res/png/uncheck-all.png"
 			tooltip: qsTr("uncheck all")
 			onClicked: {
-				console.log("uncheck all");
+				for (var i=0; i<listM.count; i++) {
+					listM.get(i)["enabled"]=false;
+				}
 			}
 		}
 		IconButton {
@@ -98,7 +105,7 @@ Rectangle {
 				anchors.leftMargin: 5
 				anchors.verticalCenter: parent.verticalCenter
 
-				checked: listM.get(styleData.row).enabled
+				checked: listM.get(styleData.row).enabled === undefined ? false : listM.get(styleData.row).enabled
 
 				onCheckedChanged: {
 					listM.get(styleData.row).enabled=checked;
@@ -158,7 +165,7 @@ Rectangle {
 
 		rowDelegate: Rectangle {
 			id: rowDeleRect
-			height: listM.get(styleData.row)["s_num"]
+			height: listM.get(styleData.row).s_num === undefined ? 10 : listM.get(styleData.row).s_num
 			width: parent.width
 			color: styleData.row !== undefined ? (styleData.row % 2 ? "#E0FFE0" : "#FFE0FF") : "#FFFFFF"
 			border.color: "#F0F0F0"

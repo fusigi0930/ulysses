@@ -19,6 +19,9 @@ SplitView {
 	signal sigFetchTCInfo(var item)
 	signal sigShowTCInfo(var item)
 
+	signal sigStart(var item)
+	signal sigStop(var item)
+
 	onSigAddPlan: {
 		pannelLeft.sigAddPlan(item);
 	}

@@ -78,6 +78,8 @@ signals:
 	void sigAddTC(QVariant item);
 	void sigShowTCInfo(QVariant item);
 
+	void sigEndTestProc(QVariant item);
+
 public slots:
 	void slotNewDev(QString szIp);
 	void slotHeltDev(QString szIp);

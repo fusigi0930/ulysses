@@ -41,9 +41,7 @@ Dialog {
 	onSigShowTCInfo: {
 		console.log("step count: " + item.length);
 
-
-		if (item.length > 1 && item[0].tcid !== id) return;
-		if (item.length === 1 && item[0].tcid !== id) return;
+		if (item.length >= 1 && item[0].tcid !== id) return;
 
 		listSummaryM.append(item[0]);
 
@@ -144,7 +142,7 @@ Dialog {
 
 			rowDelegate: Rectangle {
 				id: rowDeleSummary
-				height: listSummaryM.get(styleData.row)["s_num"]
+				height: listSummaryM.get(styleData.row).s_num === undefined ? 10 : listSummaryM.get(styleData.row).s_num
 				width: parent.width
 				color: "#E0E0FF"
 				border.width: 0
@@ -165,7 +163,7 @@ Dialog {
 
 			rowDelegate: Rectangle {
 				id: rowDeleRect
-				height: listActionM.get(styleData.row)["s_num"]
+				height: listActionM.get(styleData.row).s_num === undefined ? 10 : listActionM.get(styleData.row).s_num
 				width: parent.width
 				color: styleData.row !== undefined ? (styleData.row % 2 ? "#E0FFE0" : "#FFE0FF") : "#FFFFFF"
 				border.color: "#F0F0F0"
