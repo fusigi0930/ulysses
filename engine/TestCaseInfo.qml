@@ -3,6 +3,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
 import QtQuick.Window 2.0
+import QtQuick.Controls.Styles 1.2
 import "qrc:/ulysses/"
 
 Dialog {
@@ -144,9 +145,12 @@ Dialog {
 				id: rowDeleSummary
 				height: listSummaryM.get(styleData.row)["s_num"]
 				width: parent.width
-				color: "#E0FFE0"
-				border.color: "#F0F0F0"
-				border.width: 1
+				color: "#E0E0FF"
+				border.width: 0
+			}
+
+			style: TableViewStyle {
+				backgroundColor: "#E0E0FF"
 			}
 		}
 
