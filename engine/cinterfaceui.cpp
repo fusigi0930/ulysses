@@ -21,13 +21,24 @@ CTaskThread::~CTaskThread() {
 void CTaskThread::run() {
 	if (!m_ui) return;
 
+	QThread::msleep(30);
+
 	switch (m_nFunc) {
 		default: break;
 		case _EFUNC_GET_PLANS:
+			m_mutex.lock();
 			m_ui->tfuncGetPlan(m_vItem);
+			m_mutex.unlock();
 			break;
 		case _EFUNC_GET_TCS:
+			m_mutex.lock();
 			m_ui->tfuncReqGetTC(m_vItem);
+			m_mutex.unlock();
+			break;
+		case _EFUNC_FETCH_TC_INFO:
+			m_mutex.lock();
+			m_ui->tfuncFetchTCInfo(m_vItem);
+			m_mutex.unlock();
 			break;
 	}
 
@@ -187,6 +198,15 @@ void CInterfaceUi::tfuncReqGetTC(QVariant item) {
 }
 
 void CInterfaceUi::reqFetchTCInfo(QVariant item) {
+	// the thread will be destroy after finished automaticlly
+	CTaskThread	*task=new CTaskThread(this);
+	DMSG("start update test case thread!");
+	task->m_nFunc=_EFUNC_FETCH_TC_INFO;
+	task->m_vItem=item;
+	task->start();
+}
+
+void CInterfaceUi::tfuncFetchTCInfo(QVariant item) {
 	QVariantMap mapItem=item.toMap();
 	DMSG("id: %d", mapItem["id"].toLongLong());
 

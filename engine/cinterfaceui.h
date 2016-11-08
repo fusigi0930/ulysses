@@ -6,6 +6,7 @@
 #include "netio.h"
 #include <map>
 #include <QVariant>
+#include <QMutex>
 
 #define _TTH_DEV_NAME "tlname"
 #define _TTH_PROJID "projid"
@@ -16,6 +17,7 @@ class CInterfaceUi;
 enum ETHREAD_FUNC {
 	_EFUNC_GET_PLANS,
 	_EFUNC_GET_TCS,
+	_EFUNC_FETCH_TC_INFO,
 };
 
 class CTaskThread : public QThread {
@@ -23,6 +25,7 @@ class CTaskThread : public QThread {
 protected:
 	CInterfaceUi *m_ui;
 
+	QMutex m_mutex;
 signals:
 
 public slots:
@@ -64,6 +67,7 @@ public:
 	void clearReaders();
 	void tfuncGetPlan(QVariant item);
 	void tfuncReqGetTC(QVariant item);
+	void tfuncFetchTCInfo(QVariant item);
 
 signals:
 	void sigNewDev(QVariant item);

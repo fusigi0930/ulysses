@@ -43,11 +43,12 @@ Dialog {
 
 
 		if (item.length > 1 && item[0].tcid !== id) return;
-		if (item.length === 1 && item.tcid !== id) return;
+		if (item.length === 1 && item[0].tcid !== id) return;
 
 		listSummaryM.append(item[0]);
 
 		for (var i=0; i<item.length; i++) {
+			console.log("add item " + item[i].actions);
 			listActionM.append(item[i]);
 		}
 	}
@@ -218,6 +219,7 @@ Dialog {
 					}
 				}
 			}
+			TableViewColumn { role: "execution_type"; title: "type"; width: 0; visible: false }
 
 			TableViewColumn { role: "result"; title: "Result"; width: 95 }
 
