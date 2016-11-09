@@ -9,12 +9,10 @@ import "qrc:/ulysses/"
 Dialog {
 	id: dlgTestCase
 
-	modality: Qt.ApplicationModal
+	modality: Qt.WindowModal
 	width: Screen.width / 1.5
 	height: Screen.height / 1.5
-	x: Screen.width / 6
-	y: Screen.height / 6
-	visible: true
+	visible: false
 	title: ""
 
 	standardButtons: StandardButton.Ok
@@ -58,11 +56,11 @@ Dialog {
 
 	Rectangle {
 		id: rectMainInfo
+
 		width: dlgTestCase.width - 20
 		height: dlgTestCase.height - 60
 
-		anchors.verticalCenter: parent.verticalCenter
-		anchors.horizontalCenter: parent.horizontalCenter
+		anchors.top: dlgTestCase.top
 
 		color: "transparent"
 

@@ -157,10 +157,11 @@ Rectangle {
 				"name": tc["name"],
 				"tlname": rectRightPannel.currentName
 			}
-			var dlg=dlgTestCase.createObject();
+			var dlg=dlgTestCase.createObject(rectRightPannel);
 			dlg.sigInitData(tcItem);
 			rectRightPannel.sigShowTCInfo.connect(dlg.sigShowTCInfo);
 			rectRightPannel.sigFetchTCInfo(tcItem);
+			dlg.open();
 		}
 
 		rowDelegate: Rectangle {
