@@ -19,8 +19,13 @@ SplitView {
 	signal sigFetchTCInfo(var item)
 	signal sigShowTCInfo(var item)
 
+	signal sigFetchBuild(var item)
+	signal sigShowSetting(var item)
+
 	signal sigStart(var item)
 	signal sigStop(var item)
+
+	signal sigSetBuildId(var item)
 
 	onSigAddPlan: {
 		pannelLeft.sigAddPlan(item);
@@ -39,6 +44,11 @@ SplitView {
 		pannelRight.sigShowTCInfo(item);
 	}
 
+	onSigShowSetting: {
+		console.log("info pannel show setting");
+		pannelRight.sigShowSetting(item);
+	}
+
 	LeftPannel {
 		id: pannelLeft
 		width: 300
@@ -47,6 +57,7 @@ SplitView {
 
 		onSigGetTC: {
 			splitBottomFrame.sigGetTC(item);
+			pannelRight.plan_id=item.planid;
 		}
 	}
 
@@ -59,10 +70,15 @@ SplitView {
 		onSigFetchTCInfo: {
 			splitBottomFrame.sigFetchTCInfo(item);
 		}
+
+		onSigFetchBuild: {
+			splitBottomFrame.sigFetchBuild(item);
+		}
 	}
 
 	Component.onCompleted: {
 		console.log("objName: " + objectName);
+		pannelRight.sigSetBuildId.connect(pannelLeft.sigSetBuildId);
 	}
 
 }

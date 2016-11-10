@@ -6,5 +6,6 @@
         <file>BottomPannel.qml</file>
         <file>InfoPannel.qml</file>
         <file>TestCaseInfo.qml</file>
+        <file>RunTestSettings.qml</file>
     </qresource>
 </RCC>

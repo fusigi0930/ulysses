@@ -6,6 +6,7 @@
 #define DB_NAME "testlinkdb"
 #define DB_USER "ulysses"
 #define DB_PASS "ulysses"
+#define DB_USER_ID 4
 
 //////////////////////////////////////////////
 /// \brief CTestLinkReader::CTestLinkReader
@@ -116,12 +117,47 @@ QVariant CTestLinkReader::fetchTCInfo(QVariant item) {
 	return QVariant::fromValue(json);
 }
 
+QVariant CTestLinkReader::fetchBuildInfo(QVariant item) {
+	QVariantMap mapItem=item.toMap();
+
+	long long nPlanId=mapItem[_TTH_PLANID].toLongLong();
+
+	std::list<CTestLinkPlan*>::iterator pPlan;
+	for (pPlan = m_listPlans.begin(); pPlan != m_listPlans.end(); pPlan++) {
+		if ((*pPlan)->m_nPlanId == nPlanId) {
+			break;
+		}
+	}
+
+	if (pPlan == m_listPlans.end()) return QVariant();
+
+	QVariantList vBuildInfo=(*pPlan)->fetchBuildInfo(item).toList();
+
+	QVariantList buildInfo;
+
+	for (int i=0; i < vBuildInfo.size(); i++) {
+		buildInfo.push_back(vBuildInfo.at(i));
+	}
+
+	std::list<QVariant> listPlat;
+	m_db.query(listPlat, "select * from platforms where testproject_id=%d;", m_nProjectId);
+	for (std::list<QVariant>::iterator pInfo=listPlat.begin(); pInfo != listPlat.end(); pInfo++) {
+		QVariantMap info=pInfo->toMap();
+		info.insert("type", "platform");
+		info.insert(_TTH_DEV_NAME, m_szName);
+		buildInfo.push_back(QVariant::fromValue(info));
+	}
+	return QVariant::fromValue(buildInfo);
+}
+
 ///////////////////////////////////////////////
 /// \brief CTestLinkSuite::CTestLinkSuite
 ///
 
 CTestLinkPlan::CTestLinkPlan() {
 	m_db=NULL;
+	m_nBuildId=-1;
+	m_nPlanId=-1;
 }
 
 CTestLinkPlan::~CTestLinkPlan() {
@@ -151,6 +187,7 @@ void CTestLinkPlan::duplicateInfo(CTestLinkRoot *item) {
 	if (NULL == plan) return;
 
 	this->m_nPlanId=plan->m_nPlanId;
+	this->m_nBuildId=plan->m_nBuildId;
 }
 
 QString CTestLinkPlan::getName() {
@@ -185,6 +222,48 @@ void CTestLinkPlan::getTCs() {
 
 		m_tcs.push_back(QVariant::fromValue(mapTC));
 	}
+}
+
+QVariant CTestLinkPlan::fetchBuildInfo(QVariant item) {
+	if (!m_db) return QVariant();
+
+	QVariantMap mapItem=item.toMap();
+	QString szDev=mapItem[_TTH_DEV_NAME].toString();
+	QStringList listDev=szDev.split(":");
+
+	std::list<QVariant> listBuild;
+
+	m_db->query(listBuild, "select * from builds where name like '%s%%' and testplan_id=%d;",
+				QSZ(listDev.at(0)), m_nPlanId);
+
+	QVariantList builds;
+	for (std::list<QVariant>::iterator pBuild=listBuild.begin(); pBuild != listBuild.end(); pBuild++) {
+		QVariantMap mapData=pBuild->toMap();
+		mapData.insert("type", "build");
+		mapData.insert(_TTH_DEV_NAME, szDev);
+		builds.push_back(QVariant::fromValue(mapData));
+	}
+
+	return QVariant::fromValue(builds);
+}
+
+QVariant CTestLinkPlan::getNewestBuild() {
+	if (!m_db) return QVariant();
+
+	QVariantMap mapRet;
+	std::list<QVariant> listBuf;
+	m_db->query(listBuf, "select * from builds where testplan_id=%d order by id desc limit 1;", m_nPlanId);
+	if (0 >= listBuf.size()) return QVariant();
+
+	mapRet.insert("buildid", listBuf.begin()->toMap()["id"].toLongLong());
+
+	listBuf.clear();
+	m_db->query(listBuf, "select * from platforms where testproject_id=%d order by id desc limit 1;", m_nProjectId);
+	if (0 >= listBuf.size()) return QVariant::fromValue(mapRet);
+
+	mapRet.insert("platid", listBuf.begin()->toMap()["id"].toLongLong());
+
+	return QVariant::fromValue(mapRet);
 }
 
 ////////////////////////////////////////////////////////////

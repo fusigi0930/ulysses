@@ -62,9 +62,14 @@ ApplicationWindow {
 		}
 
 		onSigShowTCInfo: {
-			console.log("show tc item: " + item.length);
 			console.log("show tc item: " + item[0].tlname);
 			pannelBottom.sigShowTCInfo(item);
+		}
+
+		onSigShowBuildPlatform: {
+			console.log("main show build item: " + item.length);
+			console.log("main show build: " + JSON.stringify(item));
+			pannelBottom.sigShowSetting(item);
 		}
 	}
 
@@ -116,6 +121,11 @@ ApplicationWindow {
 			onSigFetchTCInfo: {
 				console.log("main tlname: " + item.tlname);
 				interfaceUi.reqFetchTCInfo(item);
+			}
+
+			onSigFetchBuild: {
+				console.log("fetch build: " + item.tlname);
+				interfaceUi.reqFetchBuild(item);
 			}
 		}
 	}

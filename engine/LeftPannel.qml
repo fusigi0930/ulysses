@@ -10,9 +10,15 @@ Rectangle {
 	signal sigAddPlan(var item)
 	signal sigGetTC(var item)
 
+	signal sigSetBuildId(var item)
+
 	onSigAddPlan: {
 		console.log("planid: " + item.planid + " projid: " + item.projid);
 		tree.treeM.append(item);
+	}
+
+	onSigSetBuildId: {
+		console.log("left set build id: " + JSON.stringify(item));
 	}
 
 	TableView {
@@ -37,6 +43,8 @@ Rectangle {
 		TableViewColumn { role: "name"; title: "Name"; width: 200 }
 		TableViewColumn { role: "planid"; title: "planid"; width: 0; visible: false }
 		TableViewColumn { role: "projid"; title: "projid"; width: 0; visible: false }
+		TableViewColumn { role: "buildid"; title: "T_T"; width: 0; visible: false }
+		TableViewColumn { role: "platid"; title: "OQO"; width: 0; visible: false }
 
 		onDoubleClicked: {
 			var currentPlan=treeM.get(tree.currentRow);

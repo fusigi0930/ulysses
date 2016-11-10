@@ -87,6 +87,10 @@ enum ETestLinkNodeType {
 	_TL_NTYPE_USER			=	14,
 };
 
+#define _TTH_DEV_NAME "tlname"
+#define _TTH_PROJID "projid"
+#define _TTH_PLANID "planid"
+
 class CTestLinkRoot {
 protected:
 	CTestLinkRoot *m_parent;
@@ -141,6 +145,7 @@ public:
 	virtual QString getDevName() { return m_szName; }
 
 	QVariant fetchTCInfo(QVariant item);
+	QVariant fetchBuildInfo(QVariant item);
 
 };
 
@@ -151,6 +156,7 @@ private:
 
 public:
 	unsigned long long m_nPlanId;
+	unsigned long long m_nBuildId;
 	std::list<QVariant> m_tcs;
 
 
@@ -168,6 +174,8 @@ public:
 	virtual bool isOpened() { getRoot()->isOpened(); }
 
 	void getTCs();
+	QVariant fetchBuildInfo(QVariant item);
+	QVariant getNewestBuild();
 };
 
 class CTestLinkItem : public CRootItem, public CTestLinkRoot

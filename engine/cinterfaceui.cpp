@@ -40,6 +40,11 @@ void CTaskThread::run() {
 			m_ui->tfuncFetchTCInfo(m_vItem);
 			m_mutex.unlock();
 			break;
+		case _EFUNC_FETCH_BUILD_INFO:
+			m_mutex.lock();
+			m_ui->tfuncFetchBuild(m_vItem);
+			m_mutex.unlock();
+			break;
 	}
 
 	deleteLater();
@@ -122,6 +127,7 @@ void CInterfaceUi::tfuncGetPlan(QVariant item) {
 		mapItem.insert("objName", szName);
 		mapItem.insert(_TTH_PLANID, (*pPlan)->m_nPlanId);
 		mapItem.insert(_TTH_PROJID, (*pPlan)->getRoot()->m_nProjectId);
+		mapItem.insert("buildid", -1);
 		mapItem.insert("enabled", true);
 		emit sigAddPlan(QVariant::fromValue(mapItem));
 	}
@@ -220,4 +226,28 @@ void CInterfaceUi::tfuncFetchTCInfo(QVariant item) {
 
 	QVariant jsonTC = pItem->second->fetchTCInfo(item);
 	emit sigShowTCInfo(jsonTC);
+}
+
+void CInterfaceUi::reqFetchBuild(QVariant item) {
+	// the thread will be destroy after finished automaticlly
+	CTaskThread	*task=new CTaskThread(this);
+	DMSG("start update build and platfrom thread!");
+	task->m_nFunc=_EFUNC_FETCH_BUILD_INFO;
+	task->m_vItem=item;
+	task->start();
+}
+
+void CInterfaceUi::tfuncFetchBuild(QVariant item) {
+	QVariantMap mapItem=item.toMap();
+
+	QString szName=mapItem[_TTH_DEV_NAME].toString();
+	std::map<QString, CTestLinkReader*>::iterator pItem=m_mapReaders.find(szName);
+
+	if (pItem == m_mapReaders.end()) {
+		DMSG("it is impossible!!");
+		return;
+	}
+
+	QVariant jsonBuild = pItem->second->fetchBuildInfo(item);
+	emit sigShowBuildPlatform(jsonBuild);
 }

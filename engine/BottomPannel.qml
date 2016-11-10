@@ -18,6 +18,9 @@ Rectangle {
 	signal sigFetchTCInfo(var item)
 	signal sigShowTCInfo(var item)
 
+	signal sigFetchBuild(var item)
+	signal sigShowSetting(var item)
+
 	onSigAddPlan: {
 		for (var i=0; i<lstItems.length; i++) {
 			if (item.objName === lstItems[i].objectName) {
@@ -57,6 +60,17 @@ Rectangle {
 		}
 	}
 
+	onSigShowSetting: {
+		console.log("bottom pannel show setting: " + item[0].tlname);
+		for (var i=0; i<lstItems.length; i++) {
+			if (item[0].tlname === lstItems[i].objectName) {
+				console.log("bottom panel show build and platfrom");
+				lstItems[i].sigShowSetting(item);
+				return;
+			}
+		}
+	}
+
 	Component.onCompleted: {
 		compInfoPannel=Qt.createComponent("InfoPannel.qml");
 	}
@@ -81,6 +95,7 @@ Rectangle {
 		object.listCurrentName=name;
 		object.sigGetTC.connect(reqGetTC);
 		object.sigFetchTCInfo.connect(regFetchTCInfo);
+		object.sigFetchBuild.connect(sigFetchBuild);
 		lstItems.push(object);
 	}
 

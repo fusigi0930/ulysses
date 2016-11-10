@@ -23,5 +23,6 @@
 		<file>res/png/clean_fail.png</file>
 		<file>res/png/check-all.png</file>
 		<file>res/png/uncheck-all.png</file>
+		<file>res/png/setting.png</file>
 	</qresource>
 </RCC>	

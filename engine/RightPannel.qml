@@ -9,12 +9,19 @@ Rectangle {
 	property var currentName: ""
 	property var listM
 	property var dlgTestCase
+	property var dlgTestSettings
+	property int plan_id: -1
 
 	signal sigCleanTCList()
 	signal sigAddTC(var item)
 
 	signal sigFetchTCInfo(var item)
 	signal sigShowTCInfo(var item)
+
+	signal sigFetchBuild(var item)
+	signal sigShowSetting(var item)
+
+	signal sigSetBuildId(var item)
 
 	signal sigStart(var item)
 	signal sigStop(var item)
@@ -66,8 +73,27 @@ Rectangle {
 			}
 		}
 		IconButton {
-			id: buttonStartTest
+			id: buttonSetting
 			anchors.left: buttonUncheckAll.right
+			anchors.leftMargin: 10
+			text: qsTr("test settings")
+			image: "qrc:/image/res/png/setting.png"
+			tooltip: qsTr("test settings")
+			onClicked: {
+				var dlg=dlgTestSettings.createObject(rectRightPannel);
+				dlg.sigSetBuildId.connect(rectRightPannel.sigSetBuildId);
+				rectRightPannel.sigShowSetting.connect(dlg.sigShowSetting);
+				var item = {
+					"tlname": rectRightPannel.currentName,
+					"planid": rectRightPannel.plan_id,
+				};
+				rectRightPannel.sigFetchBuild(item);
+				dlg.open();
+			}
+		}
+		IconButton {
+			id: buttonStartTest
+			anchors.left: buttonSetting.right
 			anchors.leftMargin: 10
 			text: qsTr("Start test")
 			image: "qrc:/image/res/png/run.png"
@@ -189,6 +215,7 @@ Rectangle {
 	Component.onCompleted: {
 		console.log("table view current name: " + rectRightPannel.currentName);
 		dlgTestCase=Qt.createComponent("TestCaseInfo.qml");
+		dlgTestSettings=Qt.createComponent("RunTestSettings.qml");
 		listM = listModelCreator.createObject();
 		table.model = listM;
 	}

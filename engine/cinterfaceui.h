@@ -8,16 +8,13 @@
 #include <QVariant>
 #include <QMutex>
 
-#define _TTH_DEV_NAME "tlname"
-#define _TTH_PROJID "projid"
-#define _TTH_PLANID "planid"
-
 class CInterfaceUi;
 
 enum ETHREAD_FUNC {
 	_EFUNC_GET_PLANS,
 	_EFUNC_GET_TCS,
 	_EFUNC_FETCH_TC_INFO,
+	_EFUNC_FETCH_BUILD_INFO,
 };
 
 class CTaskThread : public QThread {
@@ -63,11 +60,13 @@ public:
 	Q_INVOKABLE void getTestPlan(QString szName);
 	Q_INVOKABLE void reqGetTC(QVariant item);
 	Q_INVOKABLE void reqFetchTCInfo(QVariant item);
+	Q_INVOKABLE void reqFetchBuild(QVariant item);
 
 	void clearReaders();
 	void tfuncGetPlan(QVariant item);
 	void tfuncReqGetTC(QVariant item);
 	void tfuncFetchTCInfo(QVariant item);
+	void tfuncFetchBuild(QVariant item);
 
 signals:
 	void sigNewDev(QVariant item);
@@ -77,6 +76,8 @@ signals:
 
 	void sigAddTC(QVariant item);
 	void sigShowTCInfo(QVariant item);
+
+	void sigShowBuildPlatform(QVariant item);
 
 	void sigEndTestProc(QVariant item);
 
