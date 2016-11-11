@@ -127,6 +127,22 @@ ApplicationWindow {
 				console.log("fetch build: " + item.tlname);
 				interfaceUi.reqFetchBuild(item);
 			}
+
+			onSigStart: {
+				var updateInfo = {
+					"ip": item.tlname.split(':')[1],
+					"itemcolor": "#90FF90"
+				}
+				broadcastView.sigUpdateItem(updateInfo);
+			}
+
+			onSigStop: {
+				var updateInfo = {
+					"ip": item.tlname.split(':')[1],
+					"itemcolor": "#C0C0E0"
+				}
+				broadcastView.sigUpdateItem(updateInfo);
+			}
 		}
 	}
 }

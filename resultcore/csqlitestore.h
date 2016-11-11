@@ -73,6 +73,12 @@ protected:
 	QMutex m_mutex;
 	QString m_szDBName;
 
+	virtual long long addTCResult(const QVariantMap &item);
+	virtual long long addTSResult(const QVariantMap &item);
+
+	virtual bool updateTCResult(const QVariantMap &item);
+	virtual bool updateTSResult(const QVariantMap &item);
+
 public:
 	CUlyStore();
 	virtual ~CUlyStore();

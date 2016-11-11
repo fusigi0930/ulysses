@@ -100,6 +100,10 @@ Rectangle {
 			tooltip: qsTr("starting test procedure")
 			onClicked: {
 				console.log("starting test procedure");
+				var item = {
+					"tlname": rectRightPannel.currentName
+				}
+				rectRightPannel.sigStart(item);
 			}
 		}
 		IconButton {
@@ -111,6 +115,10 @@ Rectangle {
 			tooltip: qsTr("stop running test procedure")
 			onClicked: {
 				console.log("stop test procedure");
+				var item = {
+					"tlname": rectRightPannel.currentName
+				}
+				rectRightPannel.sigStop(item);
 			}
 		}
 	}

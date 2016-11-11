@@ -32,18 +32,25 @@ long long CUlyStore::add(const QVariant &item) {
 	QVariantMap mapItem=item.toMap();
 	long long nRet=0;
 	if (0 == mapItem["type"].toString().compare("tc_result")) {
-
+		nRet=addTCResult(mapItem);
 	}
 	else if (0 == mapItem["type"].toString().compare("ts_result")) {
-
+		nRet=addTSResult(mapItem);
 	}
 	m_mutex.unlock();
-	return 0;
+	return nRet;
 }
 
 bool CUlyStore::update(const QVariant &item) {
 	m_mutex.lock();
-
+	QVariantMap mapItem=item.toMap();
+	long long nRet=0;
+	if (0 == mapItem["type"].toString().compare("tc_result")) {
+		nRet=updateTCResult(mapItem);
+	}
+	else if (0 == mapItem["type"].toString().compare("ts_result")) {
+		nRet=updateTSResult(mapItem);
+	}
 	m_mutex.unlock();
 	return true;
 }
@@ -52,6 +59,113 @@ void CUlyStore::remove(const QVariant &item) {
 	m_mutex.lock();
 
 	m_mutex.unlock();
+}
+
+long long CUlyStore::addTCResult(const QVariantMap &item) {
+
+	long long nRet=0;
+	QSqlQuery query=m_db.exec();
+
+	query.prepare("insert into executions ("
+				  "build_id,tester_id,execution_ts,"
+				  "testplan_id,tcversion_id,tcversion_number,"
+				  "platform_id,execution_type) values ("
+				  "?,?,now(),?,?,1,?,?);"
+				  );
+
+	query.bindValue(0, item["build_id"]);
+	query.bindValue(1, item["tester_id"]);
+	query.bindValue(2, item["testplan_id"]);
+	query.bindValue(3, item["tcversion_id"]);
+	query.bindValue(4, item["platform_id"]);
+	query.bindValue(5, item["execution_type"]);
+
+	query.exec();
+	if (QSqlError::NoError != query.lastError().type()) {
+		return nRet;
+	}
+
+	nRet=query.lastInsertId().toLongLong();
+
+	return nRet;
+}
+
+long long CUlyStore::addTSResult(const QVariantMap &item) {
+	long long nRet=0;
+	QSqlQuery query=m_db.exec();
+
+	query.prepare("insert into execution_tcsteps ("
+				  "execution_id,tcstep_id,notes,status) values ("
+				  "?,?,?,?);"
+				  );
+
+	query.bindValue(0, item["execution_id"]);
+	query.bindValue(1, item["tcstep_id"]);
+	query.bindValue(2, item["note"]);
+	query.bindValue(3, item["status"]);
+
+	query.exec();
+	if (QSqlError::NoError != query.lastError().type()) {
+		return nRet;
+	}
+
+	nRet=query.lastInsertId().toLongLong();
+
+	return nRet;
+}
+
+bool CUlyStore::updateTCResult(const QVariantMap &item) {
+	// sync type
+	// "id":id
+	// "sid": server id
+	// "sdate": sync time
+	// "type": sync type
+	QString szCond[] = {
+		"id",
+		""
+	};
+
+	QString szField[] = {
+		"notes",
+		"status",
+		""
+	};
+
+	QSqlQuery query=m_db.exec();
+
+	query.exec("begin;");
+	int nCondIndex=0;
+	while (!szCond[nCondIndex].isEmpty()) {
+		if (item.find(szCond[nCondIndex]) == item.end()) {
+			nCondIndex++;
+			continue;
+		}
+		int nIndex=0;
+		while (!szField[nIndex].isEmpty()) {
+			if (item.find(szField[nIndex]) == item.end()) {
+				nIndex++;
+				continue;
+			}
+
+			QString szCmd;
+			szCmd.sprintf("update executions set %s=? "
+						  "where %s=?", QSZ(szField[nIndex]), QSZ(szCond[nCondIndex]));
+
+			query.prepare(szCmd);
+			query.bindValue(0, item[szField[nIndex]]);
+			query.bindValue(1, item[szCond[nCondIndex]]);
+			query.exec();
+			nIndex++;
+		}
+		nCondIndex++;
+	}
+
+	query.exec("commit;");
+	return true;
+}
+
+bool CUlyStore::updateTSResult(const QVariantMap &item) {
+	return true;
 }
 
 /*

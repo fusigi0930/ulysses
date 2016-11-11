@@ -21,6 +21,9 @@ Rectangle {
 	signal sigFetchBuild(var item)
 	signal sigShowSetting(var item)
 
+	signal sigStart(var item)
+	signal sigStop(var item)
+
 	onSigAddPlan: {
 		for (var i=0; i<lstItems.length; i++) {
 			if (item.objName === lstItems[i].objectName) {
@@ -96,6 +99,8 @@ Rectangle {
 		object.sigGetTC.connect(reqGetTC);
 		object.sigFetchTCInfo.connect(regFetchTCInfo);
 		object.sigFetchBuild.connect(sigFetchBuild);
+		object.sigStart.connect(sigStart);
+		object.sigStop.connect(sigStop);
 		lstItems.push(object);
 	}
 

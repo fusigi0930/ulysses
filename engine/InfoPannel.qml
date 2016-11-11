@@ -79,6 +79,8 @@ SplitView {
 	Component.onCompleted: {
 		console.log("objName: " + objectName);
 		pannelRight.sigSetBuildId.connect(pannelLeft.sigSetBuildId);
+		pannelRight.sigStart.connect(splitBottomFrame.sigStart)
+		pannelRight.sigStop.connect(splitBottomFrame.sigStop)
 	}
 
 }
