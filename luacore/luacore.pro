@@ -13,10 +13,13 @@ CONFIG += dll
 DEFINES += LUACORE_LIBRARY
 
 SOURCES += luacore.cpp \
-    luafunc.cpp
+    luafunc.cpp \
+    cluafunc.cpp \
+    crunluathread.cpp
 
 HEADERS += luacore.h \
-        luacore_global.h
+        luacore_global.h \
+    crunluathread.h
 
 INCLUDEPATH += \
         ../common/inc \

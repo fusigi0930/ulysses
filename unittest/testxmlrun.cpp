@@ -5,6 +5,8 @@
 #include "debug.h"
 #include "testgroup.h"
 
+#if TESTITEM & TEST_XML
+
 void CTestGroup::testCXmlRun_saveFile() {
 	CXmlRun xmlrun;
 	SItem item1;
@@ -365,3 +367,5 @@ void CTestGroup::testBaseXml() {
 
 	QCOMPARE(base->getItemCount(), 100);
 }
+
+#endif

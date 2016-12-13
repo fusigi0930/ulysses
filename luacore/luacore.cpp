@@ -48,6 +48,7 @@ void CLuaCore::registerLuaCore() {
 
 	luaL_openlibs(m_LuaState);
 	registerLuaOverrideFunc();
+	registerFunc();
 	DMSG("top: %d", lua_gettop(m_LuaState));
 
 
@@ -73,18 +74,26 @@ void CLuaCore::registerLuaCore() {
 bool CLuaCore::open(QString szFile) {
 	CRootInterp::open(szFile);
 
-	if (NULL != m_LuaState) {
-		lua_close(m_LuaState);
-		m_LuaState=NULL;
+	if (NULL == m_LuaState) {
+		registerLuaCore();
 	}
 
-	registerLuaCore();
+	CInterpThread *thread=new CInterpThread;
+	thread->setIO(this);
+	setThread(thread);
+	thread->start();
 
 	return true;
 }
 
 void CLuaCore::close() {
 	// terminate lua and thread
+	for (std::map<QString,QThread*>::iterator pThread=m_mapFuncThread.begin(); pThread != m_mapFuncThread.end(); pThread++) {
+		if (pThread->second->isRunning()) pThread->second->terminate();
+		delete pThread->second;
+	}
+	m_mapFuncThread.clear();
+
 	if (NULL != m_LuaState) {
 		lua_close(m_LuaState);
 		m_LuaState=NULL;
@@ -99,6 +108,16 @@ void CLuaCore::close() {
 
 
 int CLuaCore::run() {
+	if (NULL == m_LuaState) {
+		DMSG("lua is not inited!");
+		return -1;
+	}
+	if (m_szFile.isEmpty()) {
+		DMSG("file name is empty");
+		return -2;
+	}
+
+	luaL_dofile(m_LuaState, QSZ(m_szFile));
 
 	return 0;
 }
@@ -113,9 +132,11 @@ int CLuaCore::run_as_string(QString szScript) {
 }
 
 QString CLuaCore::getResult() {
+	DMSG("get response result: %s", QSZ(m_szLuaResult));
 	return m_szLuaResult;
 }
 
 void CLuaCore::setResult(QString str) {
+	DMSG("set response result: %s", QSZ(str));
 	m_szLuaResult=str;
 }

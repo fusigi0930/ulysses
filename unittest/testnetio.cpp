@@ -6,7 +6,7 @@
 #include <QThread>
 #include <QSignalSpy>
 
-#if 0
+#if TESTITEM & TEST_NETIO
 void CTestGroup::testCNetcatIO_openServer() {
 	QString szRecv;
 

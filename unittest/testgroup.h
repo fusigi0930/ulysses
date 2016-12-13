@@ -3,6 +3,13 @@
 
 #include <QObject>
 
+#define TEST_XML		(1 << 0)
+#define TEST_NETIO		(1 << 1)
+#define TEST_SQL		(1 << 2)
+#define TEST_LUA		(1 << 3)
+
+#define TESTITEM		(TEST_LUA)
+
 class CTestGroup : public QObject {
 	Q_OBJECT
 
@@ -16,6 +23,7 @@ public:
 	}
 
 private slots:
+#if TESTITEM & TEST_XML
 	void testCXmlRun_saveFile();
 	void testCXmlRun_openFile();
 	void testCXmlRun_replaceItem();
@@ -33,15 +41,22 @@ private slots:
 	void testCXmlFactoryRun_multipleItem();
 
 	void testBaseXml();
+#endif
 
+#if TESTITEM & TEST_LUA
 	void testCLuaCore_runAsScript();
+	void testCLuaCore_open();
+	void testCLuaCore_runThread();
 
-#if 0
+#endif
+
+#if TESTITEM & TEST_NETIO
 	void testCNetcatIO_openServer();
 	void testCNotifyRecv_broadcastProcess();
 	void testCTelnetIO_openClient();
 #endif
 
+#if TESTITEM & TEST_SQL
 	void testCSQLiteStore_initDB();
 	void testCSQLiteStore_addTarget();
 	void testCSQLiteStore_addBoard();
@@ -55,6 +70,7 @@ private slots:
 
 	void testCDBSyncStore_initDB();
 	void testDBSyncInfo();
+#endif
 };
 
 #endif // __TESTGROUP_H__

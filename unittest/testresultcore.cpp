@@ -9,6 +9,8 @@
 
 #define TEST_DB "D:\\test.db"
 
+#if TESTITEM & TEST_SQL
+
 void CTestGroup::testCSQLiteStore_initDB() {
 	CSQLiteStore db;
 	db.open(TEST_DB);
@@ -428,3 +430,6 @@ void CTestGroup::testDBSyncInfo() {
 
 	QFile::remove(TEST_DB);
 }
+
+
+#endif

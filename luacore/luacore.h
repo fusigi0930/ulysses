@@ -8,6 +8,7 @@
 #include <QString>
 #include <base_interp.h>
 #include <QThread>
+#include <map>
 
 class LUACORESHARED_EXPORT CInterpThread : public QThread
 {
@@ -35,8 +36,12 @@ private:
 
 	void registerLuaCore();
 	void registerLuaOverrideFunc();
+	void registerFunc();
 	CLuaCore **m_luaUserData;
+
 public:
+	std::map<QString, QThread*> m_mapFuncThread;
+
 	CLuaCore();
 	virtual ~CLuaCore();
 
@@ -51,6 +56,11 @@ public:
 
 	// override original Lua function
 	static int luaPrint(lua_State* L);
+
+	// additional functions
+	static int CLuaRunThread(lua_State *L);
+	static int CLuaSendEvent(lua_State *L);
+	static int CLuaSetEventMode(lua_State *L);
 };
 
 #endif // CLUACORE_H

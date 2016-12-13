@@ -42,6 +42,8 @@ public:
 			return -1;
 		}
 		
+        m_szFile=szFile;
+
         if (m_thread)
             m_thread->start();
 						
