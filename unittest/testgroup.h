@@ -47,6 +47,10 @@ private slots:
 	void testCLuaCore_runAsScript();
 	void testCLuaCore_open();
 	void testCLuaCore_runThread();
+	void testCLuaCore_syntaxRequire();
+	void testCLuaCore_syntaxRequireVariable();
+	void testCLuaCore_defaultConst();
+	void testCLuaCore_sendEventKey();
 
 #endif
 

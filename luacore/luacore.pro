@@ -8,7 +8,7 @@ QT       += widgets network opengl sql script scripttools svg xml multimedia
 
 TARGET = luacore
 TEMPLATE = lib
-CONFIG += dll
+CONFIG += dll warn_off
 
 DEFINES += LUACORE_LIBRARY
 

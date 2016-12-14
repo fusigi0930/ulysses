@@ -37,7 +37,14 @@ private:
 	void registerLuaCore();
 	void registerLuaOverrideFunc();
 	void registerFunc();
+	void registerConst();
+
 	CLuaCore **m_luaUserData;
+
+	static void sendInputFuncEvent(std::vector<int> *vt);
+	static void sendInputWmEvent(std::vector<int> *vt);
+
+	void adjustLuaPath();
 
 public:
 	std::map<QString, QThread*> m_mapFuncThread;

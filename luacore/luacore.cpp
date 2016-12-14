@@ -4,6 +4,7 @@
 #include "lauxlib.h"
 
 #include <typeinfo>
+#include <QFileInfo>
 
 //////////////////////////////////////////////
 /// CInterpThread
@@ -48,6 +49,7 @@ void CLuaCore::registerLuaCore() {
 
 	luaL_openlibs(m_LuaState);
 	registerLuaOverrideFunc();
+	registerConst();
 	registerFunc();
 	DMSG("top: %d", lua_gettop(m_LuaState));
 
@@ -106,6 +108,23 @@ void CLuaCore::close() {
 	CRootInterp::close();
 }
 
+void CLuaCore::adjustLuaPath() {
+	// compare path environment
+	lua_getglobal(m_LuaState, "package");
+	lua_getfield(m_LuaState, -1, "path");
+	QString szEnvPath=lua_tostring(m_LuaState, -1);
+	DMSG("LUA PATH: %s", QSZ(szEnvPath));
+	QFileInfo fi(m_szFile);
+
+	if (!szEnvPath.contains(fi.absolutePath(), Qt::CaseInsensitive)) {
+		QString szBuf;
+		szBuf.sprintf("%s;%s/?.lua;", QSZ(szEnvPath), QSZ(fi.absolutePath()));
+		lua_pop(m_LuaState, 1);
+		lua_pushstring(m_LuaState, QSZ(szBuf));
+		lua_setfield(m_LuaState, -2, "path");
+		lua_pop(m_LuaState, 1);
+	}
+}
 
 int CLuaCore::run() {
 	if (NULL == m_LuaState) {
@@ -117,7 +136,17 @@ int CLuaCore::run() {
 		return -2;
 	}
 
-	luaL_dofile(m_LuaState, QSZ(m_szFile));
+	adjustLuaPath();
+
+	if (luaL_loadfile(m_LuaState, QSZ(m_szFile))) {
+		DMSG("load %s failed!", QSZ(m_szFile));
+		return -3;
+	}
+
+	if (lua_pcall(m_LuaState, 0, LUA_MULTRET, 0)) {
+		DMSG("run lua script failed");
+		return -4;
+	}
 
 	return 0;
 }
