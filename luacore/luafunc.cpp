@@ -193,6 +193,7 @@ static const struct SLuaConst const_data[] = {
 	{ "CONST_EVENT_ACTION_RDOWN",	3 },
 	{ "CONST_EVENT_ACTION_RUP",		4 },
 	{ "CONST_EVENT_ACTION_RCLICK",	5 },
+	{ "CONST_EVENT_ACTION_MOVE",	6 },
 
 	{ "CONST_MODE_EVENT_WM",	1 },
 	{ "CONST_MODE_EVENT_FUNC",	0 },

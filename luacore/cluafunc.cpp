@@ -18,6 +18,7 @@
 #define EVENT_ACTION_RDOWN		3
 #define EVENT_ACTION_RUP		4
 #define EVENT_ACTION_RCLICK		5
+#define EVENT_ACTION_MOVE		6
 
 #define MODE_EVENT_WM	1
 #define MODE_EVENT_FUNC	0
@@ -93,12 +94,71 @@ void CLuaCore::sendInputWmEvent(std::vector<int> *vt) {
 	// argument 1: event value
 	// argument 2: event action
 	// argument 3: event duration or repeat times
+	DMSG("sent input event");
 	switch ((*vt)[0]) {
 		default: break;
 		case EVENT_KEY:
+		switch((*vt)[2]) {
+			default: break;
+			case EVENT_ACTION_DOWN:
+				::SendMessage(::GetForegroundWindow(), WM_KEYDOWN, static_cast<WPARAM>((*vt)[1]), 1);
+				QThread::msleep((*vt)[3]);
+				break;
+			case EVENT_ACTION_UP:
+				::SendMessage(::GetForegroundWindow(), WM_KEYUP, static_cast<WPARAM>((*vt)[1]), 1);
+				QThread::msleep((*vt)[3]);
+				break;
+			case EVENT_ACTION_CLICK:
+				for(int i=0; i<(*vt)[3]; i++) {
+					::SendMessage(::GetForegroundWindow(), WM_KEYDOWN, static_cast<WPARAM>((*vt)[1]), 1);
+					QThread::msleep(70);
+					::SendMessage(::GetForegroundWindow(), WM_KEYUP, static_cast<WPARAM>((*vt)[1]), 1);
+					QThread::msleep(70);
+				}
+				break;
+			}
 
 			break;
 		case EVENT_MOUSE:
+			switch ((*vt)[3]) {
+				default: break;
+				case EVENT_ACTION_DOWN:
+					::SendMessage(NULL, WM_LBUTTONDOWN, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+					QThread::msleep((*vt)[4]);
+					break;
+				case EVENT_ACTION_UP:
+					::SendMessage(NULL, WM_LBUTTONUP, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+					QThread::msleep((*vt)[4]);
+					break;
+				case EVENT_ACTION_CLICK:
+					for(int i=0; i<(*vt)[4]; i++) {
+						::SendMessage(NULL, WM_LBUTTONDOWN, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+						QThread::msleep(70);
+						::SendMessage(NULL, WM_LBUTTONUP, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+						QThread::msleep(70);
+					}
+					break;
+				case EVENT_ACTION_RDOWN:
+					::SendMessage(NULL, WM_RBUTTONDOWN, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+					QThread::msleep((*vt)[4]);
+					break;
+				case EVENT_ACTION_RUP:
+					::SendMessage(NULL, WM_RBUTTONDOWN, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+					QThread::msleep((*vt)[4]);
+					break;
+				case EVENT_ACTION_RCLICK:
+					for(int i=0; i<(*vt)[4]; i++) {
+						::SendMessage(NULL, WM_RBUTTONDOWN, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+						QThread::msleep(70);
+						::SendMessage(NULL, WM_RBUTTONUP, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+						QThread::msleep(70);
+					}
+					break;
+				case EVENT_ACTION_MOVE:
+					::SendMessage(::GetForegroundWindow(), WM_MOUSEMOVE, 0, static_cast<LPARAM>((*vt)[1] | (*vt)[2] << 16));
+					QThread::msleep((*vt)[4]);
+					break;
+			}
 			break;
 	}
 }
@@ -110,6 +170,7 @@ void CLuaCore::sendInputFuncEvent(std::vector<int> *vt) {
 	// argument 3: event duration or repeat times
 
 	INPUT in;
+	DMSG("sent input event");
 	switch ((*vt)[0]) {
 		default: break;
 		case EVENT_KEY:
@@ -146,26 +207,26 @@ void CLuaCore::sendInputFuncEvent(std::vector<int> *vt) {
 			break;
 		case EVENT_MOUSE:
 			in.type=INPUT_MOUSE;
-			in.mi.dx=(*vt)[2];
-			in.mi.dy=(*vt)[3];
+			in.mi.dx=(*vt)[1]*(65535/::GetSystemMetrics(SM_CXSCREEN));
+			in.mi.dy=(*vt)[2]*(65535/::GetSystemMetrics(SM_CYSCREEN));
 			in.mi.mouseData=0;
 			in.mi.time=0;
 			in.mi.dwExtraInfo=NULL;
 
-			switch ((*vt)[4]) {
+			switch ((*vt)[3]) {
 				default: break;
 				case EVENT_ACTION_DOWN:
 					in.mi.dwFlags=MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_LEFTDOWN;
 					::SendInput(1, &in, sizeof(in));
-					QThread::msleep((*vt)[5]);
+					QThread::msleep((*vt)[4]);
 					break;
 				case EVENT_ACTION_UP:
 					in.mi.dwFlags=MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_LEFTUP;
 					::SendInput(1, &in, sizeof(in));
-					QThread::msleep((*vt)[5]);
+					QThread::msleep((*vt)[4]);
 					break;
 				case EVENT_ACTION_CLICK:
-					for(int i=0; i<(*vt)[5]; i++) {
+					for(int i=0; i<(*vt)[4]; i++) {
 						in.mi.dwFlags=MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_LEFTDOWN;
 						::SendInput(1, &in, sizeof(in));
 						QThread::msleep(70);
@@ -177,15 +238,15 @@ void CLuaCore::sendInputFuncEvent(std::vector<int> *vt) {
 				case EVENT_ACTION_RDOWN:
 					in.mi.dwFlags=MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_RIGHTDOWN;
 					::SendInput(1, &in, sizeof(in));
-					QThread::msleep((*vt)[5]);
+					QThread::msleep((*vt)[4]);
 					break;
 				case EVENT_ACTION_RUP:
 					in.mi.dwFlags=MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_RIGHTUP;
 					::SendInput(1, &in, sizeof(in));
-					QThread::msleep((*vt)[5]);
+					QThread::msleep((*vt)[4]);
 					break;
 				case EVENT_ACTION_RCLICK:
-					for(int i=0; i<(*vt)[5]; i++) {
+					for(int i=0; i<(*vt)[4]; i++) {
 						in.mi.dwFlags=MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_RIGHTDOWN;
 						::SendInput(1, &in, sizeof(in));
 						QThread::msleep(70);
@@ -193,6 +254,11 @@ void CLuaCore::sendInputFuncEvent(std::vector<int> *vt) {
 						::SendInput(1, &in, sizeof(in));
 						QThread::msleep(70);
 					}
+					break;
+				case EVENT_ACTION_MOVE:
+					in.mi.dwFlags=MOUSEEVENTF_ABSOLUTE|MOUSEEVENTF_MOVE;
+					::SendInput(1, &in, sizeof(in));
+					QThread::msleep((*vt)[4]);
 					break;
 			}
 
@@ -213,7 +279,7 @@ int CLuaCore::CLuaSendEvent(lua_State *L) {
 
 	std::vector<int> vtArgu;
 
-	for (int i=1; i<nArgNum; i++) {
+	for (int i=1; i<=nArgNum; i++) {
 		int nBuf=lua_tointeger(L, i);
 		DMSG("argument %d: %d", i, nBuf);
 		vtArgu.push_back(nBuf);
@@ -238,15 +304,16 @@ int CLuaCore::CLuaSendEvent(lua_State *L) {
 }
 
 int CLuaCore::CLuaSetEventMode(lua_State *L) {
+	DMSG("set mode!!");
 	if (NULL == L) {
 		return 0;
 	}
 
 	int nArgNum=lua_gettop(L);
-	if (1 != nArgNum) {
-		DMSG("argument number error!");
-		return 0;
-	}
+	//if (1 > nArgNum) {
+	//	DMSG("argument number error!");
+	//	return 0;
+	//}
 
 	int nEventMode=lua_tointeger(L, -1);
 	DMSG("event mode: %d", nEventMode);
