@@ -28,6 +28,7 @@ INCLUDEPATH += \
 
 LIBS += \
     -L$$_PRO_FILE_PWD_/lua-5.3.2/src \
+    -L$$_PRO_FILE_PWD_/opencv/lib \
     -llua
 
 CONFIG(debug, debug|release) {
