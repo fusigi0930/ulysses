@@ -19,7 +19,8 @@ SOURCES += luacore.cpp \
 
 HEADERS += luacore.h \
         luacore_global.h \
-    crunluathread.h
+    crunluathread.h \
+    luna_four_code.h
 
 INCLUDEPATH += \
         ../common/inc \

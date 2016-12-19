@@ -58,8 +58,6 @@ void CTestGroup::testCLuaCore_defaultConst() {
 void CTestGroup::testCLuaCore_sendEventKey() {
 	g_lua.create("d:\\project\\luatest\\sendevent_key.lua");
 	QThread::msleep(2500);
-
-	QCOMPARE(1,1);
 }
 
 
