@@ -17,6 +17,8 @@
 #include "lua.hpp"
 #include <string.h> // For strlen
 
+#define nullptr NULL
+
 template < typename T > class Luna {
   public:
 

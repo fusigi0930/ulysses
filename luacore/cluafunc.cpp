@@ -4,6 +4,8 @@
 #include "lauxlib.h"
 #include "crunluathread.h"
 
+#include "copencv.h"
+
 #include <typeinfo>
 #include <vector>
 #include <windows.h>
@@ -40,6 +42,9 @@ void CLuaCore::registerFunc() {
 		lua_pushcfunction(m_LuaState, additional_func[i].func);
 		lua_setglobal(m_LuaState, additional_func[i].name);
 	}
+
+	// register class
+	Luna<COpenCV>::Register(m_LuaState);
 }
 
 int CLuaCore::CLuaRunThread(lua_State *L) {

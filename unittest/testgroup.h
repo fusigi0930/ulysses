@@ -51,7 +51,8 @@ private slots:
 	void testCLuaCore_syntaxRequireVariable();
 	void testCLuaCore_defaultConst();
 	void testCLuaCore_sendEventKey();
-
+	void testCLuaCore_cvCaptureScreen();
+	void testCLuaCore_syntaxLoadDll();
 #endif
 
 #if TESTITEM & TEST_NETIO

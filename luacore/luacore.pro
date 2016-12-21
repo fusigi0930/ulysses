@@ -15,21 +15,41 @@ DEFINES += LUACORE_LIBRARY
 SOURCES += luacore.cpp \
     luafunc.cpp \
     cluafunc.cpp \
-    crunluathread.cpp
+    crunluathread.cpp \
+    copencv.cpp
 
 HEADERS += luacore.h \
         luacore_global.h \
     crunluathread.h \
-    luna_four_code.h
+    luna_four_code.h \
+    copencv.h
 
 INCLUDEPATH += \
         ../common/inc \
-        $$_PRO_FILE_PWD_/lua-5.3.2/src
+        $$_PRO_FILE_PWD_/lua-5.3.2/src \
+        $$_PRO_FILE_PWD_/opencv/inc
 
 LIBS += \
     -L$$_PRO_FILE_PWD_/lua-5.3.2/src \
     -L$$_PRO_FILE_PWD_/opencv/lib \
     -llua
+
+LIBS += \
+    -llibpng \
+    -llibjpeg \
+    -lzlib \
+    -llibjasper \
+    -llibtiff \
+    -lIlmImf \
+
+LIBS += \
+    -lopencv_core2413.dll \
+    -lopencv_highgui2413.dll \
+    -lopencv_imgproc2413.dll \
+    -lopencv_objdetect2413.dll
+
+LIBS += \
+    -lgdi32
 
 CONFIG(debug, debug|release) {
         OUTDIR = $$_PRO_FILE_PWD_/../out/debug
