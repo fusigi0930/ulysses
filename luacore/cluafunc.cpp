@@ -31,6 +31,7 @@ static const struct luaL_Reg additional_func[] = {
 	{ "run_thread", CLuaCore::CLuaRunThread },
 	{ "send_event", CLuaCore::CLuaSendEvent },
 	{ "set_event_mode", CLuaCore::CLuaSetEventMode },
+	{ "wait", CLuaCore::CLuaSleep },
 	{ NULL, NULL},
 };
 
@@ -325,6 +326,17 @@ int CLuaCore::CLuaSetEventMode(lua_State *L) {
 
 	lua_pushinteger(L, nEventMode);
 	lua_setglobal(L, VARNAME_EVENT_MODE);
+
+	return 0;
+}
+
+int CLuaCore::CLuaSleep(lua_State *L) {
+	if (NULL == L) return 0;
+
+	lua_gettop(L);
+	int nmSleep=lua_tointeger(L, -1);
+
+	QThread::msleep(nmSleep);
 
 	return 0;
 }

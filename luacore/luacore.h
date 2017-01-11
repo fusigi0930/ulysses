@@ -68,6 +68,7 @@ public:
 	static int CLuaRunThread(lua_State *L);
 	static int CLuaSendEvent(lua_State *L);
 	static int CLuaSetEventMode(lua_State *L);
+	static int CLuaSleep(lua_State *L);
 };
 
 #endif // CLUACORE_H

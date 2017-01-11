@@ -63,7 +63,7 @@ void CTestGroup::testCLuaCore_sendEventKey() {
 void CTestGroup::testCLuaCore_cvCaptureScreen() {
 						//"cv.cap_screen(0,0,400,200)\n"
 	g_lua.run_as_string("local cv=opencv()\n"
-						"x,y=cv.match(nil,\"d:/project/luatest/pattern.bmp\",0,0,600,400)\n"
+						"x,y=cv.match(nil,\"d:/project/luatest/pattern.png\",0,0,600,400)\n"
 						"cv.rect(x,y,50,50)\n"
 						"cv.show_screen()\n");
 	QThread::msleep(100);
